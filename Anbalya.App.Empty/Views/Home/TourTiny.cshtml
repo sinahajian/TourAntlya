@@ -1,0 +1,20 @@
+@using Models.Entities
+@model TourDto
+
+<div class="single-recent-blog-post">
+    <div class="thumb">
+        <img class="img-fluid" src="@Model.Foto" alt="post">
+    </div>
+    <div class="details">
+        <div class="tags">
+
+            <a href="#" class="button_hover tag_btn">@Model.Category</a>
+
+        </div>
+        <a href="#">
+            <h4 class="sec_h4">@Model.TourName</h4>
+        </a>
+        <p>@Model.Description</p>
+
+    </div>
+</div>

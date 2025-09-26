@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Relaxing" xml:space="preserve">
+    <value>Relaxing</value>
+  </data>
+  <data name="Adventure" xml:space="preserve">
+    <value>Adventure</value>
+  </data>
+  <data name="History" xml:space="preserve">
+    <value>History</value>
+  </data>
+  <data name="Nature" xml:space="preserve">
+    <value>Nature</value>
+  </data>
+  <data name="Family" xml:space="preserve">
+    <value>Family</value>
+  </data>
+  <data name="Special" xml:space="preserve">
+    <value>Special</value>
+  </data>
+</root>

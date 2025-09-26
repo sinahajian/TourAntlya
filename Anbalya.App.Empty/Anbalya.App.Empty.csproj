@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Anbalya.App.Empty</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql" Version="9.0.3" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+  </ItemGroup>
+<ItemGroup>
+  <!-- فایل پایه: -->
+  <EmbeddedResource Update="Resources/Category.resx">
+    <!-- کلاس public تولید می‌کند -->
+    <Generator>PublicResXFileCodeGenerator</Generator>
+    <!-- -->
+    <LastGenOutput>Category.Designer.cs</LastGenOutput>
+    <!---->
+    <CustomToolNamespace>MyProject.Resources</CustomToolNamespace>
+  </EmbeddedResource>
+
+  <!-- -->
+  <EmbeddedResource Update="Resources/Category.de.resx" />
+  <EmbeddedResource Update="Resources/Category.fa.resx" />
+  <EmbeddedResource Update="Resources/Category.ru.resx" />
+  <EmbeddedResource Update="Resources/Category.pl.resx" />
+  <EmbeddedResource Update="Resources/Category.ar.resx" />
+</ItemGroup>
+</Project>
