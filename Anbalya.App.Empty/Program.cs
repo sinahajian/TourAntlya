@@ -26,6 +26,13 @@ builder.Services.AddScoped<ILanguageResolver, LanguageResolver>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<TourDbContext>();
+    db.Database.Migrate();        // جداول را می‌سازد/آپدیت می‌کند
+    // (اختیاری) اگر Seed داده نیاز داری، اینجا انجام بده
+}
+
 app.UseDeveloperExceptionPage();
 app.UseStaticFiles();
 app.UseStatusCodePages();
