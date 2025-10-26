@@ -8,11 +8,16 @@ using Models.Repository;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<TourDbContext>(options =>
 {
-    var cs = builder.Configuration.GetConnectionString("Default");
+    var connectionKey = builder.Environment.IsDevelopment()
+        ? "SinaLocalhost"    // local postgres (sina localhost)
+        : "SinaRailway";     // production railway (sina railway)
+    var cs = builder.Configuration.GetConnectionString(connectionKey);
+    if (string.IsNullOrWhiteSpace(cs))
+    {
+        throw new InvalidOperationException($"Connection string '{connectionKey}' was not found.");
+    }
     options.UseNpgsql(cs);
-}
-
-);
+});
 builder.Services.AddScoped<ITourRepository, TourRepository>();
 builder.Services.AddScoped<IManagerRepository, ManagerRepository>();
 builder.Services.AddScoped<IManagerTourRepository, ManagerTourRepository>();
