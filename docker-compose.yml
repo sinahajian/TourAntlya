@@ -5,7 +5,7 @@ services:
     container_name: pg-local
     restart: unless-stopped
     environment:
-      POSTGRES_USER: sina
+      POSTGRES_USER: tourAntalya
       POSTGRES_PASSWORD: 12sina122
       POSTGRES_DB: TourAntalya
     ports:
