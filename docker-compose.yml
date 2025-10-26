@@ -5,20 +5,20 @@ services:
     container_name: pg-local
     restart: unless-stopped
     environment:
-      POSTGRES_USER: Sina
+      POSTGRES_USER: sina
       POSTGRES_PASSWORD: 12sina122
-      POSTGRES_DB: Sina
+      POSTGRES_DB: TourAntalya
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
+      # دیتابیس/یوزر واقعی را پینگ کن؛ یا ساده فقط پذیرش اتصال را چک کن
+      test: ["CMD-SHELL", "pg_isready -h localhost -p 5432 -U sina -d sina || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 10
 
-  # اختیاری: pgAdmin برای مدیریت گرافیکی
   pgadmin:
     image: dpage/pgadmin4:9.8
     depends_on: [postgres]
