@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Anbalya.App.Empty")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f4aec401168f08f4a7b5f8a7dd35cbf76c928fea")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+440d03aaf0690a7f3bfcd8e33989e20c6d082a84")]
 [assembly: System.Reflection.AssemblyProductAttribute("Anbalya.App.Empty")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Anbalya.App.Empty")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

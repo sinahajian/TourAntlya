@@ -9,11 +9,64 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Anbalya.App.Empty.Migrations
 {
     /// <inheritdoc />
-    public partial class firstnewM : Migration
+    public partial class first1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "LandingContents",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Language = table.Column<string>(type: "text", nullable: false),
+                    Tagline = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    TaglineEn = table.Column<string>(type: "text", nullable: false),
+                    TaglineDe = table.Column<string>(type: "text", nullable: false),
+                    TaglineFa = table.Column<string>(type: "text", nullable: false),
+                    TaglineRu = table.Column<string>(type: "text", nullable: false),
+                    TaglinePl = table.Column<string>(type: "text", nullable: false),
+                    TaglineAr = table.Column<string>(type: "text", nullable: false),
+                    TitleEn = table.Column<string>(type: "text", nullable: false),
+                    TitleDe = table.Column<string>(type: "text", nullable: false),
+                    TitleFa = table.Column<string>(type: "text", nullable: false),
+                    TitleRu = table.Column<string>(type: "text", nullable: false),
+                    TitlePl = table.Column<string>(type: "text", nullable: false),
+                    TitleAr = table.Column<string>(type: "text", nullable: false),
+                    DescriptionEn = table.Column<string>(type: "text", nullable: false),
+                    DescriptionDe = table.Column<string>(type: "text", nullable: false),
+                    DescriptionFa = table.Column<string>(type: "text", nullable: false),
+                    DescriptionRu = table.Column<string>(type: "text", nullable: false),
+                    DescriptionPl = table.Column<string>(type: "text", nullable: false),
+                    DescriptionAr = table.Column<string>(type: "text", nullable: false),
+                    BackgroundImage = table.Column<string>(type: "text", nullable: true),
+                    CreationTime = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LandingContents", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Managers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserName = table.Column<string>(type: "text", nullable: false),
+                    UserEmail = table.Column<string>(type: "text", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    CreationTime = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Managers", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Tours",
                 columns: table => new
@@ -72,6 +125,16 @@ namespace Anbalya.App.Empty.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "LandingContents",
+                columns: new[] { "Id", "BackgroundImage", "CreationTime", "Description", "DescriptionAr", "DescriptionDe", "DescriptionEn", "DescriptionFa", "DescriptionPl", "DescriptionRu", "Language", "Tagline", "TaglineAr", "TaglineDe", "TaglineEn", "TaglineFa", "TaglinePl", "TaglineRu", "Title", "TitleAr", "TitleDe", "TitleEn", "TitleFa", "TitlePl", "TitleRu" },
+                values: new object[] { 1, null, 0L, "Step away from routine: gentle cruises, adventures, and sunny escapes are ready for you.", "امنح نفسك استراحة حقيقية: رحلات بحرية، مغامرات وتجارب مميزة تلائم كل الأذواق.", "Lass den Alltag hinter dir: sanfte Bootstouren, Naturerlebnisse und Ausflüge voller Sonne warten bereits auf dich.", "Step away from routine: gentle cruises, adventures, and sunny escapes are ready for you.", "با تورهای ما از شلوغی دور شوید؛ سفرهایی آرام، ماجراجویانه و سرشار از تجربه‌های تازه.", "Odpocznij od codzienności: czekają na Ciebie rejsy, przygody i chwile czystego relaksu.", "Устройте себе отдых: море, приключения и новые впечатления ждут вас каждый день.", "en", "Away from monotonous life", "ابتعد عن الحياة الرتيبة", "Raus aus dem Alltag", "Away from monotonous life", "دور از زندگی یکنواخت", "Z dala od monotonii", "Подальше от монотонной жизни", "Relax Your Mind", "أرخِ ذهنك", "Entspann deinen Geist", "Relax Your Mind", "ذهن خود را آرام کنید", "Zrelaksuj swój umysł", "Расслабьте свой разум" });
+
+            migrationBuilder.InsertData(
+                table: "Managers",
+                columns: new[] { "Id", "CreationTime", "Name", "Password", "UserEmail", "UserName" },
+                values: new object[] { 1, 0L, "name", "12sina122", "Sina.hajian@gmail.com", "Sina" });
+
+            migrationBuilder.InsertData(
                 table: "Tours",
                 columns: new[] { "Id", "ActiveDay", "Category", "CreationTime", "DescriptionAr", "DescriptionDe", "DescriptionEn", "DescriptionPe", "DescriptionPo", "DescriptionRu", "DurationHours", "Foto", "InfantPrice", "KinderPrice", "LocLat", "LocLon", "MiniDescriptionAr", "MiniDescriptionDe", "MiniDescriptionEn", "MiniDescriptionPe", "MiniDescriptionPo", "MiniDescriptionRu", "Price", "Services", "TourName" },
                 values: new object[,]
@@ -106,6 +169,12 @@ namespace Anbalya.App.Empty.Migrations
                 name: "IX_Fotos_TourId",
                 table: "Fotos",
                 column: "TourId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LandingContents_Language",
+                table: "LandingContents",
+                column: "Language",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -113,6 +182,12 @@ namespace Anbalya.App.Empty.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Fotos");
+
+            migrationBuilder.DropTable(
+                name: "LandingContents");
+
+            migrationBuilder.DropTable(
+                name: "Managers");
 
             migrationBuilder.DropTable(
                 name: "Tours");
