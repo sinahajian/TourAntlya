@@ -9,6 +9,7 @@ namespace Models.Interface
         List<Tour> GetAll();
         Task<TourDto?> GetByIdAsync(int id, string lang, CancellationToken ct = default);
         Task<List<TourDto>> ListAsync(string lang, CancellationToken ct = default);
+        Task<List<TourDto>> ListByCategoryAsync(Category category, string lang, CancellationToken ct = default);
 
     }
 }

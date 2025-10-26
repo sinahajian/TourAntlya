@@ -1,0 +1,118 @@
+@using Models.Entities
+@model ManagerTourCreateViewModel
+@{
+    Layout = "_ManagerLayout";
+    ViewData["Manager"] = ViewData["Manager"] ?? null;
+    ViewData["Title"] = "Add Tour";
+    var categories = Enum.GetValues(typeof(Category)).Cast<Category>();
+}
+
+<div class="container-fluid manager-tour-edit">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Add New Tour</h1>
+        <a class="btn btn-secondary btn-sm" href="@Url.Action("Tours", "Managers", new { userName = Model.UserName })">
+            &larr; Back to list
+        </a>
+    </div>
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <div class="card shadow">
+        <div class="card-body">
+            <form method="post" action="@Url.Action("AddTour", "Managers")" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="UserName" value="@Model.UserName" />
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="TourName">Tour Name</label>
+                        <input type="text" class="form-control" id="TourName" name="TourName" value="@Model.TourName" required />
+                        @Html.ValidationMessage("TourName", null, new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="Category">Category</label>
+                        <select class="form-control" id="Category" name="Category">
+                            @foreach (var category in categories)
+                            {
+                                var isSelected = (int)category == Model.Category;
+                                <option value="@((int)category)" @(isSelected ? "selected=\"selected\"" : string.Empty)>@category</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Active Days</label>
+                    <div class="manager-day-toggle">
+                        @foreach (var option in Model.DayOptions)
+                        {
+                            var checkboxId = $"create-day-{option.Index}";
+                            var isChecked = Model.SelectedDays?.Contains(option.Index) ?? false;
+                            <div class="day-toggle-item">
+                                <input type="checkbox"
+                                       class="day-toggle-input"
+                                       id="@checkboxId"
+                                       name="SelectedDays"
+                                       value="@option.Index"
+                                       @(isChecked ? "checked" : null) />
+                                <label class="day-toggle-label" for="@checkboxId">@option.DisplayName</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="Price">Adult Price</label>
+                        <input type="number" class="form-control" id="Price" name="Price" value="@Model.Price" min="0" required />
+                        @Html.ValidationMessage("Price", null, new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="KinderPrice">Child Price</label>
+                        <input type="number" class="form-control" id="KinderPrice" name="KinderPrice" value="@Model.KinderPrice" min="0" required />
+                        @Html.ValidationMessage("KinderPrice", null, new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="InfantPrice">Infant Price</label>
+                        <input type="number" class="form-control" id="InfantPrice" name="InfantPrice" value="@Model.InfantPrice" min="0" required />
+                        @Html.ValidationMessage("InfantPrice", null, new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="DurationHours">Duration (hours)</label>
+                        <input type="number" class="form-control" id="DurationHours" name="DurationHours" value="@Model.DurationHours" min="0" required />
+                        @Html.ValidationMessage("DurationHours", null, new { @class = "text-danger" })
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="LocLat">Latitude</label>
+                        <input type="number" step="0.0001" class="form-control" id="LocLat" name="LocLat" value="@Model.LocLat" />
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="LocLon">Longitude</label>
+                        <input type="number" step="0.0001" class="form-control" id="LocLon" name="LocLon" value="@Model.LocLon" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ServicesText">Services (one per line)</label>
+                    <textarea class="form-control" id="ServicesText" name="ServicesText" rows="5">@Model.ServicesText</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="Photos">Photos</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="Photos" name="Photos" multiple>
+                        <label class="custom-file-label" for="Photos">Choose photos</label>
+                    </div>
+                    <small class="text-muted">Accepted formats: JPG, PNG, WEBP, GIF. Max size 5 MB per file.</small>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Create Tour</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

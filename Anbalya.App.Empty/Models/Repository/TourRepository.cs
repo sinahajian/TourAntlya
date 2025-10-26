@@ -39,6 +39,7 @@ namespace Models.Repository
                     t.Services,                      // ← اگر ValueConverter برای List<string> داری اوکیه
                     t.Foto,
                     t.Fotos.Select(f => f.Address),
+                    t.ActiveDay,
                     lang
                 ))
                 .FirstOrDefaultAsync(ct);
@@ -47,6 +48,7 @@ namespace Models.Repository
         public async Task<List<TourDto>> ListAsync(string lang, CancellationToken ct = default)
         {
             return await _tourDbContext.Tours
+                .AsNoTracking()
                 .Select(t => new TourDto(
                     t.Id,
                     t.TourName,
@@ -63,6 +65,34 @@ namespace Models.Repository
                     t.Services,
                     t.Foto,
                     t.Fotos.Select(f => f.Address),
+                    t.ActiveDay,
+                    lang
+                ))
+                .ToListAsync(ct);
+        }
+
+        public async Task<List<TourDto>> ListByCategoryAsync(Category category, string lang, CancellationToken ct = default)
+        {
+            return await _tourDbContext.Tours
+                .Where(t => t.Category == category)
+                .AsNoTracking()
+                .Select(t => new TourDto(
+                    t.Id,
+                    t.TourName,
+                    t.Price,
+                    t.KinderPrice,
+                    t.InfantPrice,
+                    t.LocLat,
+                    t.LocLon,
+                    t.Category,
+                    t.Category.GetDisplayName(lang),
+                    DescriptionForLang(t, lang),
+                    MiniDescriptionForLang(t, lang),
+                    t.DurationHours,
+                    t.Services,
+                    t.Foto,
+                    t.Fotos.Select(f => f.Address),
+                    t.ActiveDay,
                     lang
                 ))
                 .ToListAsync(ct);

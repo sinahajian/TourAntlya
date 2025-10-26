@@ -1,0 +1,43 @@
+@model ManagerLoginViewModel
+
+<section class="manager-login-section section_gap_top">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h2 class="card-title text-center mb-4">Manager Login</h2>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                @Model.ErrorMessage
+                            </div>
+                        }
+
+                        @using (Html.BeginForm("LoginManagers", "Managers", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(m => m.Input.UserName, new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.Input.UserName, new { @class = "form-control", placeholder = "Enter your user name" })
+                                @Html.ValidationMessageFor(m => m.Input.UserName, "", new { @class = "text-danger small" })
+                            </div>
+
+                            <div class="form-group mb-4">
+                                @Html.LabelFor(m => m.Input.Password, new { @class = "form-label" })
+                                @Html.PasswordFor(m => m.Input.Password, new { @class = "form-control", placeholder = "Enter your password" })
+                                @Html.ValidationMessageFor(m => m.Input.Password, "", new { @class = "text-danger small" })
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Login</button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

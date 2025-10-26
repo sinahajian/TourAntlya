@@ -1,5 +1,16 @@
+@using Models.Helper
+@inject Models.Interface.ILanguageResolver LanguageResolver
+@{
+    var currentLanguageCode = LanguageResolver.Resolve(Context);
+    var currentLanguage = LanguageCatalog.Find(currentLanguageCode);
+    var languageOptions = LanguageCatalog.Options;
+    var languageReturnUrl = (Context.Request.Path + Context.Request.QueryString).ToString();
+    var isRtl = LanguageCatalog.IsRtl(currentLanguageCode);
+    var navAlignmentClass = isRtl ? "mr-auto" : "ml-auto";
+}
+
 <!DOCTYPE html>
-<html>
+<html lang="@currentLanguageCode" dir="@(isRtl ? "rtl" : "ltr")">
 
 <head>
     <!-- Required meta tags -->
@@ -8,16 +19,16 @@
 
     <title>Royal Hotel</title>
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="css/bootstrap.css">
-    <link rel="stylesheet" href="vendors/linericon/style.css">
-    <link rel="stylesheet" href="css/font-awesome.min.css">
-    <link rel="stylesheet" href="vendors/owl-carousel/owl.carousel.min.css">
-    <link rel="stylesheet" href="vendors/bootstrap-datepicker/bootstrap-datetimepicker.min.css">
-    <link rel="stylesheet" href="vendors/nice-select/css/nice-select.css">
-    <link rel="stylesheet" href="vendors/owl-carousel/owl.carousel.min.css">
+    <link rel="stylesheet" href="@Url.Content("~/css/bootstrap.css")">
+    <link rel="stylesheet" href="@Url.Content("~/vendors/linericon/style.css")">
+    <link rel="stylesheet" href="@Url.Content("~/css/font-awesome.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/vendors/owl-carousel/owl.carousel.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/vendors/bootstrap-datepicker/bootstrap-datetimepicker.min.css")">
+    <link rel="stylesheet" href="@Url.Content("~/vendors/nice-select/css/nice-select.css")">
+    <link rel="stylesheet" href="@Url.Content("~/vendors/owl-carousel/owl.carousel.min.css")">
     <!-- main css -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="@Url.Content("~/css/style.css")">
+    <link rel="stylesheet" href="@Url.Content("~/css/responsive.css")">
 </head>
 
 <body>
@@ -26,7 +37,7 @@
         <div class="container">
             <nav class="navbar navbar-expand-lg navbar-light">
                 <!-- Brand and toggle get grouped for better mobile display -->
-                <a class="navbar-brand logo_h" href="index.html"><img src="image/Logo.png" alt=""></a>
+                <a class="navbar-brand logo_h" href="@Url.Action("Index", "Home")"><img src="@Url.Content("~/image/Logo.png")" alt=""></a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse"
                     data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                     aria-label="Toggle navigation">
@@ -36,21 +47,38 @@
                 </button>
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div class="collapse navbar-collapse offset" id="navbarSupportedContent">
-                    <ul class="nav navbar-nav menu_nav ml-auto">
-                        <li class="nav-item active"><a class="nav-link" href="index.html">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="about.html">About us</a></li>
-                        <li class="nav-item"><a class="nav-link" href="accomodation.html">Accomodation</a></li>
-                        <li class="nav-item"><a class="nav-link" href="gallery.html">Gallery</a></li>
+                    <ul class="nav navbar-nav menu_nav @navAlignmentClass">
+                        <li class="nav-item active"><a class="nav-link" href="@Url.Action("Index", "Home")">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">About us</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Accomodation</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Gallery</a></li>
                         <li class="nav-item submenu dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button"
                                 aria-haspopup="true" aria-expanded="false">Blog</a>
                             <ul class="dropdown-menu">
-                                <li class="nav-item"><a class="nav-link" href="blog.html">Blog</a></li>
-                                <li class="nav-item"><a class="nav-link" href="blog-single.html">Blog Details</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#">Blog</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#">Blog Details</a></li>
                             </ul>
                         </li>
-                        <li class="nav-item"><a class="nav-link" href="elements.html">Elemests</a></li>
-                        <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Elemests</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-globe"></i> @currentLanguage.DisplayName
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="languageDropdown">
+                                @foreach (var option in languageOptions)
+                                {
+                                    var activeClass = option.Code == currentLanguageCode ? "active" : string.Empty;
+                                    <a class="dropdown-item @activeClass"
+                                       href="@Url.Action("SetLanguage", "Localization", new { culture = option.Code, returnUrl = languageReturnUrl })">
+                                        @option.DisplayName
+                                    </a>
+                                }
+                            </div>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="@Url.Action("LoginManagers", "Managers")">Manager Login</a></li>
                     </ul>
                 </div>
             </nav>
@@ -119,14 +147,14 @@
                     <div class="single-footer-widget instafeed">
                         <h6 class="footer_title">InstaFeed</h6>
                         <ul class="list_style instafeed d-flex flex-wrap">
-                            <li><img src="image/instagram/Image-01.jpg" alt=""></li>
-                            <li><img src="image/instagram/Image-02.jpg" alt=""></li>
-                            <li><img src="image/instagram/Image-03.jpg" alt=""></li>
-                            <li><img src="image/instagram/Image-04.jpg" alt=""></li>
-                            <li><img src="image/instagram/Image-05.jpg" alt=""></li>
-                            <li><img src="image/instagram/Image-06.jpg" alt=""></li>
-                            <li><img src="image/instagram/Image-07.jpg" alt=""></li>
-                            <li><img src="image/instagram/Image-08.jpg" alt=""></li>
+                            <li><img src="@Url.Content("~/image/instagram/Image-01.jpg")" alt=""></li>
+                            <li><img src="@Url.Content("~/image/instagram/Image-02.jpg")" alt=""></li>
+                            <li><img src="@Url.Content("~/image/instagram/Image-03.jpg")" alt=""></li>
+                            <li><img src="@Url.Content("~/image/instagram/Image-04.jpg")" alt=""></li>
+                            <li><img src="@Url.Content("~/image/instagram/Image-05.jpg")" alt=""></li>
+                            <li><img src="@Url.Content("~/image/instagram/Image-06.jpg")" alt=""></li>
+                            <li><img src="@Url.Content("~/image/instagram/Image-07.jpg")" alt=""></li>
+                            <li><img src="@Url.Content("~/image/instagram/Image-08.jpg")" alt=""></li>
                         </ul>
                     </div>
                 </div>
@@ -155,18 +183,18 @@
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="js/jquery-3.2.1.min.js"></script>
-    <script src="js/popper.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="vendors/owl-carousel/owl.carousel.min.js"></script>
-    <script src="js/jquery.ajaxchimp.min.js"></script>
-    <script src="js/mail-script.js"></script>
-    <script src="vendors/bootstrap-datepicker/bootstrap-datetimepicker.min.js"></script>
-    <script src="vendors/nice-select/js/jquery.nice-select.js"></script>
-    <script src="js/mail-script.js"></script>
-    <script src="js/stellar.js"></script>
-    <script src="vendors/lightbox/simpleLightbox.min.js"></script>
-    <script src="js/custom.js"></script>
+    <script src="@Url.Content("~/js/jquery-3.2.1.min.js")"></script>
+    <script src="@Url.Content("~/js/popper.js")"></script>
+    <script src="@Url.Content("~/js/bootstrap.min.js")"></script>
+    <script src="@Url.Content("~/vendors/owl-carousel/owl.carousel.min.js")"></script>
+    <script src="@Url.Content("~/js/jquery.ajaxchimp.min.js")"></script>
+    <script src="@Url.Content("~/js/mail-script.js")"></script>
+    <script src="@Url.Content("~/vendors/bootstrap-datepicker/bootstrap-datetimepicker.min.js")"></script>
+    <script src="@Url.Content("~/vendors/nice-select/js/jquery.nice-select.js")"></script>
+    <script src="@Url.Content("~/js/mail-script.js")"></script>
+    <script src="@Url.Content("~/js/stellar.js")"></script>
+    <script src="@Url.Content("~/vendors/lightbox/simpleLightbox.min.js")"></script>
+    <script src="@Url.Content("~/js/custom.js")"></script>
 </body>
 
 </html>

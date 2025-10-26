@@ -1,0 +1,79 @@
+@model string
+@using Models.Entities
+@using Models.Helper
+
+@{
+    var lang = LanguageCatalog.Normalize(Model ?? "en");
+    var isRtl = LanguageCatalog.IsRtl(lang);
+    string title = lang switch
+    {
+        "de" => "Kategorien",
+        "fa" => "دسته‌بندی‌ها",
+        "ru" => "Категории",
+        "pl" => "Kategorie",
+        "ar" => "الفئات",
+        _ => "Categories"
+    };
+
+    string description = lang switch
+    {
+        "de" => "Entdecke Erlebnisse für jede Stimmung – von entspannt bis voller Abenteuer.",
+        "fa" => "برای هر سلیقه‌ای تجربه‌ای متفاوت؛ از آرامش تا ماجراجویی.",
+        "ru" => "Подберите впечатления на любой вкус — от релакса до приключений.",
+        "pl" => "Znajdź wycieczki na każdą okazję – od relaksu po przygodę.",
+        "ar" => "اكتشف تجارب تناسب كل الأذواق، من الاسترخاء إلى المغامرة.",
+        _ => "Discover experiences for every mood – from calm escapes to thrilling adventures."
+    };
+
+    string priceSuffix = lang switch
+    {
+        "de" => "/Erwachsener",
+        "fa" => "/بزرگسال",
+        "ru" => "/взрослый",
+        "pl" => "/osoba dorosła",
+        "ar" => "/للبالغ",
+        _ => "/adult"
+    };
+
+    string buttonLabel = lang switch
+    {
+        "de" => "Alle Touren",
+        "fa" => "مشاهده تورها",
+        "ru" => "Смотреть туры",
+        "pl" => "Zobacz wycieczki",
+        "ar" => "عرض الجولات",
+        _ => "View tours"
+    };
+
+    var textAlignClass = isRtl ? "text-right" : "text-center";
+    var cardTextClass = isRtl ? "text-right" : "text-center";
+    var sectionDir = isRtl ? "rtl" : "ltr";
+}
+
+<section class="accomodation_area section_gap" dir="@sectionDir">
+    <div class="container">
+        <div class="section_title @textAlignClass">
+            <h2 class="title_color">@title</h2>
+            <p>@description</p>
+        </div>
+        <div class="row mb_30">
+            @foreach (Category cat in Enum.GetValues(typeof(Category)))
+            {
+                var image = "image/" + cat.ToString() + ".png";
+                <div class="col-lg-3 col-sm-6">
+                    <div class="accomodation_item @cardTextClass">
+                        <div class="hotel_img">
+                            <img src="@image" alt="@cat.GetDisplayName(lang)">
+                            <a href="@Url.Action("Category", "Home", new { category = cat })"
+                                class="btn theme_btn button_hover">@buttonLabel</a>
+                        </div>
+                        <a href="@Url.Action("Category", "Home", new { category = cat })">
+                            <h4 class="sec_h4">@cat.GetDisplayName(lang)</h4>
+                        </a>
+                        <h5>€250<small> @priceSuffix</small></h5>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>

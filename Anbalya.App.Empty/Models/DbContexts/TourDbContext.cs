@@ -7,15 +7,51 @@ namespace Models.DbContexts
     public class TourDbContext : DbContext
     {
         public DbSet<Tour> Tours { get; set; }
+        public DbSet<Manager> Managers { get; set; }
         public DbSet<Foto> Fotos { get; set; }
+        public DbSet<LandingContent> LandingContents { get; set; }
         public TourDbContext(DbContextOptions options) : base(options)
         {
 
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Manager>().HasData(new Manager() { Id = 1, Name = "name", UserName = "Sina", Password = "12sina122", UserEmail = "Sina.hajian@gmail.com" });
 
             modelBuilder.Entity<Foto>().HasOne(t => t.Tour).WithMany(t => t.Fotos).HasForeignKey(t => t.TourId);
+            modelBuilder.Entity<LandingContent>()
+                .HasIndex(c => c.Language)
+                .IsUnique();
+            modelBuilder.Entity<LandingContent>().HasData(
+                new LandingContent
+                {
+                    Id = 1,
+                    Language = "en",
+                    Tagline = "Away from monotonous life",
+                    Title = "Relax Your Mind",
+                    Description = "Step away from routine: gentle cruises, adventures, and sunny escapes are ready for you.",
+                    TaglineEn = "Away from monotonous life",
+                    TitleEn = "Relax Your Mind",
+                    DescriptionEn = "Step away from routine: gentle cruises, adventures, and sunny escapes are ready for you.",
+                    TaglineDe = "Raus aus dem Alltag",
+                    TitleDe = "Entspann deinen Geist",
+                    DescriptionDe = "Lass den Alltag hinter dir: sanfte Bootstouren, Naturerlebnisse und Ausflüge voller Sonne warten bereits auf dich.",
+                    TaglineFa = "دور از زندگی یکنواخت",
+                    TitleFa = "ذهن خود را آرام کنید",
+                    DescriptionFa = "با تورهای ما از شلوغی دور شوید؛ سفرهایی آرام، ماجراجویانه و سرشار از تجربه‌های تازه.",
+                    TaglineRu = "Подальше от монотонной жизни",
+                    TitleRu = "Расслабьте свой разум",
+                    DescriptionRu = "Устройте себе отдых: море, приключения и новые впечатления ждут вас каждый день.",
+                    TaglinePl = "Z dala od monotonii",
+                    TitlePl = "Zrelaksuj swój umysł",
+                    DescriptionPl = "Odpocznij od codzienności: czekają na Ciebie rejsy, przygody i chwile czystego relaksu.",
+                    TaglineAr = "ابتعد عن الحياة الرتيبة",
+                    TitleAr = "أرخِ ذهنك",
+                    DescriptionAr = "امنح نفسك استراحة حقيقية: رحلات بحرية، مغامرات وتجارب مميزة تلائم كل الأذواق.",
+                    BackgroundImage = null,
+                    CreationTime = 0
+                }
+            );
             modelBuilder.Entity<Tour>().HasData(
 
 

@@ -26,7 +26,7 @@ namespace Models.Entities
         public int DurationHours { get; set; }
         public List<string> Services { get; set; } = new List<string>();
         public string? Foto { get; set; }
-        public IEnumerable<Foto> Fotos { get; set; } = Enumerable.Empty<Foto>();
+        public ICollection<Foto> Fotos { get; set; } = new List<Foto>();
         public int ActiveDay { get; set; }
         public Tour(int id, string name, int price, int kinderPrice, int infantPrice, Category category, float locLat, float locLon, string descriptionEn, string descriptionDe, string descriptionRu, string descriptionPo, string descriptionPe, string descriptionAr, string miniDescriptionEn, string miniDescriptionDe, string miniDescriptionRu, string miniDescriptionPo, string miniDescriptionPe, string miniDescriptionAr, List<Foto> fotos, int activeDay, int durationHours, List<string> services)
         {
@@ -51,7 +51,11 @@ namespace Models.Entities
             MiniDescriptionPe = miniDescriptionPe;
             MiniDescriptionRu = miniDescriptionRu;
 
-            Foto = fotos.First().Address;
+            if (fotos != null && fotos.Count > 0)
+            {
+                Foto = fotos[0].Address;
+            }
+            Fotos = new List<Foto>();
             Category = category;
             ActiveDay = activeDay;
             DurationHours = durationHours;

@@ -28,16 +28,100 @@ build_property._RazorSourceGeneratorDebug =
 build_property.EffectiveAnalysisLevelStyle = 9.0
 build_property.EnableCodeStyleSeverity = 
 
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/Category.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9DYXRlZ29yeS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9pbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/Tour.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9Ub3VyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/TourTiny.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9Ub3VyVGlueS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Shared/_layout.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19sYXlvdXQuY3NodG1s
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/_AboutHistorySection.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9fQWJvdXRIaXN0b3J5U2VjdGlvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/_AccommodationSection.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9fQWNjb21tb2RhdGlvblNlY3Rpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/_BannerSection.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9fQmFubmVyU2VjdGlvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/_BookingSection.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9fQm9va2luZ1NlY3Rpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/_BreadcrumbSection.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9fQnJlYWRjcnVtYlNlY3Rpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/_CategoryTiles.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9fQ2F0ZWdvcnlUaWxlcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/_EmptyStateSection.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9fRW1wdHlTdGF0ZVNlY3Rpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/_FacilitiesSection.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9fRmFjaWxpdGllc1NlY3Rpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/_LatestBlogSection.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9fTGF0ZXN0QmxvZ1NlY3Rpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/_TestimonialsSection.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9fVGVzdGltb25pYWxzU2VjdGlvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Managers/AddTour.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFuYWdlcnMvQWRkVG91ci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Managers/EditTour.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFuYWdlcnMvRWRpdFRvdXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Managers/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFuYWdlcnMvSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Managers/LandingContent.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFuYWdlcnMvTGFuZGluZ0NvbnRlbnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Managers/LoginManagers.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFuYWdlcnMvTG9naW5NYW5hZ2Vycy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Managers/Tours.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFuYWdlcnMvVG91cnMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Managers/_ManagerDashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFuYWdlcnMvX01hbmFnZXJEYXNoYm9hcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Managers/_ManagerLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFuYWdlcnMvX01hbmFnZXJMYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/_viewStart.cshtml]

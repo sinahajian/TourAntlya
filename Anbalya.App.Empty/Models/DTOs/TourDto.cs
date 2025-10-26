@@ -1,6 +1,6 @@
 using Models.Entities;
 
-public record TourDto(
+public partial record TourDto(
     int Id,
     string TourName,
     int Price,
@@ -16,5 +16,6 @@ public record TourDto(
     List<string> Services,
     string? Foto,
     IEnumerable<string> Fotos,
+    int ActiveDay,
     string LanguageUsed       // ← مثلا "de" یا "en"
 );

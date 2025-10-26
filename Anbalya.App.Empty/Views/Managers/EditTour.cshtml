@@ -1,0 +1,207 @@
+@model ManagerTourEditViewModel
+@using Models.Entities
+@{
+    Layout = "_ManagerLayout";
+    ViewData["Title"] = $"Edit {Model.Tour.TourName}";
+    var categories = Enum.GetValues(typeof(Category)).Cast<Category>();
+}
+
+<div class="container-fluid manager-tour-edit">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Edit Tour</h1>
+            <small class="text-muted">Tour ID: @Model.Tour.Id</small>
+        </div>
+        <a class="btn btn-secondary btn-sm" href="@Url.Action("Tours", "Managers", new { userName = Model.UserName })">
+            &larr; Back to list
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="post" action="@Url.Action("EditTour", "Managers")" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="UserName" value="@Model.UserName" />
+                <input type="hidden" name="Tour.Id" value="@Model.Tour.Id" />
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="Tour_TourName">Tour Name</label>
+                        <input type="text" class="form-control" id="Tour_TourName" name="Tour.TourName" value="@Model.Tour.TourName" required />
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="Tour_Category">Category</label>
+                        <select class="form-control" id="Tour_Category" name="Tour.Category">
+                            @foreach (var category in categories)
+                            {
+                                var isSelected = category == Model.Tour.Category;
+                                <option value="@((int)category)" @(isSelected ? "selected=\"selected\"" : string.Empty)>@category</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="Tour_Price">Adult Price</label>
+                        <input type="number" class="form-control" id="Tour_Price" name="Tour.Price" value="@Model.Tour.Price" min="0" required />
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="Tour_KinderPrice">Child Price</label>
+                        <input type="number" class="form-control" id="Tour_KinderPrice" name="Tour.KinderPrice" value="@Model.Tour.KinderPrice" min="0" required />
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="Tour_InfantPrice">Infant Price</label>
+                        <input type="number" class="form-control" id="Tour_InfantPrice" name="Tour.InfantPrice" value="@Model.Tour.InfantPrice" min="0" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Active Days</label>
+                    <div class="manager-day-toggle">
+                        @foreach (var option in Model.DayOptions)
+                        {
+                            var checkboxId = $"edit-day-{Model.Tour.Id}-{option.Index}";
+                            var isChecked = Model.SelectedDays?.Contains(option.Index) ?? false;
+                            <div class="day-toggle-item">
+                                <input type="checkbox"
+                                       class="day-toggle-input"
+                                       id="@checkboxId"
+                                       name="SelectedDays"
+                                       value="@option.Index"
+                                       @(isChecked ? "checked" : null) />
+                                <label class="day-toggle-label" for="@checkboxId">@option.DisplayName</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="Tour_DurationHours">Duration (hours)</label>
+                        <input type="number" class="form-control" id="Tour_DurationHours" name="Tour.DurationHours" value="@Model.Tour.DurationHours" min="0" required />
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="Tour_LocLat">Latitude</label>
+                        <input type="number" step="0.0001" class="form-control" id="Tour_LocLat" name="Tour.LocLat" value="@Model.Tour.LocLat" />
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="Tour_LocLon">Longitude</label>
+                        <input type="number" step="0.0001" class="form-control" id="Tour_LocLon" name="Tour.LocLon" value="@Model.Tour.LocLon" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ServicesText">Services (one per line)</label>
+                    <textarea class="form-control" id="ServicesText" name="ServicesText" rows="4">@Model.ServicesText</textarea>
+                </div>
+
+                <hr />
+                <h5 class="mb-3 text-gray-700">Descriptions</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="Tour_DescriptionEn">Description (EN)</label>
+                            <textarea class="form-control" id="Tour_DescriptionEn" name="Tour.DescriptionEn" rows="4">@Model.Tour.DescriptionEn</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="Tour_DescriptionDe">Description (DE)</label>
+                            <textarea class="form-control" id="Tour_DescriptionDe" name="Tour.DescriptionDe" rows="4">@Model.Tour.DescriptionDe</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="Tour_DescriptionRu">Description (RU)</label>
+                            <textarea class="form-control" id="Tour_DescriptionRu" name="Tour.DescriptionRu" rows="4">@Model.Tour.DescriptionRu</textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="Tour_DescriptionPo">Description (PO)</label>
+                            <textarea class="form-control" id="Tour_DescriptionPo" name="Tour.DescriptionPo" rows="4">@Model.Tour.DescriptionPo</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="Tour_DescriptionPe">Description (FA)</label>
+                            <textarea class="form-control" id="Tour_DescriptionPe" name="Tour.DescriptionPe" rows="4">@Model.Tour.DescriptionPe</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="Tour_DescriptionAr">Description (AR)</label>
+                            <textarea class="form-control" id="Tour_DescriptionAr" name="Tour.DescriptionAr" rows="4">@Model.Tour.DescriptionAr</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="mt-4 mb-3 text-gray-700">Short Descriptions</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="Tour_MiniDescriptionEn">Mini Description (EN)</label>
+                            <textarea class="form-control" id="Tour_MiniDescriptionEn" name="Tour.MiniDescriptionEn" rows="3">@Model.Tour.MiniDescriptionEn</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="Tour_MiniDescriptionDe">Mini Description (DE)</label>
+                            <textarea class="form-control" id="Tour_MiniDescriptionDe" name="Tour.MiniDescriptionDe" rows="3">@Model.Tour.MiniDescriptionDe</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="Tour_MiniDescriptionRu">Mini Description (RU)</label>
+                            <textarea class="form-control" id="Tour_MiniDescriptionRu" name="Tour.MiniDescriptionRu" rows="3">@Model.Tour.MiniDescriptionRu</textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="Tour_MiniDescriptionPo">Mini Description (PO)</label>
+                            <textarea class="form-control" id="Tour_MiniDescriptionPo" name="Tour.MiniDescriptionPo" rows="3">@Model.Tour.MiniDescriptionPo</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="Tour_MiniDescriptionPe">Mini Description (FA)</label>
+                            <textarea class="form-control" id="Tour_MiniDescriptionPe" name="Tour.MiniDescriptionPe" rows="3">@Model.Tour.MiniDescriptionPe</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="Tour_MiniDescriptionAr">Mini Description (AR)</label>
+                            <textarea class="form-control" id="Tour_MiniDescriptionAr" name="Tour.MiniDescriptionAr" rows="3">@Model.Tour.MiniDescriptionAr</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+                <h5 class="mb-3 text-gray-700">Gallery</h5>
+                @if (Model.ExistingPhotos.Any())
+                {
+                    <div class="d-flex flex-wrap manager-tour-photo-list mb-3">
+                        @foreach (var photo in Model.ExistingPhotos)
+                        {
+                            var isSelected = string.Equals(photo, Model.PrimaryPhoto, StringComparison.Ordinal);
+                            <div class="manager-tour-photo-item m-1">
+                                <img src="@Url.Content(photo)" alt="Photo for @Model.Tour.TourName" class="img-thumbnail @(isSelected ? "border-primary" : string.Empty)">
+                                <form method="post" action="@Url.Action("SetPrimaryPhoto", "Managers")" class="mt-1">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="tourId" value="@Model.Tour.Id" />
+                                    <input type="hidden" name="photoAddress" value="@photo" />
+                                    <input type="hidden" name="userName" value="@Model.UserName" />
+                                    <button type="submit" class="btn btn-sm btn-outline-primary btn-block @(isSelected ? "active" : string.Empty)" @(isSelected ? "disabled" : string.Empty)>
+                                        @(isSelected ? "Selected" : "Set as main")
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">No photos uploaded yet.</p>
+                }
+
+                <div class="form-group">
+                    <label for="NewPhotos">Add Photos</label>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="NewPhotos" name="NewPhotos" multiple>
+                        <label class="custom-file-label" for="NewPhotos">Choose photos</label>
+                    </div>
+                    <small class="text-muted">Accepted formats: JPG, PNG, WEBP, GIF. Max size 5 MB per file.</small>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

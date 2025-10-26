@@ -1,0 +1,174 @@
+@model LandingContentEditViewModel
+@{
+    Layout = "_ManagerLayout";
+    ViewData["Title"] = "Landing Content";
+    var feedback = ViewData["Feedback"] as string;
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Landing Page Content</h1>
+            <span class="text-muted small">Update the hero section visitors see on the public site.</span>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(feedback))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @feedback
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" action="@Url.Action("LandingContent", "Managers")">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="UserName" value="@Model.UserName" />
+                <input type="hidden" id="ActiveLanguage" name="ActiveLanguage" value="@Model.ActiveLanguage" />
+                <input type="hidden" name="BackgroundImage" value="@Model.BackgroundImage" />
+
+                <div class="form-group">
+                    <label class="d-block">Hero Background Image</label>
+                    @if (!string.IsNullOrWhiteSpace(Model.BackgroundImage))
+                    {
+                        <div class="mb-3">
+                            <span class="text-muted small d-block mb-1">Current image</span>
+                            <div class="border rounded overflow-hidden hero-preview">
+                                <img src="@Url.Content(Model.BackgroundImage)" alt="Current hero background" class="img-fluid" />
+                            </div>
+                        </div>
+                    }
+                    <div class="custom-file">
+                        <input type="file"
+                               class="custom-file-input"
+                               id="BackgroundImageFile"
+                               name="BackgroundImageFile"
+                               accept=".jpg,.jpeg,.png,.webp,.gif" />
+                        <label class="custom-file-label" for="BackgroundImageFile">Choose file...</label>
+                    </div>
+                    <small class="form-text text-muted">Supported: JPG, PNG, WEBP, GIF up to 5 MB.</small>
+                    @Html.ValidationMessage("BackgroundImageFile", null, new { @class = "text-danger" })
+                </div>
+
+                <ul class="nav nav-tabs" id="landing-content-tabs" role="tablist">
+                    @for (var i = 0; i < Model.Languages.Count; i++)
+                    {
+                        var entry = Model.Languages[i];
+                        var isActive = entry.Code == Model.ActiveLanguage;
+                        var buttonId = $"lang-tab-{entry.Code}";
+                        var paneId = $"lang-pane-{entry.Code}";
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link @(isActive ? "active" : string.Empty)"
+                               id="@buttonId"
+                               data-toggle="tab"
+                               href="#@paneId"
+                               role="tab"
+                               aria-controls="@paneId"
+                               aria-selected="@(isActive ? "true" : "false")"
+                               data-lang="@entry.Code">
+                                @entry.DisplayName
+                            </a>
+                        </li>
+                    }
+                </ul>
+
+                <div class="tab-content pt-3" id="landing-content-panes">
+                    @for (var i = 0; i < Model.Languages.Count; i++)
+                    {
+                        var entry = Model.Languages[i];
+                        var isActive = entry.Code == Model.ActiveLanguage;
+                        var paneId = $"lang-pane-{entry.Code}";
+                        var dir = entry.IsRtl ? "rtl" : "ltr";
+                        var idx = i;
+                        <div class="tab-pane fade @(isActive ? "show active" : string.Empty)" id="@paneId" role="tabpanel" aria-labelledby="lang-tab-@entry.Code">
+                            <input type="hidden" name="Languages[@idx].Code" value="@entry.Code" />
+                            <input type="hidden" name="Languages[@idx].DisplayName" value="@entry.DisplayName" />
+                            <input type="hidden" name="Languages[@idx].IsRtl" value="@(entry.IsRtl.ToString().ToLowerInvariant())" />
+
+                            <div class="form-group">
+                                <label for="tagline-@entry.Code">@entry.DisplayName Tagline</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="tagline-@entry.Code"
+                                       name="Languages[@idx].Tagline"
+                                       value="@entry.Tagline"
+                                       dir="@dir"
+                                       maxlength="160" />
+                                @Html.ValidationMessage($"Languages[{idx}].Tagline", null, new { @class = "text-danger" })
+                            </div>
+
+                            <div class="form-group">
+                                <label for="title-@entry.Code">@entry.DisplayName Headline</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="title-@entry.Code"
+                                       name="Languages[@idx].Title"
+                                       value="@entry.Title"
+                                       dir="@dir"
+                                       maxlength="160" />
+                                @Html.ValidationMessage($"Languages[{idx}].Title", null, new { @class = "text-danger" })
+                            </div>
+
+                            <div class="form-group">
+                                <label for="description-@entry.Code">@entry.DisplayName Description</label>
+                                <textarea class="form-control"
+                                          id="description-@entry.Code"
+                                          name="Languages[@idx].Description"
+                                          rows="4"
+                                          dir="@dir">@entry.Description</textarea>
+                                @Html.ValidationMessage($"Languages[{idx}].Description", null, new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var tabs = document.querySelectorAll('#landing-content-tabs a[data-lang]');
+            var activeField = document.getElementById('ActiveLanguage');
+            if (!tabs || !activeField) return;
+            tabs.forEach(function (tab) {
+                tab.addEventListener('shown.bs.tab', function (event) {
+                    var lang = event.target.getAttribute('data-lang');
+                    if (lang) {
+                        activeField.value = lang;
+                    }
+                });
+                tab.addEventListener('click', function (event) {
+                    var lang = event.currentTarget.getAttribute('data-lang');
+                    if (lang) {
+                        activeField.value = lang;
+                    }
+                });
+            });
+        })();
+        (function () {
+            var input = document.getElementById('BackgroundImageFile');
+            if (!input) return;
+            input.addEventListener('change', function () {
+                var label = input.nextElementSibling;
+                if (!label) return;
+                if (input.files && input.files.length > 0) {
+                    label.textContent = input.files[0].name;
+                } else {
+                    label.textContent = "Choose file...";
+                }
+            });
+        })();
+    </script>
+}

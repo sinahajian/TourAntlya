@@ -1,0 +1,188 @@
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@using Models.Helper
+@model TourDto
+
+@{
+    Func<string?, string> resolvePhoto = path =>
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return string.Empty;
+        }
+
+        return path.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            ? path
+            : Url.Content(path);
+    };
+
+    var gallery = new List<string>();
+    var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+    void AddPhoto(string? path)
+    {
+        var resolved = resolvePhoto(path);
+        if (string.IsNullOrWhiteSpace(resolved))
+        {
+            return;
+        }
+
+        if (seen.Add(resolved))
+        {
+            gallery.Add(resolved);
+        }
+    }
+
+    AddPhoto(Model.Foto);
+    if (Model.Fotos != null)
+    {
+        foreach (var foto in Model.Fotos)
+        {
+            AddPhoto(foto);
+        }
+    }
+
+    var heroPhotoUrl = gallery.FirstOrDefault() ?? Url.Content("~/image/about_banner.jpg");
+    var activeDayNames = DayMaskHelper
+        .ToSelectedDays(Model.ActiveDay)
+        .Select(index => DayMaskHelper.Options.FirstOrDefault(o => o.Index == index)?.DisplayName ?? $"Day {index + 1}")
+        .ToList();
+
+    var services = Model.Services ?? new List<string>();
+    var languageLabel = string.IsNullOrWhiteSpace(Model.LanguageUsed)
+        ? "EN"
+        : Model.LanguageUsed.ToUpperInvariant();
+    var hasCoordinates = Math.Abs(Model.LocLat) > 0.001 || Math.Abs(Model.LocLon) > 0.001;
+}
+
+<section class="tour-hero d-flex align-items-end" style="background-image:url('@heroPhotoUrl'); background-size:cover; background-position:center; min-height:360px;">
+    <div class="w-100" style="background:rgba(0, 0, 0, 0.55);">
+        <div class="container py-5 text-white">
+            <div class="row align-items-end">
+                <div class="col-lg-8">
+                    <span class="badge badge-pill badge-light text-uppercase mb-3">@Model.CategoryString</span>
+                    <h1 class="display-4">@Model.TourName</h1>
+                    <p class="lead mb-0">@Model.MiniDescription</p>
+                </div>
+                <div class="col-lg-4 text-lg-right mt-4 mt-lg-0">
+                    <div class="d-inline-block px-4 py-3 bg-white text-dark rounded shadow">
+                        <div class="h5 mb-1">Adult @Model.Price EUR</div>
+                        <div>Child @Model.KinderPrice EUR</div>
+                        <div>Infant @Model.InfantPrice EUR</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="tour-overview section_gap">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mb-5 mb-lg-0">
+                <div class="mb-4">
+                    <h2 class="mb-3">Tour Overview</h2>
+                    <p>@Model.Description</p>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Duration</h5>
+                                <p class="card-text mb-0">@Model.DurationHours hour(s)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Available Days</h5>
+                                @if (activeDayNames.Any())
+                                {
+                                    <p class="card-text mb-0">
+                                        @string.Join(", ", activeDayNames)
+                                    </p>
+                                }
+                                else
+                                {
+                                    <p class="card-text mb-0">Schedule on request</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Meeting Point</h5>
+                                @if (hasCoordinates)
+                                {
+                                    <p class="card-text mb-0">Latitude @Model.LocLat, Longitude @Model.LocLon</p>
+                                }
+                                else
+                                {
+                                    <p class="card-text mb-0">Details provided after booking</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (services.Any())
+                {
+                    <div class="mb-5">
+                        <h3 class="mb-3">What's Included</h3>
+                        <ul class="list_style">
+                            @foreach (var service in services)
+                            {
+                                <li>@service</li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                @if (gallery.Count > 1)
+                {
+                    <div class="mb-4">
+                        <h3 class="mb-3">Gallery</h3>
+                        <div class="row">
+                            @foreach (var image in gallery.Skip(1))
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <img src="@image" class="img-fluid rounded shadow-sm" alt="Photo from @Model.TourName">
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title">Need to know</h4>
+                        <ul class="list_style">
+                            <li>Category: @Model.CategoryString</li>
+                            <li>Language: @languageLabel</li>
+                            @if (activeDayNames.Any())
+                            {
+                                <li>Operates: @string.Join(", ", activeDayNames)</li>
+                            }
+                            <li>Duration: @Model.DurationHours hour(s)</li>
+                        </ul>
+                        <a href="@Url.Action("Category", "Home", new { category = Model.Category })" class="btn theme_btn button_hover btn-block">More @Model.CategoryString Tours</a>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title">Ready to book?</h4>
+                        <p>Contact us to reserve your spots or customize this experience for your group.</p>
+                        <a href="mailto:info@tourantalya.com" class="btn theme_btn button_hover btn-block">Email Us</a>
+                        <a href="tel:+902422000000" class="btn theme_btn button_hover btn-block mt-2">Call +90 242 200 00 00</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

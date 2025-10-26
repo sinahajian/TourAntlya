@@ -1,0 +1,51 @@
+@using System.Collections.Generic
+@using System.Linq
+@model CategoryPageViewModel
+@{
+    
+     Layout = "~/Views/Shared/_Layout.cshtml";
+    // Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+@{
+    ViewData["Title"] = "عنوان صفحه";
+}
+
+
+
+@{
+    var breadcrumb = new BreadcrumbViewModel(
+        Model.DisplayName,
+        new List<BreadcrumbItem>
+        {
+            new("Home", Url.Action("Index", "Home")),
+            new(Model.DisplayName, null)
+        });
+
+    var allTours = Model.Tours.ToList();
+}
+
+@await Html.PartialAsync("_BreadcrumbSection", breadcrumb)
+
+@if (!allTours.Any())
+{
+    var emptyState = new EmptyStateViewModel(
+        "No tours available",
+        "We all live in an age that belongs to the young at heart. Life that is becoming extremely fast, please check back soon.",
+        "Back to all tours",
+        Url.Action("Index", "Home") ?? "#"
+    );
+    @await Html.PartialAsync("_EmptyStateSection", emptyState)
+}
+else
+{
+    var allSection = new AccommodationSectionViewModel(
+        $"{Model.DisplayName} Tours",
+        "We all live in an age that belongs to the young at heart. Life that is becoming extremely fast, explore every tour in this category.",
+        allTours,
+        "mb_30 accomodation_two"
+    );
+    @await Html.PartialAsync("_AccommodationSection", allSection)
+    @await Html.PartialAsync("_BookingSection")
+    @await Html.PartialAsync("_LatestBlogSection", allTours)
+}

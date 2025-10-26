@@ -1,0 +1,33 @@
+@model AccommodationSectionViewModel
+
+@if (Model.Tours.Count > 0)
+{
+    <section class="accomodation_area section_gap">
+        <div class="container">
+            <div class="section_title text-center">
+                <h2 class="title_color">@Model.Title</h2>
+                <p>@Model.Description</p>
+            </div>
+            <div class="row @Model.RowClass">
+                @foreach (var tour in Model.Tours)
+                {
+                    var detailUrl = Url.Action("Tour", "Home", new { id = tour.Id, slug = tour.Slug }) ?? "#";
+                    <div class="col-lg-3 col-sm-6">
+                        <div class="accomodation_item text-center">
+                            <div class="hotel_img">
+                                <a href="@detailUrl">
+                                    <img src="@tour.Foto" alt="@tour.TourName">
+                                </a>
+                                <a href="@detailUrl" class="btn theme_btn button_hover">View Tour</a>
+                            </div>
+                            <a href="@detailUrl">
+                                <h4 class="sec_h4">@tour.TourName</h4>
+                            </a>
+                            <h5>@tour.Price<small> /adult</small></h5>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}

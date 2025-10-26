@@ -143,7 +143,6 @@
 /Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/obj/Debug/net9.0/compressed/sb7527oini-5y92vvq571.gz
 /Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/obj/Debug/net9.0/compressed/i0zxg1crs0-34rukg2di6.gz
 /Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/obj/Debug/net9.0/compressed/lgl0li2z2e-4bp3i3sq7x.gz
-/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/obj/Debug/net9.0/compressed/hdbqsb54tc-eouis2tgpc.gz
 /Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/obj/Debug/net9.0/compressed/olqjhqzbvm-qw051m36cq.gz
 /Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/obj/Debug/net9.0/compressed/7s1a3wg0vk-jlva5bkqju.gz
 /Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/obj/Debug/net9.0/compressed/y9psqyrmks-fpo1swh7n0.gz
@@ -245,3 +244,7 @@
 /Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/obj/Debug/net9.0/Anbalya.App.Empty.pdb
 /Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/obj/Debug/net9.0/Anbalya.App.Empty.genruntimeconfig.cache
 /Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/obj/Debug/net9.0/ref/Anbalya.App.Empty.dll
+/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/obj/Debug/net9.0/Anbalya.App.Empty.sourcelink.json
+/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/obj/Debug/net9.0/compressed/hdbqsb54tc-jhqumvi9rm.gz
+/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/obj/Debug/net9.0/compressed/7694q6t9g7-51wt7lnvyc.gz
+/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/obj/Debug/net9.0/compressed/hnubeqriz1-fex5g6st2z.gz

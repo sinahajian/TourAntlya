@@ -3,15 +3,17 @@
 
 <div class="single-recent-blog-post">
     <div class="thumb">
-        <img class="img-fluid" src="@Model.Foto" alt="post">
+        <a href="@Url.Action("Tour", "Home", new { id = Model.Id, slug = Model.Slug })">
+            <img class="img-fluid" src="@Model.Foto" alt="@Model.TourName">
+        </a>
     </div>
     <div class="details">
         <div class="tags">
 
-            <a href="#" class="button_hover tag_btn">@Model.Category</a>
+            <a href="@Url.Action("Category", "Home", new { category = Model.Category })" class="button_hover tag_btn">@Model.CategoryString</a>
 
         </div>
-        <a href="#">
+        <a href="@Url.Action("Tour", "Home", new { id = Model.Id, slug = Model.Slug })">
             <h4 class="sec_h4">@Model.TourName</h4>
         </a>
         <p>@Model.Description</p>

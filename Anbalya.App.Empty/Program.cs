@@ -14,6 +14,9 @@ builder.Services.AddDbContext<TourDbContext>(options =>
 
 );
 builder.Services.AddScoped<ITourRepository, TourRepository>();
+builder.Services.AddScoped<IManagerRepository, ManagerRepository>();
+builder.Services.AddScoped<IManagerTourRepository, ManagerTourRepository>();
+builder.Services.AddScoped<ILandingContentRepository, LandingContentRepository>();
 builder.Services.AddScoped<ILanguageResolver, LanguageResolver>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");

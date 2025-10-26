@@ -1,0 +1,101 @@
+@using System
+@model ManagerTourListViewModel
+@{
+    Layout = "_ManagerLayout";
+    ViewData["Manager"] = Model.Manager;
+    ViewData["Title"] = "Manage Tours";
+}
+
+<div class="container-fluid manager-tour-list">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Tours</h1>
+        <span class="text-muted small">Total tours: @Model.Tours.Count</span>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.FeedbackMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @Model.FeedbackMessage
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <div class="row">
+        @foreach (var tour in Model.Tours)
+        {
+            <div class="col-xl-4 col-lg-6 col-md-12 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0">@tour.Name</h5>
+                            <small class="text-muted">@tour.Category</small>
+                        </div>
+                        <span class="badge badge-primary">#@tour.Id</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="manager-tour-main-photo mb-3">
+                            @if (!string.IsNullOrWhiteSpace(tour.PrimaryPhoto))
+                            {
+                                <img src="@Url.Content(tour.PrimaryPhoto)" alt="Main photo for @tour.Name" class="img-fluid rounded shadow-sm">
+                            }
+                            else
+                            {
+                                <div class="text-center text-muted small border rounded py-5">
+                                    No main photo selected
+                                </div>
+                            }
+                        </div>
+                        <div class="d-flex justify-content-between text-gray-600 small mb-3 flex-wrap">
+                            <span class="mr-2">Adult: <strong>@tour.Price.ToString("C0")</strong></span>
+                            <span class="mr-2">Child: <strong>@tour.KinderPrice.ToString("C0")</strong></span>
+                            <span>Infant: <strong>@tour.InfantPrice.ToString("C0")</strong></span>
+                        </div>
+
+                        <div class="manager-tour-photos mb-3">
+                            <h6 class="small text-uppercase text-gray-600 mb-2">All Photos</h6>
+                            @if (tour.Photos.Count == 0)
+                            {
+                                <p class="text-muted small mb-0">No additional photos available.</p>
+                            }
+                            else
+                            {
+                                <div class="d-flex flex-wrap manager-tour-photo-list">
+                                    @foreach (var photo in tour.Photos)
+                                    {
+                                        var isSelected = string.Equals(photo, tour.PrimaryPhoto, StringComparison.Ordinal);
+                                        <div class="manager-tour-photo-item m-1">
+                                            <img src="@Url.Content(photo)" alt="Photo for @tour.Name" class="img-thumbnail @(isSelected ? "border-primary" : string.Empty)">
+                                            <form method="post" action="@Url.Action("SetPrimaryPhoto", "Managers")" class="mt-1">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="tourId" value="@tour.Id" />
+                                                <input type="hidden" name="photoAddress" value="@photo" />
+                                                <input type="hidden" name="userName" value="@Model.Manager.UserName" />
+                                                <button type="submit" class="btn btn-sm btn-outline-primary btn-block @(isSelected ? "active" : string.Empty)" @(isSelected ? "disabled" : string.Empty)>
+                                                    @(isSelected ? "Selected" : "Set as main")
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("EditTour", "Managers", new { tourId = tour.Id, userName = Model.Manager.UserName })">
+                                Edit
+                            </a>
+                            <form method="post" action="@Url.Action("DeleteTour", "Managers")" onsubmit="return confirm('Are you sure you want to delete @tour.Name?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="tourId" value="@tour.Id" />
+                                <input type="hidden" name="userName" value="@Model.Manager.UserName" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

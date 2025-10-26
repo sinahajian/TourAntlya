@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Anbalya.App.Empty.Migrations
 {
     [DbContext(typeof(TourDbContext))]
-    [Migration("20250926130000_s2")]
-    partial class s2
+    [Migration("20251020171050_Fotos")]
+    partial class Fotos
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,6 +48,49 @@ namespace Anbalya.App.Empty.Migrations
                     b.HasIndex("TourId");
 
                     b.ToTable("Fotos");
+                });
+
+            modelBuilder.Entity("Models.Entities.Manager", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<long>("CreationTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Managers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreationTime = 0L,
+                            Name = "name",
+                            Password = "12sina122",
+                            UserEmail = "Sina.hajian@gmail.com",
+                            UserName = "Sina"
+                        });
                 });
 
             modelBuilder.Entity("Models.Entities.Tour", b =>

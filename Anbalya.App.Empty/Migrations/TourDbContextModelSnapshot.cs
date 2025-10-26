@@ -47,6 +47,188 @@ namespace Anbalya.App.Empty.Migrations
                     b.ToTable("Fotos");
                 });
 
+            modelBuilder.Entity("Models.Entities.LandingContent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BackgroundImage")
+                        .HasColumnType("text");
+
+                    b.Property<long>("CreationTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DescriptionAr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DescriptionDe")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DescriptionEn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DescriptionFa")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DescriptionPl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DescriptionRu")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Tagline")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TaglineAr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TaglineDe")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TaglineEn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TaglineFa")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TaglinePl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TaglineRu")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleAr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleDe")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleEn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleFa")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitlePl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleRu")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Language")
+                        .IsUnique();
+
+                    b.ToTable("LandingContents");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreationTime = 0L,
+                            Description = "Step away from routine: gentle cruises, adventures, and sunny escapes are ready for you.",
+                            DescriptionAr = "امنح نفسك استراحة حقيقية: رحلات بحرية، مغامرات وتجارب مميزة تلائم كل الأذواق.",
+                            DescriptionDe = "Lass den Alltag hinter dir: sanfte Bootstouren, Naturerlebnisse und Ausflüge voller Sonne warten bereits auf dich.",
+                            DescriptionEn = "Step away from routine: gentle cruises, adventures, and sunny escapes are ready for you.",
+                            DescriptionFa = "با تورهای ما از شلوغی دور شوید؛ سفرهایی آرام، ماجراجویانه و سرشار از تجربه‌های تازه.",
+                            DescriptionPl = "Odpocznij od codzienności: czekają na Ciebie rejsy, przygody i chwile czystego relaksu.",
+                            DescriptionRu = "Устройте себе отдых: море, приключения и новые впечатления ждут вас каждый день.",
+                            Language = "en",
+                            Tagline = "Away from monotonous life",
+                            TaglineAr = "ابتعد عن الحياة الرتيبة",
+                            TaglineDe = "Raus aus dem Alltag",
+                            TaglineEn = "Away from monotonous life",
+                            TaglineFa = "دور از زندگی یکنواخت",
+                            TaglinePl = "Z dala od monotonii",
+                            TaglineRu = "Подальше от монотонной жизни",
+                            Title = "Relax Your Mind",
+                            TitleAr = "أرخِ ذهنك",
+                            TitleDe = "Entspann deinen Geist",
+                            TitleEn = "Relax Your Mind",
+                            TitleFa = "ذهن خود را آرام کنید",
+                            TitlePl = "Zrelaksuj swój umysł",
+                            TitleRu = "Расслабьте свой разум"
+                        });
+                });
+
+            modelBuilder.Entity("Models.Entities.Manager", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<long>("CreationTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Managers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreationTime = 0L,
+                            Name = "name",
+                            Password = "12sina122",
+                            UserEmail = "Sina.hajian@gmail.com",
+                            UserName = "Sina"
+                        });
+                });
+
             modelBuilder.Entity("Models.Entities.Tour", b =>
                 {
                     b.Property<int>("Id")

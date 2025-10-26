@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Anbalya.App.Empty.Migrations
 {
     [DbContext(typeof(TourDbContext))]
-    [Migration("20250925141659_FirstMigration")]
-    partial class FirstMigration
+    [Migration("20251020193011_landing")]
+    partial class landing
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,6 +48,98 @@ namespace Anbalya.App.Empty.Migrations
                     b.HasIndex("TourId");
 
                     b.ToTable("Fotos");
+                });
+
+            modelBuilder.Entity("Models.Entities.LandingContent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BackgroundImage")
+                        .HasColumnType("text");
+
+                    b.Property<long>("CreationTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Tagline")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Language")
+                        .IsUnique();
+
+                    b.ToTable("LandingContents");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreationTime = 0L,
+                            Description = "If you are looking at blank cassettes on the web, you may be very confused at the difference in price. You may see some for as low as $0.17 each.",
+                            Language = "en",
+                            Tagline = "Away from monotonous life",
+                            Title = "Relax Your Mind"
+                        });
+                });
+
+            modelBuilder.Entity("Models.Entities.Manager", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<long>("CreationTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Managers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreationTime = 0L,
+                            Name = "name",
+                            Password = "12sina122",
+                            UserEmail = "Sina.hajian@gmail.com",
+                            UserName = "Sina"
+                        });
                 });
 
             modelBuilder.Entity("Models.Entities.Tour", b =>
@@ -109,6 +201,30 @@ namespace Anbalya.App.Empty.Migrations
                     b.Property<float>("LocLon")
                         .HasColumnType("real");
 
+                    b.Property<string>("MiniDescriptionAr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("MiniDescriptionDe")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("MiniDescriptionEn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("MiniDescriptionPe")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("MiniDescriptionPo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("MiniDescriptionRu")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("Price")
                         .HasColumnType("integer");
 
@@ -143,6 +259,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 24,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "رحلة بحرية هادئة من أنطاليا إلى كيمر: سباحة وغوص سطحي في خلجان فيروزية، غداء في أوليمبوس وإطلالات على الجزر الثلاث. يوم سهل ومشمس.",
+                            MiniDescriptionDe = "Sanfte Bootstour von Antalya nach Kemer: Schwimmen & Schnorcheln, Mittag an der Olympos-Bucht und Ausblicke auf die Drei Inseln – entspannt und sonnig.",
+                            MiniDescriptionEn = "Gentle cruise from Antalya to Kemer: swim & snorkel in turquoise bays, lunch at Olympos, and views of the Three Islands. Easy, sun-kissed day.",
+                            MiniDescriptionPe = "کروز آرام از آنتالیا تا کمر: شنا و اسنورکل در آب‌های فیروزه‌ای، ناهار در الیمپوس و چشم‌انداز «سه جزیره». یک روز راحت و آفتابی.",
+                            MiniDescriptionPo = "Spokojny rejs z Antalyi do Kemer: kąpiele i snorkeling w turkusowych zatokach, lunch w Olympos i widoki Trzech Wysp. Luźny, słoneczny dzień.",
+                            MiniDescriptionRu = "Неспешный круиз из Анталии в Кемер: купание и сноркелинг в бирюзовых бухтах, обед в Олимпос и виды на Три острова. Лёгкий, солнечный день.",
                             Price = 47,
                             Services = new List<string> { "Hotel pickup & drop-off", "Boat cruise", "Swimming stops", "Snorkelling opportunity", "Lunch" },
                             TourName = "Antalya Lazy Day Boat Trip"
@@ -165,6 +287,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 20,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "رحلة قراصنة عائلية إلى شلالات دودان مع محطات سباحة وحفلة رغوة وغداء على المتن – يوم ممتع وسهل للجميع.",
+                            MiniDescriptionDe = "Familienfreundliche Piratenfahrt zu den Düden-Wasserfällen mit Badestopps, Schaumparty und Mittag an Bord – entspannt & spritzig.",
+                            MiniDescriptionEn = "Family-friendly pirate cruise to Düden Waterfalls with swim stops, foam party, and lunch on board – easy, splashy fun all day.",
+                            MiniDescriptionPe = "کروز خانوادگی به آبشار دودن با توقف‌های شنا، پارتی کف و ناهار روی عرشه – آسان، شاد و پر آب‌تنی.",
+                            MiniDescriptionPo = "Rodzinny rejs piracki do wodospadów Düden: kąpiele, impreza z pianą i lunch na pokładzie – lekko i pełne zabawy.",
+                            MiniDescriptionRu = "Семейный пиратский круиз к водопадам Дюден: купание, пенная вечеринка и обед на борту – легко, ярко и весело.",
                             Price = 34,
                             Services = new List<string> { "Hotel pickup & drop-off", "Boat cruise", "Swimming stops", "Foam party", "Lunch", "Onboard showers" },
                             TourName = "Antalya Pirate Boat Trip"
@@ -187,6 +315,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 26,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "مسارات ترابية، عبير الصنوبر، زيارة قرية وتوقف للسباحة – يوم كامل من الطرق الوعرة في جبال طوروس.",
+                            MiniDescriptionDe = "Staubige Pisten, Pinienduft, Dorfbesuch und Badestopp – ein ganzer Offroad-Tag im Taurusgebirge.",
+                            MiniDescriptionEn = "Dusty trails, pine-scented air, village visit and a cool swim stop – a full-day off-road escape in the Taurus Mountains.",
+                            MiniDescriptionPe = "جاده‌های خاکی، عطر کاج، بازدید روستا و یک توقف خنک برای شنا – یک روز تمام آفرود در کوه‌های توروس.",
+                            MiniDescriptionPo = "Piaszczyste szlaki, zapach sosen, wizyta w wiosce i kąpiel – całodniowa off-road przygoda w Taurach.",
+                            MiniDescriptionRu = "Пыльные тропы, аромат сосен, визит в деревню и купание – насыщенный оффроуд-день в горах Тавра.",
                             Price = 47,
                             Services = new List<string> { "Hotel pickup & drop-off", "Professional guide", "Lunch", "Off-road driving", "Photo stops & village visit", "Swimming stop (Hatipler)", "Insurance" },
                             TourName = "Jeep Safari and Off-road Adventures"
@@ -209,6 +343,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 0,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "تجديف مانافغات مع مرشدين محترفين، مناظر الوادي، محطات سباحة وغداء شواء على الضفة – أدرينالين وسط الطبيعة.",
+                            MiniDescriptionDe = "Wildwasser auf dem Manavgat: Profibegleitung, Canyonblicke, Badestopps & BBQ am Ufer – Adrenalin pur in der Natur.",
+                            MiniDescriptionEn = "Whitewater thrills on the Manavgat: pro guides, canyon views, swim breaks and riverside BBQ lunch – pure adrenaline in nature.",
+                            MiniDescriptionPe = "رفتینگ ماناوگات با راهنمای حرفه‌ای، مناظر کانین، توقف‌های شنا و ناهار BBQ کنار رود – آدرنالین ناب در دل طبیعت.",
+                            MiniDescriptionPo = "Rafting na Manavgat: profesjonaliści, widoki kanionu, przerwy na kąpiel i BBQ nad rzeką – czysta adrenalina.",
+                            MiniDescriptionRu = "Рафтинг по Манавгату: профи-гида, виды каньона, купание и BBQ на берегу – адреналин и природа на весь день.",
                             Price = 50,
                             Services = new List<string> { "Hotel pickup & drop-off", "Rafting equipment", "Professional rafting guides", "Open-buffet & BBQ lunch", "Insurance", "Swimming breaks", "Bridged canyon passage" },
                             TourName = "Rafting Manavgat River Tour"
@@ -231,6 +371,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 57,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "رحلة يومية إلى باموكالي وهيرابوليس: مصاطب الترافرتين، المسرح الروماني، المتحف وحوض كليوباترا الاختياري – موقع يونسكو.",
+                            MiniDescriptionDe = "Tagesausflug zum „Baumwollschloss“ & Hierapolis: Travertinen, römisches Theater, Museum & optionaler Kleopatra-Pool – UNESCO-Klassiker.",
+                            MiniDescriptionEn = "Day trip to the ‘Cotton Castle’ & Hierapolis: travertine terraces, Roman theatre, museum and optional Cleopatra Pool – UNESCO classic.",
+                            MiniDescriptionPe = "سفر روزانه به «قلعه پنبه‌ای» و هیراپولیس: تراس‌های تراورتن، تئاتر رومی، موزه و استخر اختیاری کلئوپاترا – میراث یونسکو.",
+                            MiniDescriptionPo = "Pamukkale & Hierapolis: tarasy trawertynowe, teatr rzymski, muzeum i opcjonalny basen Kleopatry – klasyk UNESCO.",
+                            MiniDescriptionRu = "Памуккале и Иераполис: травертины, римский театр, музей и опциональный бассейн Клеопатры – объект ЮНЕСКО.",
                             Price = 114,
                             Services = new List<string> { "Hotel pickup & drop-off", "Professional guide", "Transport Antalya–Pamukkale", "Visit to Hierapolis", "Free time at travertines", "UNESCO heritage site", "Optional Cleopatra Pool (extra)" },
                             TourName = "Pamukkale Trip from Antalya"
@@ -253,6 +399,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 47,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "نصف يوم من المرح: أسود بحر مرحة، دلافين ذكية، عروض مذهلة وابتسامات – مع نقل من وإلى الفندق.",
+                            MiniDescriptionDe = "Halbtägiger Familienspaß: verspielte Seelöwen, kluge Delfine, Kunststücke & Lachen – inkl. Hoteltransfer.",
+                            MiniDescriptionEn = "Half-day fun for all ages: playful sea lions, smart dolphins, stunts and smiles with hotel pickup & drop-off.",
+                            MiniDescriptionPe = "نیم‌روز شادی برای همه سنین: شیرهای دریایی بازیگوش، دلفین‌های باهوش و حرکات دیدنی – همراه با ترانسفر هتل.",
+                            MiniDescriptionPo = "Pół dnia zabawy: zabawne lwy morskie, inteligentne delfiny, sztuczki i uśmiechy – z odbiorem z hotelu.",
+                            MiniDescriptionRu = "Полдня веселья: морские львы, умные дельфины, трюки и радость – с трансфером от/до отеля.",
                             Price = 47,
                             Services = new List<string> { "Hotel pickup (13:45) & drop-off (17:00)", "Live dolphin & sea lion show", "Seating at the venue", "Free time for photos", "Insurance" },
                             TourName = "Sea Lions and Dolphin Show"
@@ -275,6 +427,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 25,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "غوصتان مُوجهان في مياه صافية، أسماك ملوّنة ولمحات من الكهوف مع غداء على القارب – مناسب للمبتدئين وآمن.",
+                            MiniDescriptionDe = "Zwei geführte Tauchgänge im glasklaren Mittelmeer, bunte Fische, Höhlen-Highlights & Mittagessen an Bord – auch für Anfänger.",
+                            MiniDescriptionEn = "Two guided dives in crystal-clear Med waters, exotic fish, cave peek-ins and lunch on board — beginner-friendly & safe.",
+                            MiniDescriptionPe = "دو غواصی هدایت‌شده در آب‌های شفاف مدیترانه، ماهی‌های رنگارنگ، سرک کشیدن به غارها و ناهار روی قایق – مناسب مبتدی‌ها.",
+                            MiniDescriptionPo = "Dwa nurkowania z instruktorem w krystalicznej wodzie, egzotyczne ryby, zajrzenie do jaskiń i lunch na pokładzie – także dla początkujących.",
+                            MiniDescriptionRu = "Два погружения в прозрачном Средиземном море, экзотические рыбы, пещеры и обед на борту — безопасно и для новичков.",
                             Price = 56,
                             Services = new List<string> { "Hotel pickup & drop-off", "Diving equipment", "Professional instructors", "2 dives (conditions permitting)", "Boat trip", "Lunch", "Insurance", "Option to join as visitor" },
                             TourName = "Scuba Diving"
@@ -297,6 +455,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 24,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "رحلة نهرية هادئة مع نسيم البحر، إطلالات طوروس، توقف عند شلال مانافغات ووقت للتسوق في البازار التركي.",
+                            MiniDescriptionDe = "Entspannte Flussfahrt mit Meeresbrise, Taurus-Panorama, Stopp am Manavgat-Wasserfall und Bummel über den türkischen Basar.",
+                            MiniDescriptionEn = "Easygoing river cruise with sea breeze, Taurus views, Manavgat Waterfall stop and time to wander the lively Turkish bazaar.",
+                            MiniDescriptionPe = "کروز رودخانه‌ای راحت با نسیم دریا، مناظر توروس، توقف آبشار ماناوگات و وقت آزاد در بازار ترکی.",
+                            MiniDescriptionPo = "Spokojny rejs rzeką: morska bryza, widoki Taurusu, przystanek przy wodospadzie Manavgat i czas na turecki bazar.",
+                            MiniDescriptionRu = "Неспешный речной круиз: бриз, виды Тавра, остановка у водопада Манавгат и время на турецком базаре.",
                             Price = 47,
                             Services = new List<string> { "Hotel pickup & drop-off", "River/boat cruise", "Visit Turkish Bazaar", "Visit Manavgat Waterfall", "Free time for shopping", "Insurance" },
                             TourName = "Antalya Manavgat Waterfall & Turkish Bazaar"
@@ -319,6 +483,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 24,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "هروب جزيرة إلى سولوادا: خلجان فيروزية ورمال ناعمة وأجواء مريحة – للأزواج والأصدقاء والعائلات.",
+                            MiniDescriptionDe = "Trauminsel Suluada: türkisfarbene Buchten, feiner Sand und entspannte Vibes – für Paare, Freunde und Familien.",
+                            MiniDescriptionEn = "Dreamy island escape to Suluada—turquoise coves, soft sands and chill vibes for couples, friends and families.",
+                            MiniDescriptionPe = "فرار به جزیره سولوآدا؛ خلیج‌های فیروزه‌ای، شن نرم و حال‌وهوای ریلکس برای زوج‌ها، دوستان و خانواده‌ها.",
+                            MiniDescriptionPo = "Suluada: turkusowe zatoczki, miękki piasek i totalny chill – dla par, znajomych i rodzin.",
+                            MiniDescriptionRu = "Сулуада: бирюзовые бухты, мягкий песок и полное расслабление — для пар, друзей и семей.",
                             Price = 47,
                             Services = new List<string> { "Hotel pickup & drop-off", "Boat trip from Adrasan", "Swimming stops", "Free time on beaches", "Captain trip customization (on request)", "Insurance" },
                             TourName = "Suluada The Maldives of Turkey"
@@ -341,6 +511,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 0,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "حمّام تركي أصيل في أنطاليا: ساونا، تقشير، تدليك بالرغوة والزيوت مع ختام بشاي تركي.",
+                            MiniDescriptionDe = "Klassischer Hamam in Antalya – Sauna, Peeling, Schaummassage & Ölmassage, abgerundet mit türkischem Tee.",
+                            MiniDescriptionEn = "Classic hammam ritual in Antalya—sauna, scrub, foam and oil massage, finished with soothing Turkish tea.",
+                            MiniDescriptionPe = "حمام سنتی آنتالیا؛ سونا، لایه‌برداری، ماساژ کف و ماساژ روغن، با یک چای ترکی داغ برای پایان.",
+                            MiniDescriptionPo = "Klasyczny hammam w Antalyi – sauna, peeling, masaż pianą i olejkami, na koniec turecka herbata.",
+                            MiniDescriptionRu = "Классический хаммам в Анталье: сауна, пилинг, пенный и масляный массаж + чашка турецкого чая.",
                             Price = 30,
                             Services = new List<string> { "Sauna/steam room", "Body scrub (peeling)", "Foam massage", "Aromatherapy oil massage", "Turkish tea", "Changing room & locker", "Towels", "Insurance" },
                             TourName = "Antalya Traditional Turkish Bath with Massage"
@@ -363,6 +539,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 0,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "جولة باجي 3 ساعات عبر كثبان طوروس – تعليمات أمان، خوذات، توقفات للسباحة ومناظر المتوسط.",
+                            MiniDescriptionDe = "3 Stunden Buggy-Action über Dünen im Taurus – Einweisung, Helme, Bade-Stopps und Mittelmeer-Panoramen.",
+                            MiniDescriptionEn = "3-hour buggy blast across Taurus dunes—briefing, helmets, splash stops and big Mediterranean views.",
+                            MiniDescriptionPe = "3 ساعت هیجان باگی روی تپه‌های شنی توروس – آموزش، کلاه ایمنی، توقف‌های آبی و مناظر مدیترانه.",
+                            MiniDescriptionPo = "3 godziny jazdy buggy przez wydmy Taurusu – szkolenie, kaski, postoje na kąpiel i widoki na Morze Śródziemne.",
+                            MiniDescriptionRu = "3 часа багги по дюнам Тавра — инструктаж, шлемы, водные остановки и средиземноморские виды.",
                             Price = 61,
                             Services = new List<string> { "Hotel pickup & drop-off (Kemer/Antalya)", "Safety briefing", "Buggy ride", "Helmet", "Swimming/photo breaks", "Insurance" },
                             TourName = "Antalya Buggy Safari"
@@ -385,6 +567,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 47,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "سفاري دراجات رباعية في طوروس – توجيه أمني، مسارات وعرة خلابة وتوقفات منعشة للسباحة.",
+                            MiniDescriptionDe = "Quad-Spaß im Taurus – Sicherheitseinweisung, Schotterpisten mit Aussicht und erfrischende Badepausen.",
+                            MiniDescriptionEn = "Throttle up a quad through Taurus trails—safety briefing, scenic dirt tracks and refreshing swim breaks.",
+                            MiniDescriptionPe = "کوادسافاری در توروس – توضیحات ایمنی، مسیرهای آفرود دیدنی و توقف‌های خنک برای شنا.",
+                            MiniDescriptionPo = "Quad safari w Tauruse – instruktaż, malownicze szlaki off-road i orzeźwiające postoje na kąpiel.",
+                            MiniDescriptionRu = "Квадросафари в Тавре — брифинг по безопасности, живописные грунтовки и освежающие купания.",
                             Price = 47,
                             Services = new List<string> { "Hotel pickup & drop-off (Kemer/Antalya)", "Safety briefing", "Quad bike ride", "Helmet", "Swimming/photo breaks", "Insurance" },
                             TourName = "Antalya Quad Safari"
@@ -407,6 +595,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 0,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "رحلة عشاء مسائية بهدوء البحر وإطلالات الساحل – طعام طازج وأجواء رومانسية لا تُنسى.",
+                            MiniDescriptionDe = "Sanfter Abendkruiz mit Küstenblick & frisch zubereitetem Dinner – romantisch, entspannt, unvergesslich.",
+                            MiniDescriptionEn = "Gentle evening cruise with coastline views and a freshly prepared dinner—romantic, relaxed, memorable.",
+                            MiniDescriptionPe = "کروز شام آرام با منظره ساحل و شامی تازه – رمانتیک، ریلکس و ماندگار.",
+                            MiniDescriptionPo = "Wieczorny rejs z widokiem na wybrzeże i świeżą kolacją – romantycznie, spokojnie, niezapomnianie.",
+                            MiniDescriptionRu = "Вечерний круиз с ужином и огнями побережья — романтично, спокойно, запоминается.",
                             Price = 40,
                             Services = new List<string> { "Hotel pickup & drop-off", "Evening boat cruise", "Freshly prepared dinner", "Scenic coastline views" },
                             TourName = "Dinner Cruise"
@@ -429,6 +623,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 0,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "يوم طبيعي متكامل: ثلاثة شلالات، رحلة نهرية في مانافغات ووقت في البازار التركي النابض.",
+                            MiniDescriptionDe = "Natur pur an einem Tag: drei Wasserfälle, Manavgat-Flussfahrt und Zeit auf dem lebhaften türkischen Basar.",
+                            MiniDescriptionEn = "Full-day nature combo: three iconic waterfalls, Manavgat river cruise and time at the lively Turkish bazaar.",
+                            MiniDescriptionPe = "یک روزِ طبیعت: سه آبشار معروف، کروز رود ماناوگات و وقتی خوش در بازار پرجنب‌وجوش ترکی.",
+                            MiniDescriptionPo = "Cały dzień w naturze: 3 wodospady, rejs Manavgat i czas na tętniący życiem turecki bazar.",
+                            MiniDescriptionRu = "День природы: три водопада, речной круиз по Манавгату и прогулка по турецкому базару.",
                             Price = 40,
                             Services = new List<string> { "Hotel pickup & drop-off", "Visit 3 waterfalls", "Manavgat river cruise", "Visit Turkish bazaar", "Free time for shopping" },
                             TourName = "3 Different Waterfalls in Antalya"
@@ -451,6 +651,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 55,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "رحلة عبر الزمن: مسارح رومانية، معبد أبولو وآثار قديمة مع وقفة منعشة عند شلالات كورشونلو.",
+                            MiniDescriptionDe = "Zeitreise: römische Theater, Apollon-Tempel, antike Ruinen und erfrischende Kursunlu-Wasserfälle.",
+                            MiniDescriptionEn = "Time-travel day: Roman theatres, Apollo’s Temple, ancient ruins and a refreshing stop at Kursunlu Falls.",
+                            MiniDescriptionPe = "یک روز تاریخی: تئاترهای رومی، معبد آپولو، ویرانه‌های باستانی و آبشارهای کورشونلو.",
+                            MiniDescriptionPo = "Podróż w czasie: teatry rzymskie, świątynia Apolla i relaks przy wodospadach Kursunlu.",
+                            MiniDescriptionRu = "День истории: римские театры, храм Аполлона, древние руины и отдых у водопада Куршунлу.",
                             Price = 100,
                             Services = new List<string> { "Hotel pickup & drop-off", "Professional guide", "Visit Perge", "Visit Aspendos amphitheatre", "Visit Side (Temple of Apollo)", "Visit Kursunlu Waterfalls", "Lunch" },
                             TourName = "Perge, Side, Aspendos & Kursunlu Waterfalls"
@@ -473,6 +679,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 29,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "رحلة قارب مريحة عبر الوادي الأخضر مع محطات سباحة وغداء مطل على البحيرة.",
+                            MiniDescriptionDe = "Bootstour durch smaragdgrüne Schluchten mit Badestopps und Mittagessen am See.",
+                            MiniDescriptionEn = "Relaxing cruise through emerald lakes and canyons with swim stops and a lake-view lunch.",
+                            MiniDescriptionPe = "قایق‌سواری در گرین کنیون؛ شنا، آرامش و ناهار با چشم‌انداز دریاچه.",
+                            MiniDescriptionPo = "Rejs po Zielonym Kanionie – kąpiele, relaks i obiad z widokiem na jezioro.",
+                            MiniDescriptionRu = "Прогулка по изумрудному каньону: купание, отдых и обед с видом на озеро.",
                             Price = 57,
                             Services = new List<string> { "Hotel pickup & drop-off", "Boat cruise (Grand & Little Canyon)", "Swimming stops", "Lunch at lake-view restaurant", "Insurance" },
                             TourName = "Green Canyon Boat Trip (Full-Day)"
@@ -495,6 +707,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 21,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "جولة مدينة، شلالات دودان، ورشة تقليدية ورحلة بحرية متوسطية في يوم واحد.",
+                            MiniDescriptionDe = "Altstadt-Tour, Düden-Wasserfälle, Handwerk und Bootsfahrt im Mittelmeer an einem Tag.",
+                            MiniDescriptionEn = "Old town walk, Düden Waterfalls, handicrafts and a scenic Mediterranean boat trip – all in one day.",
+                            MiniDescriptionPe = "گردش در شهر قدیم، آبشار دودن، صنایع دستی و کروز مدیترانه‌ای – همه در یک روز.",
+                            MiniDescriptionPo = "Zwiedzanie starego miasta, wodospady Düden i rejs po Morzu Śródziemnym – wszystko w jeden dzień.",
+                            MiniDescriptionRu = "Старая Анталия, водопады Дюден, ремесла и морская прогулка за один день.",
                             Price = 41,
                             Services = new List<string> { "Hotel pickup & drop-off", "Guided Kaleici walking tour", "Visit Hadrian’s Gate, Clock Tower, Kesik Minare", "Visit Düden Waterfalls (Lower Düden)", "Handicraft workshop stop", "Mediterranean boat trip", "Insurance" },
                             TourName = "Antalya City Tour, Boat Trip & Waterfalls"
@@ -517,6 +735,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 0,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "يوم مليء بالأدرينالين: رافتينغ، كانيونينغ وسباحة في مياه نقية وسط جبال طوروس.",
+                            MiniDescriptionDe = "Adrenalin pur: Rafting, Canyoning, Baden im klaren Wasser und Taurus-Landschaften.",
+                            MiniDescriptionEn = "Adrenaline day: whitewater rafting, canyoning, swimming in crystal waters and epic Taurus landscapes.",
+                            MiniDescriptionPe = "یک روز پرهیجان: رفتینگ، کنیونینگ، شنا در آب زلال و مناظر کوه‌های توروس.",
+                            MiniDescriptionPo = "Dzień adrenaliny: rafting, kanioning, kąpiele i widoki gór Taurus.",
+                            MiniDescriptionRu = "Адреналин: рафтинг, каньонинг, купание в кристальной воде и пейзажи Тавра.",
                             Price = 49,
                             Services = new List<string> { "Hotel pickup & drop-off", "Safety briefing & equipment", "Rafting on Köprü River", "Canyoning segment", "Swimming stops", "Professional guides", "Insurance" },
                             TourName = "Koprulu Canyon Rafting and Canyoning"
@@ -539,6 +763,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 0,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "غوص في كيمر: مياه فيروزية، أسماك ملونة وإشراف آمن للمبتدئين والمحترفين.",
+                            MiniDescriptionDe = "Tauchen in Kemer: türkisfarbenes Wasser, bunte Fische, Felsformationen und sichere Begleitung.",
+                            MiniDescriptionEn = "Dive into Kemer’s turquoise waters – colorful fish, rock formations and safe guidance for all levels.",
+                            MiniDescriptionPe = "غواصی در کمر: آب‌های فیروزه‌ای، ماهی‌های رنگارنگ و آموزش ایمن برای همه.",
+                            MiniDescriptionPo = "Nurkowanie w Kemer – turkusowa woda, kolorowe ryby i pełne wsparcie instruktorów.",
+                            MiniDescriptionRu = "Дайвинг в Кемере: бирюзовая вода, яркие рыбы и надёжное сопровождение инструкторов.",
                             Price = 52,
                             Services = new List<string> { "Hotel pickup & drop-off", "Professional instructors", "Full diving briefing", "Diving equipment", "2 dives (conditions permitting)", "Boat trip", "Insurance" },
                             TourName = "Kemer Scuba Diving"
@@ -561,6 +791,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 0,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "رحلة يومين في كابادوكيا: مداخن الجن، كنائس الكهوف ورحلة بالون اختيارية عند الشروق.",
+                            MiniDescriptionDe = "Zwei Tage Kappadokien: Feenkamine, Höhlenkirchen und optional Ballonfahrt bei Sonnenaufgang.",
+                            MiniDescriptionEn = "Two days in magical Cappadocia: fairy chimneys, cave churches and optional sunrise balloon ride.",
+                            MiniDescriptionPe = "۲ روز کاپادوکیا: دودکش‌های پری، کلیساهای سنگی و پرواز بالن اختیاری هنگام طلوع.",
+                            MiniDescriptionPo = "2 dni w Kapadocji: kominy wróżek, kościoły skalne i opcjonalny lot balonem o świcie.",
+                            MiniDescriptionRu = "2 дня в Каппадокии: фейские трубы, пещерные церкви и полёт на воздушном шаре.",
                             Price = 82,
                             Services = new List<string> { "Hotel pickup & drop-off", "Return transfers", "Professional guide", "Overnight accommodation (standard, unless otherwise stated)", "Visits to valleys & rock-cut churches", "Optional hot air balloon ride (extra)" },
                             TourName = "Cappadocia (2-Days)"
@@ -583,6 +819,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 0,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "أكبر أكواريوم أنبوبي في العالم: أسماك قرش، أسماك استوائية وحطام طائرات.",
+                            MiniDescriptionDe = "Größtes Tunnel-Aquarium der Welt: Haie, tropische Fische und spektakuläre Wracks.",
+                            MiniDescriptionEn = "Walk through the world’s largest tunnel aquarium – sharks, tropical fish and sunken plane wrecks.",
+                            MiniDescriptionPe = "بزرگ‌ترین آکواریوم تونلی جهان؛ کوسه‌ها، ماهی‌های استوایی و لاشه هواپیما.",
+                            MiniDescriptionPo = "Największe akwarium tunelowe na świecie: rekiny, ryby tropikalne i wraki.",
+                            MiniDescriptionRu = "Крупнейший тоннельный аквариум: акулы, тропические рыбы и затонувшие экспонаты.",
                             Price = 65,
                             Services = new List<string> { "Entrance to Tunnel Aquarium", "Access to thematic aquariums", "Wreck exhibits (plane & ship)", "Interactive displays" },
                             TourName = "Visit the World's Largest Tunnel Aquarium"
@@ -605,6 +847,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 17,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "ساعتان في الحمام التركي: ساونا، تقشير، تدليك بالرغوة والزيوت – استرخاء تام.",
+                            MiniDescriptionDe = "2 Stunden Hamam: Sauna, Peeling, Schaum- und Ölmassage – Entspannung pur.",
+                            MiniDescriptionEn = "2-hour hammam ritual with sauna, scrub, foam and oil massage – relax like never before.",
+                            MiniDescriptionPe = "۲ ساعت حمام ترکی؛ سونا، لایه‌برداری، ماساژ کف و ماساژ روغنی – آرامش ناب.",
+                            MiniDescriptionPo = "2-godzinny hammam: sauna, peeling, masaż pianą i olejkami – pełen relaks.",
+                            MiniDescriptionRu = "2 часа хаммама: сауна, пилинг, пенный и масляный массаж – полное расслабление.",
                             Price = 32,
                             Services = new List<string> { "Sauna", "Body peeling", "Foam massage", "Aromatherapy oil massage", "Turkish tea" },
                             TourName = "Massage and Scrub at a Turkish Bath in Antalya"
@@ -627,6 +875,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 60,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "رحلة يوم كامل: مدينة كيكوفا الغارقة، مقابر ليكية في ميرا وكنيسة القديس نيكولاس.",
+                            MiniDescriptionDe = "Ganztagesausflug: versunkene Stadt Kekova, lykische Gräber in Myra und Nikolauskirche.",
+                            MiniDescriptionEn = "Full-day trip: Kekova’s sunken city, Lycian tombs in Myra and St. Nicholas Church in Demre.",
+                            MiniDescriptionPe = "یک روز کامل: شهر غرق‌شده ککووا، مقبره‌های لیکیایی در میرا و کلیسای سنت نیکلاس.",
+                            MiniDescriptionPo = "Całodniowa wycieczka: zatopione miasto Kekova, grobowce w Myrze i Kościół św. Mikołaja.",
+                            MiniDescriptionRu = "День экскурсий: затонувший город Кекова, гробницы в Мирах и церковь Николая.",
                             Price = 120,
                             Services = new List<string> { "Hotel pickup & drop-off", "Boat trip to Kekova", "Swimming/snorkeling stops", "Lunch", "Guided visit to Myra ruins", "Visit to St. Nicholas Church", "Insurance" },
                             TourName = "Kekova Sunken City, Myra & St. Nicholas Church"
@@ -649,6 +903,12 @@ namespace Anbalya.App.Empty.Migrations
                             KinderPrice = 25,
                             LocLat = 0f,
                             LocLon = 0f,
+                            MiniDescriptionAr = "رحلة قراصنة من كيمر: أطلال فاسيليس، محطات سباحة، غداء ومتعة للعائلة.",
+                            MiniDescriptionDe = "Piratenschiff ab Kemer: Ruinen von Phaselis, Badepausen, Mittagessen und Familienspaß.",
+                            MiniDescriptionEn = "Pirate-style cruise from Kemer with Phaselis ruins, swim stops, lunch and family fun.",
+                            MiniDescriptionPe = "کروز دزدان دریایی از کمر؛ خرابه‌های فاسلیس، شنا، ناهار و سرگرمی خانوادگی.",
+                            MiniDescriptionPo = "Rejs piracki z Kemer: ruiny Phaselis, postoje na kąpiel, lunch i zabawa dla rodzin.",
+                            MiniDescriptionRu = "Пиратский круиз из Кемера: руины Фаселиса, купания, обед и веселье для всей семьи.",
                             Price = 49,
                             Services = new List<string> { "Hotel pickup & drop-off", "Pirate boat cruise", "Lunch on board", "Swimming stops", "Stop at Phaselis (ancient city)", "Paradise Island or Mehmet Ali Bükü stop", "Alaca Water swimming/snorkeling" },
                             TourName = "Kemer Full-Day Pirate Boat Trip with Lunch"

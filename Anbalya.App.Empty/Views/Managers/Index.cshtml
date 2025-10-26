@@ -1,0 +1,8 @@
+@model ManagerDashboardViewModel
+@{
+    Layout = "_ManagerLayout";
+    ViewData["Title"] = "Manager Dashboard";
+    ViewData["Manager"] = Model.Manager;
+}
+
+@await Html.PartialAsync("_ManagerDashboard", Model)
