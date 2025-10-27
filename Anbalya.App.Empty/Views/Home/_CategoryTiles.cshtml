@@ -1,9 +1,11 @@
-@model string
+@model HomePageViewModel
 @using Models.Entities
 @using Models.Helper
+@using System.Linq
+@using System.Collections.Generic
 
 @{
-    var lang = LanguageCatalog.Normalize(Model ?? "en");
+    var lang = LanguageCatalog.Normalize(Model?.Language ?? "en");
     var isRtl = LanguageCatalog.IsRtl(lang);
     string title = lang switch
     {
@@ -48,6 +50,10 @@
     var textAlignClass = isRtl ? "text-right" : "text-center";
     var cardTextClass = isRtl ? "text-right" : "text-center";
     var sectionDir = isRtl ? "rtl" : "ltr";
+    var minPriceByCategory = Model?.Tours?
+        .GroupBy(t => t.Category)
+        .ToDictionary(g => g.Key, g => g.Min(t => t.Price))
+        ?? new Dictionary<Category, int>();
 }
 
 <section class="accomodation_area section_gap" dir="@sectionDir">
@@ -60,6 +66,7 @@
             @foreach (Category cat in Enum.GetValues(typeof(Category)))
             {
                 var image = "image/" + cat.ToString() + ".png";
+                var hasPrice = minPriceByCategory.TryGetValue(cat, out var price);
                 <div class="col-lg-3 col-sm-6">
                     <div class="accomodation_item @cardTextClass">
                         <div class="hotel_img">
@@ -70,7 +77,14 @@
                         <a href="@Url.Action("Category", "Home", new { category = cat })">
                             <h4 class="sec_h4">@cat.GetDisplayName(lang)</h4>
                         </a>
-                        <h5>€250<small> @priceSuffix</small></h5>
+                        @if (hasPrice)
+                        {
+                            <h5>€@price<small> @priceSuffix</small></h5>
+                        }
+                        else
+                        {
+                            <h5>—<small> @priceSuffix</small></h5>
+                        }
                     </div>
                 </div>
             }

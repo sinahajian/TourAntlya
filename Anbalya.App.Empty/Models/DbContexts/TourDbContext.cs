@@ -1,4 +1,5 @@
 
+using System;
 using Microsoft.EntityFrameworkCore;
 using Models.Entities;
 namespace Models.DbContexts
@@ -10,13 +11,59 @@ namespace Models.DbContexts
         public DbSet<Manager> Managers { get; set; }
         public DbSet<Foto> Fotos { get; set; }
         public DbSet<LandingContent> LandingContents { get; set; }
-        public TourDbContext(DbContextOptions options) : base(options)
+        public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<PaymentOption> PaymentOptions { get; set; }
+        public TourDbContext(DbContextOptions<TourDbContext> options) : base(options)
         {
 
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Manager>().HasData(new Manager() { Id = 1, Name = "name", UserName = "Sina", Password = "12sina122", UserEmail = "Sina.hajian@gmail.com" });
+
+            modelBuilder.Entity<Reservation>()
+                .HasOne(r => r.Tour)
+                .WithMany(t => t.Reservations)
+                .HasForeignKey(r => r.TourId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PaymentOption>()
+                .HasIndex(p => p.Method)
+                .IsUnique();
+
+            var paymentSeedTimestamp = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+            modelBuilder.Entity<PaymentOption>().HasData(
+                new PaymentOption
+                {
+                    Id = 1,
+                    Method = PaymentMethod.PayPal,
+                    DisplayName = "PayPal",
+                    AccountIdentifier = "paypal@example.com",
+                    Instructions = "Send the payment to the PayPal account above and include your reservation ID in the notes.",
+                    IsEnabled = true,
+                    UpdatedAt = paymentSeedTimestamp
+                },
+                new PaymentOption
+                {
+                    Id = 2,
+                    Method = PaymentMethod.Visa,
+                    DisplayName = "Visa Card",
+                    AccountIdentifier = "**** **** **** 4242",
+                    Instructions = "Contact our team to complete the Visa payment securely.",
+                    IsEnabled = true,
+                    UpdatedAt = paymentSeedTimestamp
+                },
+                new PaymentOption
+                {
+                    Id = 3,
+                    Method = PaymentMethod.Revolut,
+                    DisplayName = "Revolut",
+                    AccountIdentifier = "REVOLUT-12345678",
+                    Instructions = "Use Revolut transfer and note your reservation ID for quick confirmation.",
+                    IsEnabled = true,
+                    UpdatedAt = paymentSeedTimestamp
+                });
 
             modelBuilder.Entity<Foto>().HasOne(t => t.Tour).WithMany(t => t.Fotos).HasForeignKey(t => t.TourId);
             modelBuilder.Entity<LandingContent>()

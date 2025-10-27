@@ -51,10 +51,22 @@
                     <span>Manage Tours</span>
                 </a>
             </li>
+            <li class="nav-item @(string.Equals(currentAction, "Reservations", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+                <a class="nav-link" href="@Url.Action("Reservations", "Managers", new { userName = manager?.UserName })">
+                    <i class="fa fa-fw fa-calendar-check-o"></i>
+                    <span>Reservations</span>
+                </a>
+            </li>
             <li class="nav-item @(string.Equals(currentAction, "LandingContent", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
                 <a class="nav-link" href="@Url.Action("LandingContent", "Managers", new { userName = manager?.UserName })">
                     <i class="fa fa-fw fa-bullhorn"></i>
                     <span>Landing Content</span>
+                </a>
+            </li>
+            <li class="nav-item @(string.Equals(currentAction, "PaymentOptions", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+                <a class="nav-link" href="@Url.Action("PaymentOptions", "Managers", new { userName = manager?.UserName })">
+                    <i class="fa fa-fw fa-credit-card"></i>
+                    <span>Payment Settings</span>
                 </a>
             </li>
 

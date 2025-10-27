@@ -1,0 +1,137 @@
+@model ManagerReservationListViewModel
+@using System
+@using System.Linq
+@using Models.Entities
+@{
+    Layout = "_ManagerLayout";
+    ViewData["Title"] = "Reservations";
+
+    var reservationStatuses = Enum.GetValues(typeof(ReservationStatus)).Cast<ReservationStatus>().ToList();
+    var paymentStatuses = Enum.GetValues(typeof(PaymentStatus)).Cast<PaymentStatus>().ToList();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Reservations</h1>
+    <div class="text-muted small">
+        Pending: <strong>@Model.PendingCount</strong> · Confirmed: <strong>@Model.ConfirmedCount</strong> · Paid: <strong>@Model.PaidCount</strong>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.FeedbackMessage))
+{
+    <div class="alert alert-success">@Model.FeedbackMessage</div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="form-inline">
+            <input type="hidden" name="userName" value="@Model.Manager.UserName" />
+            <div class="form-group mr-2">
+                <label class="mr-2" for="tourFilter">Filter by tour</label>
+                <select class="form-control" id="tourFilter" name="tourId">
+                    <option value="">All tours</option>
+                    @foreach (var tour in Model.Tours)
+                    {
+                        <option value="@tour.Id" @(Model.SelectedTourId == tour.Id ? "selected" : null)>@tour.Name</option>
+                    }
+                </select>
+            </div>
+            <button type="submit" class="btn btn-outline-primary">Apply</button>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="thead-light">
+                <tr>
+                    <th style="width: 12%;">Created</th>
+                    <th>Tour</th>
+                    <th>Guest</th>
+                    <th style="width: 12%;">Preferred date</th>
+                    <th style="width: 10%;" class="text-center">Guests</th>
+                    <th style="width: 10%;" class="text-center">Total (€)</th>
+                    <th style="width: 18%;">Payment</th>
+                    <th style="width: 20%;">Update</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Reservations.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">No reservations found.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var reservation in Model.Reservations)
+                    {
+                        <tr>
+                            <td class="align-middle">
+                                <div>@reservation.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd")</div>
+                                <small class="text-muted">@reservation.CreatedAt.ToLocalTime().ToString("HH:mm")</small>
+                            </td>
+                            <td class="align-middle">
+                                <strong>@reservation.TourName</strong>
+                                <div class="small text-muted">Ref: TA-@reservation.Id.ToString("D6")</div>
+                            </td>
+                            <td class="align-middle">
+                                <div>@reservation.CustomerName</div>
+                                <div class="small text-muted">@reservation.CustomerEmail</div>
+                                @if (!string.IsNullOrWhiteSpace(reservation.CustomerPhone))
+                                {
+                                    <div class="small text-muted">@reservation.CustomerPhone</div>
+                                }
+                            </td>
+                            <td class="align-middle">@reservation.PreferredDate?.ToString("yyyy-MM-dd") ?? "Flexible"</td>
+                            <td class="align-middle text-center">
+                                <div>Adults: @reservation.Adults</div>
+                                <div>Children: @reservation.Children</div>
+                                <div>Infants: @reservation.Infants</div>
+                            </td>
+                            <td class="align-middle text-center"><strong>@reservation.TotalPrice</strong></td>
+                            <td class="align-middle">
+                                <div class="badge badge-info mr-1">@reservation.PaymentMethod</div>
+                                <div class="badge @(reservation.PaymentStatus == PaymentStatus.Paid ? "badge-success" : reservation.PaymentStatus == PaymentStatus.Pending ? "badge-warning" : "badge-secondary")">@reservation.PaymentStatus</div>
+                                <div class="badge @(reservation.Status == ReservationStatus.Confirmed ? "badge-success" : reservation.Status == ReservationStatus.Pending ? "badge-warning" : "badge-secondary")">@reservation.Status</div>
+                                @if (!string.IsNullOrWhiteSpace(reservation.PaymentReference))
+                                {
+                                    <div class="small text-muted">Ref: @reservation.PaymentReference</div>
+                                }
+                            </td>
+                            <td class="align-middle">
+                                <form method="post" asp-action="UpdateReservationStatus" class="form-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userName" value="@Model.Manager.UserName" />
+                                    <input type="hidden" name="reservationId" value="@reservation.Id" />
+                                    <input type="hidden" name="tourId" value="@Model.SelectedTourId" />
+                                    <div class="form-group mr-2">
+                                        <select name="status" class="form-control form-control-sm">
+                                            @foreach (var status in reservationStatuses)
+                                            {
+                                                <option value="@status" @(reservation.Status == status ? "selected" : null)>@status</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="form-group mr-2">
+                                        <select name="paymentStatus" class="form-control form-control-sm">
+                                            @foreach (var paymentStatus in paymentStatuses)
+                                            {
+                                                <option value="@paymentStatus" @(reservation.PaymentStatus == paymentStatus ? "selected" : null)>@paymentStatus</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="form-group mr-2">
+                                        <input type="text" name="paymentReference" value="@reservation.PaymentReference" class="form-control form-control-sm" placeholder="Payment ref" />
+                                    </div>
+                                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

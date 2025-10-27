@@ -1,7 +1,7 @@
 @model HomePageViewModel
 
 @await Html.PartialAsync("_BannerSection", Model.Hero)
-@await Html.PartialAsync("_CategoryTiles", Model.Language)
+@await Html.PartialAsync("_CategoryTiles", Model)
 @await Html.PartialAsync("_FacilitiesSection")
 @await Html.PartialAsync("_AboutHistorySection")
 @await Html.PartialAsync("_TestimonialsSection")

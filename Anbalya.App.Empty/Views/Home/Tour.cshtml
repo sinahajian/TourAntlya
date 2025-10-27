@@ -1,10 +1,16 @@
+@model TourBookingPageViewModel
 @using System
 @using System.Collections.Generic
 @using System.Linq
 @using Models.Helper
-@model TourDto
+@using Models.Entities
 
 @{
+    var tour = Model.Tour;
+    var form = Model.Form ?? new TourReservationInputModel();
+    form.Language ??= tour.LanguageUsed;
+    var paymentOptions = Model.PaymentOptions ?? Array.Empty<PaymentOptionDto>();
+
     Func<string?, string> resolvePhoto = path =>
     {
         if (string.IsNullOrWhiteSpace(path))
@@ -34,10 +40,10 @@
         }
     }
 
-    AddPhoto(Model.Foto);
-    if (Model.Fotos != null)
+    AddPhoto(tour.Foto);
+    if (tour.Fotos != null)
     {
-        foreach (var foto in Model.Fotos)
+        foreach (var foto in tour.Fotos)
         {
             AddPhoto(foto);
         }
@@ -45,15 +51,18 @@
 
     var heroPhotoUrl = gallery.FirstOrDefault() ?? Url.Content("~/image/about_banner.jpg");
     var activeDayNames = DayMaskHelper
-        .ToSelectedDays(Model.ActiveDay)
+        .ToSelectedDays(tour.ActiveDay)
         .Select(index => DayMaskHelper.Options.FirstOrDefault(o => o.Index == index)?.DisplayName ?? $"Day {index + 1}")
         .ToList();
 
-    var services = Model.Services ?? new List<string>();
-    var languageLabel = string.IsNullOrWhiteSpace(Model.LanguageUsed)
+    var services = tour.Services ?? new List<string>();
+    var languageLabel = string.IsNullOrWhiteSpace(tour.LanguageUsed)
         ? "EN"
-        : Model.LanguageUsed.ToUpperInvariant();
-    var hasCoordinates = Math.Abs(Model.LocLat) > 0.001 || Math.Abs(Model.LocLon) > 0.001;
+        : tour.LanguageUsed.ToUpperInvariant();
+    var hasCoordinates = Math.Abs(tour.LocLat) > 0.001 || Math.Abs(tour.LocLon) > 0.001;
+    var estimatedTotal = Math.Max(0, form.Adults) * tour.Price
+        + Math.Max(0, form.Children) * tour.KinderPrice
+        + Math.Max(0, form.Infants) * tour.InfantPrice;
 }
 
 <section class="tour-hero d-flex align-items-end" style="background-image:url('@heroPhotoUrl'); background-size:cover; background-position:center; min-height:360px;">
@@ -61,15 +70,15 @@
         <div class="container py-5 text-white">
             <div class="row align-items-end">
                 <div class="col-lg-8">
-                    <span class="badge badge-pill badge-light text-uppercase mb-3">@Model.CategoryString</span>
-                    <h1 class="display-4">@Model.TourName</h1>
-                    <p class="lead mb-0">@Model.MiniDescription</p>
+                    <span class="badge badge-pill badge-light text-uppercase mb-3">@tour.CategoryString</span>
+                    <h1 class="display-4">@tour.TourName</h1>
+                    <p class="lead mb-0">@tour.MiniDescription</p>
                 </div>
                 <div class="col-lg-4 text-lg-right mt-4 mt-lg-0">
                     <div class="d-inline-block px-4 py-3 bg-white text-dark rounded shadow">
-                        <div class="h5 mb-1">Adult @Model.Price EUR</div>
-                        <div>Child @Model.KinderPrice EUR</div>
-                        <div>Infant @Model.InfantPrice EUR</div>
+                        <div class="h5 mb-1">Adult @tour.Price EUR</div>
+                        <div>Child @tour.KinderPrice EUR</div>
+                        <div>Infant @tour.InfantPrice EUR</div>
                     </div>
                 </div>
             </div>
@@ -83,7 +92,7 @@
             <div class="col-lg-8 mb-5 mb-lg-0">
                 <div class="mb-4">
                     <h2 class="mb-3">Tour Overview</h2>
-                    <p>@Model.Description</p>
+                    <p>@tour.Description</p>
                 </div>
 
                 <div class="row mb-4">
@@ -91,7 +100,7 @@
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body">
                                 <h5 class="card-title">Duration</h5>
-                                <p class="card-text mb-0">@Model.DurationHours hour(s)</p>
+                                <p class="card-text mb-0">@tour.DurationHours hour(s)</p>
                             </div>
                         </div>
                     </div>
@@ -118,7 +127,7 @@
                                 <h5 class="card-title">Meeting Point</h5>
                                 @if (hasCoordinates)
                                 {
-                                    <p class="card-text mb-0">Latitude @Model.LocLat, Longitude @Model.LocLon</p>
+                                    <p class="card-text mb-0">Latitude @tour.LocLat, Longitude @tour.LocLon</p>
                                 }
                                 else
                                 {
@@ -150,7 +159,7 @@
                             @foreach (var image in gallery.Skip(1))
                             {
                                 <div class="col-md-6 mb-3">
-                                    <img src="@image" class="img-fluid rounded shadow-sm" alt="Photo from @Model.TourName">
+                                    <img src="@image" class="img-fluid rounded shadow-sm" alt="Photo from @tour.TourName">
                                 </div>
                             }
                         </div>
@@ -162,27 +171,178 @@
                     <div class="card-body">
                         <h4 class="card-title">Need to know</h4>
                         <ul class="list_style">
-                            <li>Category: @Model.CategoryString</li>
+                            <li>Category: @tour.CategoryString</li>
                             <li>Language: @languageLabel</li>
                             @if (activeDayNames.Any())
                             {
                                 <li>Operates: @string.Join(", ", activeDayNames)</li>
                             }
-                            <li>Duration: @Model.DurationHours hour(s)</li>
+                            <li>Duration: @tour.DurationHours hour(s)</li>
                         </ul>
-                        <a href="@Url.Action("Category", "Home", new { category = Model.Category })" class="btn theme_btn button_hover btn-block">More @Model.CategoryString Tours</a>
+                        <a href="@Url.Action("Category", "Home", new { category = tour.Category })" class="btn theme_btn button_hover btn-block">More @tour.CategoryString Tours</a>
                     </div>
                 </div>
 
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
-                        <h4 class="card-title">Ready to book?</h4>
-                        <p>Contact us to reserve your spots or customize this experience for your group.</p>
-                        <a href="mailto:info@tourantalya.com" class="btn theme_btn button_hover btn-block">Email Us</a>
-                        <a href="tel:+902422000000" class="btn theme_btn button_hover btn-block mt-2">Call +90 242 200 00 00</a>
+                        <h4 class="card-title">Reserve your tour</h4>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+                        {
+                            <div class="alert alert-danger" role="alert">@Model.ErrorMessage</div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.SuccessMessage))
+                        {
+                            <div class="alert alert-success" role="alert">@Model.SuccessMessage</div>
+                        }
+
+                        <form asp-action="BookTour" method="post" novalidate>
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" asp-for="Form.TourId" />
+                            <input type="hidden" asp-for="Form.Language" />
+
+                            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                            <div class="form-group">
+                                <label asp-for="Form.CustomerName"></label>
+                                <input asp-for="Form.CustomerName" class="form-control" />
+                                <span asp-validation-for="Form.CustomerName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Form.CustomerEmail"></label>
+                                <input asp-for="Form.CustomerEmail" class="form-control" />
+                                <span asp-validation-for="Form.CustomerEmail" class="text-danger small"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Form.CustomerPhone"></label>
+                                <input asp-for="Form.CustomerPhone" class="form-control" />
+                                <span asp-validation-for="Form.CustomerPhone" class="text-danger small"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Form.PreferredDate"></label>
+                                <input asp-for="Form.PreferredDate" class="form-control" />
+                                <span asp-validation-for="Form.PreferredDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-4">
+                                    <label asp-for="Form.Adults"></label>
+                                    <input asp-for="Form.Adults" class="form-control" min="1" />
+                                    <span asp-validation-for="Form.Adults" class="text-danger small"></span>
+                                </div>
+                                <div class="form-group col-4">
+                                    <label asp-for="Form.Children"></label>
+                                    <input asp-for="Form.Children" class="form-control" min="0" />
+                                    <span asp-validation-for="Form.Children" class="text-danger small"></span>
+                                </div>
+                                <div class="form-group col-4">
+                                    <label asp-for="Form.Infants"></label>
+                                    <input asp-for="Form.Infants" class="form-control" min="0" />
+                                    <span asp-validation-for="Form.Infants" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Form.PickupLocation"></label>
+                                <input asp-for="Form.PickupLocation" class="form-control" placeholder="Hotel name or meeting point" />
+                                <span asp-validation-for="Form.PickupLocation" class="text-danger small"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Form.Notes"></label>
+                                <textarea asp-for="Form.Notes" class="form-control" rows="3" placeholder="Special requests or questions"></textarea>
+                                <span asp-validation-for="Form.Notes" class="text-danger small"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="d-block">Payment method</label>
+                                @if (paymentOptions.Any())
+                                {
+                                    foreach (var option in paymentOptions)
+                                    {
+                                        var paymentId = $"payment-{option.Method}";
+                                        <div class="custom-control custom-radio mb-2">
+                                            <input class="custom-control-input" type="radio" id="@paymentId" name="Form.PaymentMethod" value="@option.Method" @(form.PaymentMethod == option.Method ? "checked" : null) />
+                                            <label class="custom-control-label" for="@paymentId">
+                                                <strong>@option.DisplayName</strong>
+                                                <span class="d-block small text-muted">@option.AccountIdentifier</span>
+                                            </label>
+                                            <p class="small text-muted mt-1 mb-0">@option.Instructions</p>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="small text-muted">Payment methods will be provided after booking confirmation.</p>
+                                }
+                                <span asp-validation-for="Form.PaymentMethod" class="text-danger small"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Form.PaymentReference"></label>
+                                <input asp-for="Form.PaymentReference" class="form-control" placeholder="Optional transaction reference" />
+                                <span asp-validation-for="Form.PaymentReference" class="text-danger small"></span>
+                            </div>
+
+                            <div class="alert alert-secondary d-flex justify-content-between align-items-center" id="reservation-total" data-adult="@tour.Price" data-child="@tour.KinderPrice" data-infant="@tour.InfantPrice">
+                                <span class="mb-0">Estimated total</span>
+                                <strong class="h5 mb-0">€<span id="reservation-total-value">@estimatedTotal</span></strong>
+                            </div>
+
+                            <button type="submit" class="btn theme_btn button_hover btn-block">Reserve now</button>
+                        </form>
+
+                        <hr class="my-4" />
+                        <p class="small mb-1">Prefer to talk?</p>
+                        <a href="mailto:info@tourantalya.com" class="btn btn-outline-primary btn-block">Email us</a>
+                        <a href="tel:+902422000000" class="btn btn-outline-secondary btn-block mt-2">Call +90 242 200 00 00</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <script>
+        (function () {
+            const form = document.querySelector('form[asp-action="BookTour"]') || document.querySelector('form[action*="BookTour"]');
+            if (!form) {
+                return;
+            }
+
+            const totalContainer = document.getElementById('reservation-total');
+            const totalValue = document.getElementById('reservation-total-value');
+            const adultInput = form.querySelector('[name="Form.Adults"]');
+            const childInput = form.querySelector('[name="Form.Children"]');
+            const infantInput = form.querySelector('[name="Form.Infants"]');
+
+            const adultPrice = parseInt(totalContainer?.dataset.adult ?? '0', 10);
+            const childPrice = parseInt(totalContainer?.dataset.child ?? '0', 10);
+            const infantPrice = parseInt(totalContainer?.dataset.infant ?? '0', 10);
+
+            const updateTotal = () => {
+                const adults = parseInt(adultInput?.value ?? '0', 10) || 0;
+                const children = parseInt(childInput?.value ?? '0', 10) || 0;
+                const infants = parseInt(infantInput?.value ?? '0', 10) || 0;
+                const total = Math.max(0, adults) * adultPrice + Math.max(0, children) * childPrice + Math.max(0, infants) * infantPrice;
+                if (totalValue) {
+                    totalValue.textContent = total.toString();
+                }
+            };
+
+            [adultInput, childInput, infantInput].forEach(input => {
+                if (!input) {
+                    return;
+                }
+                input.addEventListener('change', updateTotal);
+                input.addEventListener('keyup', updateTotal);
+            });
+
+            updateTotal();
+        })();
+    </script>
+}

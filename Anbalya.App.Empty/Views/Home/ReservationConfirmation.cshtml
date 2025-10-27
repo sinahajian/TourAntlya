@@ -1,0 +1,92 @@
+@model ReservationConfirmationViewModel
+@using System
+@using Models.Entities
+
+@{
+    var tour = Model.Tour;
+    var reservation = Model.Reservation;
+    var payment = Model.PaymentOption;
+}
+
+<section class="section_gap">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <span class="badge badge-success p-2">Reservation created</span>
+                        </div>
+                        <h2 class="mb-2">Thanks, @reservation.CustomerName!</h2>
+                        <p class="mb-1">We reserved <strong>@reservation.TotalGuests</strong> spot(s) for <strong>@tour.TourName</strong>.</p>
+                        <p class="mb-0">Your reference code: <strong>@Model.ReferenceCode</strong></p>
+                        <small class="text-muted">Created @Model.FormattedCreatedAt</small>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title">Reservation details</h4>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">Tour</dt>
+                            <dd class="col-sm-8">@tour.TourName</dd>
+
+                            <dt class="col-sm-4">Preferred date</dt>
+                            <dd class="col-sm-8">@Model.FormattedPreferredDate</dd>
+
+                            <dt class="col-sm-4">Guests</dt>
+                            <dd class="col-sm-8">
+                                Adults: @reservation.Adults<br />
+                                Children: @reservation.Children<br />
+                                Infants: @reservation.Infants
+                            </dd>
+
+                            <dt class="col-sm-4">Pickup location</dt>
+                            <dd class="col-sm-8">@reservation.PickupLocation</dd>
+
+                            <dt class="col-sm-4">Contact</dt>
+                            <dd class="col-sm-8">
+                                <div>@reservation.CustomerEmail</div>
+                                @if (!string.IsNullOrWhiteSpace(reservation.CustomerPhone))
+                                {
+                                    <div>@reservation.CustomerPhone</div>
+                                }
+                            </dd>
+
+                            @if (!string.IsNullOrWhiteSpace(reservation.Notes))
+                            {
+                                <dt class="col-sm-4">Notes</dt>
+                                <dd class="col-sm-8">@reservation.Notes</dd>
+                            }
+
+                            <dt class="col-sm-4">Estimated total</dt>
+                            <dd class="col-sm-8">€@Model.TotalPrice</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                @if (payment is not null)
+                {
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h4 class="card-title">Next step: complete your @payment.DisplayName payment</h4>
+                            <p class="mb-2">Use the details below to finalise your booking. Please include your reference code <strong>@Model.ReferenceCode</strong> so we can match the payment quickly.</p>
+
+                            <div class="alert alert-info">
+                                <div class="mb-2"><strong>Account:</strong> @payment.AccountIdentifier</div>
+                                <div class="mb-0"><strong>Instructions:</strong> @payment.Instructions</div>
+                            </div>
+
+                            <p class="small text-muted mb-0">Once we confirm the payment, you will receive a follow-up email with pickup time and final details.</p>
+                        </div>
+                    </div>
+                }
+
+                <div class="text-center">
+                    <a href="@Url.Action("Tour", "Home", new { id = tour.Id, slug = tour.Slug })" class="btn theme_btn button_hover mr-2">View tour again</a>
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary">Back to home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

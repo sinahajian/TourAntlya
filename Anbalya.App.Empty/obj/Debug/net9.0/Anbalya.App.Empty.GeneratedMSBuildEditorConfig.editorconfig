@@ -36,6 +36,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9pbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/ReservationConfirmation.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9SZXNlcnZhdGlvbkNvbmZpcm1hdGlvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/Tour.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9Ub3VyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -102,6 +106,14 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Managers/LoginManagers.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFuYWdlcnMvTG9naW5NYW5hZ2Vycy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Managers/PaymentOptions.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFuYWdlcnMvUGF5bWVudE9wdGlvbnMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Managers/Reservations.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTWFuYWdlcnMvUmVzZXJ2YXRpb25zLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Managers/Tours.cshtml]

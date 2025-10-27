@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.Helper;
 using Models.Interface;
+using Models.Entities;
 
 namespace Controllers
 {
@@ -17,17 +19,23 @@ namespace Controllers
         private readonly IManagerTourRepository _managerTourRepository;
         private readonly ILandingContentRepository _landingContentRepository;
         private readonly IWebHostEnvironment _environment;
+        private readonly IReservationRepository _reservationRepository;
+        private readonly IPaymentOptionRepository _paymentOptionRepository;
 
         public ManagersController(
             IManagerRepository managerRepository,
             IManagerTourRepository managerTourRepository,
             ILandingContentRepository landingContentRepository,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            IReservationRepository reservationRepository,
+            IPaymentOptionRepository paymentOptionRepository)
         {
             _managerRepository = managerRepository;
             _managerTourRepository = managerTourRepository;
             _landingContentRepository = landingContentRepository;
             _environment = environment;
+            _reservationRepository = reservationRepository;
+            _paymentOptionRepository = paymentOptionRepository;
         }
 
         [HttpGet]
@@ -309,6 +317,123 @@ namespace Controllers
             }
 
             return RedirectToAction(nameof(Tours), new { userName = manager!.UserName });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> PaymentOptions(string userName, CancellationToken ct)
+        {
+            var (manager, redirect) = await ResolveManagerAsync(userName, ct);
+            if (redirect is not null) return redirect;
+            if (manager is null)
+            {
+                TempData["ManagerLoginError"] = "Please login to access the dashboard.";
+                return RedirectToAction(nameof(LoginManagers));
+            }
+
+            var options = await _paymentOptionRepository.ListAsync(ct);
+            var viewModel = PaymentOptionsViewModel.FromOptions(manager.UserName, options);
+
+            if (TempData.TryGetValue("ManagerPaymentFeedback", out var feedback) && feedback is string feedbackMessage)
+            {
+                viewModel.FeedbackMessage = feedbackMessage;
+            }
+
+            ViewData["Manager"] = manager;
+            ViewData["Title"] = "Payment Settings";
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PaymentOptions(PaymentOptionsViewModel model, CancellationToken ct)
+        {
+            var (manager, redirect) = await ResolveManagerAsync(model.UserName, ct);
+            if (redirect is not null) return redirect;
+            if (manager is null)
+            {
+                TempData["ManagerLoginError"] = "Please login to access the dashboard.";
+                return RedirectToAction(nameof(LoginManagers));
+            }
+
+            if (model.Options is null || model.Options.Count == 0)
+            {
+                ModelState.AddModelError(string.Empty, "At least one payment method must be provided.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewData["Manager"] = manager;
+                ViewData["Title"] = "Payment Settings";
+                return View(model);
+            }
+
+            var optionsToPersist = model.Options ?? new List<PaymentOptionInputModel>();
+
+            foreach (var option in optionsToPersist)
+            {
+                var entity = new PaymentOption
+                {
+                    Method = option.Method,
+                    DisplayName = option.DisplayName.Trim(),
+                    AccountIdentifier = option.AccountIdentifier.Trim(),
+                    Instructions = option.Instructions.Trim(),
+                    IsEnabled = option.IsEnabled
+                };
+
+                await _paymentOptionRepository.UpdateAsync(entity, ct);
+            }
+
+            TempData["ManagerPaymentFeedback"] = "Payment methods updated.";
+            return RedirectToAction(nameof(PaymentOptions), new { userName = manager.UserName });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Reservations(string userName, int? tourId, CancellationToken ct)
+        {
+            var (manager, redirect) = await ResolveManagerAsync(userName, ct);
+            if (redirect is not null) return redirect;
+            if (manager is null)
+            {
+                TempData["ManagerLoginError"] = "Please login to access the dashboard.";
+                return RedirectToAction(nameof(LoginManagers));
+            }
+
+            var reservations = await _reservationRepository.ListAsync(tourId, ct);
+            var reservationDtos = reservations
+                .Select(ReservationDetailsDto.FromEntity)
+                .ToList();
+
+            var tours = await _managerTourRepository.ListAsync(ct);
+            var viewModel = new ManagerReservationListViewModel(manager, reservationDtos, tours.ToList(), tourId);
+
+            if (TempData.TryGetValue("ManagerReservationsFeedback", out var feedback) && feedback is string message)
+            {
+                viewModel.FeedbackMessage = message;
+            }
+
+            ViewData["Manager"] = manager;
+            ViewData["Title"] = "Reservations";
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateReservationStatus(string userName, int reservationId, ReservationStatus status, PaymentStatus paymentStatus, string? paymentReference, int? tourId, CancellationToken ct)
+        {
+            var (manager, redirect) = await ResolveManagerAsync(userName, ct);
+            if (redirect is not null) return redirect;
+            if (manager is null)
+            {
+                TempData["ManagerLoginError"] = "Please login to access the dashboard.";
+                return RedirectToAction(nameof(LoginManagers));
+            }
+
+            await _reservationRepository.UpdateStatusAsync(reservationId, status, paymentStatus, string.IsNullOrWhiteSpace(paymentReference) ? null : paymentReference.Trim(), ct);
+            TempData["ManagerReservationsFeedback"] = "Reservation updated.";
+
+            return RedirectToAction(nameof(Reservations), new { userName = manager.UserName, tourId });
         }
 
         private async Task<(ManagerDto? manager, IActionResult? redirect)> ResolveManagerAsync(string userName, CancellationToken ct)

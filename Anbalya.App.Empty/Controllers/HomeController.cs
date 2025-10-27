@@ -1,4 +1,5 @@
-
+using System;
+using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using Models.Interface;
@@ -12,14 +13,20 @@ namespace Controllers
         private readonly ITourRepository _tourRepository;
         private readonly ILanguageResolver _langResolver;
         private readonly ILandingContentRepository _landingContentRepository;
+        private readonly IReservationRepository _reservationRepository;
+        private readonly IPaymentOptionRepository _paymentOptionRepository;
         public HomeController(
             ITourRepository tourRepository,
             ILanguageResolver langResolver,
-            ILandingContentRepository landingContentRepository)
+            ILandingContentRepository landingContentRepository,
+            IReservationRepository reservationRepository,
+            IPaymentOptionRepository paymentOptionRepository)
         {
             _tourRepository = tourRepository;
             _langResolver = langResolver;
             _landingContentRepository = landingContentRepository;
+            _reservationRepository = reservationRepository;
+            _paymentOptionRepository = paymentOptionRepository;
         }
 
         public async Task<IActionResult> Index(CancellationToken ct)
@@ -63,7 +70,146 @@ namespace Controllers
                 return NotFound();
             }
 
-            return View("Tour", tour);
+            if (!string.IsNullOrWhiteSpace(slug) && !string.Equals(slug, tour.Slug, StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectToActionPermanent(nameof(Tour), new { id, slug = tour.Slug });
+            }
+
+            var paymentOptions = await _paymentOptionRepository.ListAsync(ct);
+            var enabledOptions = paymentOptions
+                .Where(o => o.IsEnabled)
+                .Select(PaymentOptionDto.FromEntity)
+                .ToList();
+
+            if (enabledOptions.Count == 0)
+            {
+                enabledOptions = paymentOptions.Select(PaymentOptionDto.FromEntity).ToList();
+            }
+
+            var defaultMethod = enabledOptions.FirstOrDefault()?.Method ?? PaymentMethod.PayPal;
+
+            var viewModel = new TourBookingPageViewModel
+            {
+                Tour = tour,
+                Form = new TourReservationInputModel
+                {
+                    TourId = tour.Id,
+                    Language = lang,
+                    Adults = 1,
+                    Children = 0,
+                    Infants = 0,
+                    PickupLocation = string.Empty,
+                    PaymentMethod = defaultMethod
+                },
+                PaymentOptions = enabledOptions
+            };
+
+            return View("Tour", viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BookTour(TourReservationInputModel form, CancellationToken ct)
+        {
+            var lang = _langResolver.Resolve(HttpContext);
+            var tour = await _tourRepository.GetByIdAsync(form.TourId, lang, ct);
+            if (tour is null)
+            {
+                return NotFound();
+            }
+
+            ValidateReservationForm(form);
+
+            var paymentOptions = await _paymentOptionRepository.ListAsync(ct);
+            var enabledOptions = paymentOptions
+                .Where(o => o.IsEnabled)
+                .Select(PaymentOptionDto.FromEntity)
+                .ToList();
+
+            if (enabledOptions.All(o => o.Method != form.PaymentMethod))
+            {
+                ModelState.AddModelError(nameof(form.PaymentMethod), "Selected payment method is not available.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var errorViewModel = new TourBookingPageViewModel
+                {
+                    Tour = tour,
+                    Form = form,
+                    PaymentOptions = enabledOptions.Count > 0
+                        ? enabledOptions
+                        : paymentOptions.Select(PaymentOptionDto.FromEntity).ToList(),
+                    ErrorMessage = "Please correct the highlighted fields and try again."
+                };
+
+                return View("Tour", errorViewModel);
+            }
+
+            var totalPrice = CalculateTotalPrice(tour, form);
+
+            var reservation = new Reservation
+            {
+                TourId = tour.Id,
+                CustomerName = form.CustomerName.Trim(),
+                CustomerEmail = form.CustomerEmail.Trim(),
+                CustomerPhone = string.IsNullOrWhiteSpace(form.CustomerPhone) ? null : form.CustomerPhone.Trim(),
+                PreferredDate = form.PreferredDate,
+                Adults = form.Adults,
+                Children = form.Children,
+                Infants = form.Infants,
+                PickupLocation = form.PickupLocation.Trim(),
+                Notes = string.IsNullOrWhiteSpace(form.Notes) ? null : form.Notes.Trim(),
+                PaymentMethod = form.PaymentMethod,
+                PaymentStatus = PaymentStatus.Pending,
+                Status = ReservationStatus.Pending,
+                PaymentReference = string.IsNullOrWhiteSpace(form.PaymentReference) ? null : form.PaymentReference.Trim(),
+                TotalPrice = totalPrice,
+                Language = lang
+            };
+
+            var reservationId = await _reservationRepository.CreateAsync(reservation, ct);
+            var storedReservation = await _reservationRepository.GetByIdAsync(reservationId, ct);
+
+            if (storedReservation is null)
+            {
+                reservation.Tour = new Tour { Id = tour.Id, TourName = tour.TourName };
+                storedReservation = reservation;
+            }
+
+            var reservationDto = ReservationDetailsDto.FromEntity(storedReservation);
+            var paymentOption = paymentOptions.FirstOrDefault(o => o.Method == form.PaymentMethod);
+
+            var confirmationViewModel = new ReservationConfirmationViewModel
+            {
+                Tour = tour,
+                Reservation = reservationDto,
+                PaymentOption = paymentOption is null ? null : PaymentOptionDto.FromEntity(paymentOption)
+            };
+
+            return View("ReservationConfirmation", confirmationViewModel);
+        }
+
+        private void ValidateReservationForm(TourReservationInputModel form)
+        {
+            if (form.PreferredDate.HasValue && form.PreferredDate.Value.Date < DateTime.UtcNow.Date)
+            {
+                ModelState.AddModelError(nameof(form.PreferredDate), "Please choose a future date.");
+            }
+
+            var totalGuests = Math.Max(0, form.Adults) + Math.Max(0, form.Children) + Math.Max(0, form.Infants);
+            if (totalGuests <= 0)
+            {
+                ModelState.AddModelError(nameof(form.Adults), "At least one guest is required.");
+            }
+        }
+
+        private static int CalculateTotalPrice(TourDto tour, TourReservationInputModel form)
+        {
+            var adultTotal = Math.Max(0, form.Adults) * tour.Price;
+            var childTotal = Math.Max(0, form.Children) * tour.KinderPrice;
+            var infantTotal = Math.Max(0, form.Infants) * tour.InfantPrice;
+            return adultTotal + childTotal + infantTotal;
         }
     }
 }

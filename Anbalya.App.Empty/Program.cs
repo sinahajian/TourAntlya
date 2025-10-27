@@ -22,6 +22,8 @@ builder.Services.AddScoped<ITourRepository, TourRepository>();
 builder.Services.AddScoped<IManagerRepository, ManagerRepository>();
 builder.Services.AddScoped<IManagerTourRepository, ManagerTourRepository>();
 builder.Services.AddScoped<ILandingContentRepository, LandingContentRepository>();
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<IPaymentOptionRepository, PaymentOptionRepository>();
 builder.Services.AddScoped<ILanguageResolver, LanguageResolver>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -29,7 +31,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TourDbContext>();
-    db.Database.Migrate("first1");        // جداول را می‌سازد/آپدیت می‌کند
+    db.Database.Migrate("payment");        // جداول را می‌سازد/آپدیت می‌کند
     // (اختیاری) اگر Seed داده نیاز داری، اینجا انجام بده
 }
 

@@ -1,13 +1,51 @@
 @model IReadOnlyList<global::TourDto>
+@using Models.Helper
+@using System.Linq
 
-<section class="latest_blog_area section_gap">
+@{
+    var tours = Model ?? Array.Empty<global::TourDto>();
+    var lang = LanguageCatalog.Normalize(tours.FirstOrDefault()?.LanguageUsed ?? "en");
+    var isRtl = LanguageCatalog.IsRtl(lang);
+    var sectionDir = isRtl ? "rtl" : "ltr";
+    var textAlignClass = isRtl ? "text-right" : "text-center";
+    var cardTextClass = isRtl ? "text-right" : string.Empty;
+    var title = lang switch
+    {
+        "de" => "Beliebte Touren",
+        "fa" => "تورهای محبوب",
+        "ru" => "Популярные туры",
+        "pl" => "Popularne wycieczki",
+        "ar" => "الجولات الأكثر شعبية",
+        _ => "Popular tours"
+    };
+    var description = lang switch
+    {
+        "de" => "Entdecke, welche Touren bei Reisenden gerade besonders gefragt sind.",
+        "fa" => "ببین گردشگران این روزها بیشتر کدام تورها را انتخاب می‌کنند.",
+        "ru" => "Узнайте, какие туры сейчас выбирают путешественники.",
+        "pl" => "Zobacz, które wycieczki najczęściej wybierają podróżni.",
+        "ar" => "اكتشف أكثر الجولات حجزًا بين المسافرين هذه الأيام.",
+        _ => "See what travelers book most right now."
+    };
+    var priceSuffix = lang switch
+    {
+        "de" => "/Erwachsener",
+        "fa" => "/بزرگسال",
+        "ru" => "/взрослый",
+        "pl" => "/osoba dorosła",
+        "ar" => "/للبالغ",
+        _ => "/adult"
+    };
+}
+
+<section class="latest_blog_area section_gap" dir="@sectionDir">
     <div class="container">
-        <div class="section_title text-center">
-            <h2 class="title_color">latest posts from blog</h2>
-            <p>The French Revolution constituted for the conscience of the dominant aristocratic class a fall from </p>
+        <div class="section_title @textAlignClass">
+            <h2 class="title_color">@title</h2>
+            <p>@description</p>
         </div>
         <div class="row mb_30">
-            @foreach (var item in Model)
+            @foreach (var item in tours)
             {
                 var detailUrl = Url.Action("Tour", "Home", new { id = item.Id, slug = item.Slug }) ?? "#";
                 <div class="col-lg-4 col-md-6">
@@ -17,13 +55,16 @@
                                 <img class="img-fluid" src="@item.Foto" alt="@item.TourName">
                             </a>
                         </div>
-                        <div class="details">
+                        <div class="details @cardTextClass">
                             <div class="tags">
                                 <a href="@Url.Action("Category", "Home", new { category = item.Category })" class="button_hover tag_btn">@item.CategoryString</a>
                             </div>
                             <a href="@detailUrl">
                                 <h4 class="sec_h4">@item.TourName</h4>
                             </a>
+                            <div class="price title_color font-weight-bold mb-2">
+                                €@item.Price<small> @priceSuffix</small>
+                            </div>
                             <p>@item.MiniDescription</p>
                         </div>
                     </div>
