@@ -13,4 +13,6 @@ public class ReservationConfirmationViewModel
 
     public string FormattedCreatedAt =>
         Reservation.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+
+    public string GuestName => Reservation.FullName;
 }

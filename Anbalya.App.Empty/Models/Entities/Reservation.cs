@@ -7,6 +7,8 @@ namespace Models.Entities
         public int TourId { get; set; }
         public Tour? Tour { get; set; }
 
+        public string CustomerFirstName { get; set; } = string.Empty;
+        public string CustomerLastName { get; set; } = string.Empty;
         public string CustomerName { get; set; } = string.Empty;
         public string CustomerEmail { get; set; } = string.Empty;
         public string? CustomerPhone { get; set; }
@@ -19,6 +21,8 @@ namespace Models.Entities
 
         public string PickupLocation { get; set; } = string.Empty;
         public string? Notes { get; set; }
+        public string? HotelName { get; set; }
+        public string? RoomNumber { get; set; }
 
         public PaymentMethod PaymentMethod { get; set; }
         public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;

@@ -31,7 +31,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TourDbContext>();
-    db.Database.Migrate("payment");        // جداول را می‌سازد/آپدیت می‌کند
+    db.Database.Migrate("payment2");        // جداول را می‌سازد/آپدیت می‌کند
     // (اختیاری) اگر Seed داده نیاز داری، اینجا انجام بده
 }
 

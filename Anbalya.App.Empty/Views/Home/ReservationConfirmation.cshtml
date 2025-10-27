@@ -17,7 +17,7 @@
                         <div class="mb-3">
                             <span class="badge badge-success p-2">Reservation created</span>
                         </div>
-                        <h2 class="mb-2">Thanks, @reservation.CustomerName!</h2>
+                        <h2 class="mb-2">Thanks, @Model.GuestName!</h2>
                         <p class="mb-1">We reserved <strong>@reservation.TotalGuests</strong> spot(s) for <strong>@tour.TourName</strong>.</p>
                         <p class="mb-0">Your reference code: <strong>@Model.ReferenceCode</strong></p>
                         <small class="text-muted">Created @Model.FormattedCreatedAt</small>
@@ -41,8 +41,20 @@
                                 Infants: @reservation.Infants
                             </dd>
 
-                            <dt class="col-sm-4">Pickup location</dt>
-                            <dd class="col-sm-8">@reservation.PickupLocation</dd>
+                            @if (!string.IsNullOrWhiteSpace(reservation.HotelName))
+                            {
+                                <dt class="col-sm-4">Hotel</dt>
+                                <dd class="col-sm-8">
+                                    @reservation.HotelName
+                                    @if (!string.IsNullOrWhiteSpace(reservation.RoomNumber))
+                                    {
+                                        <span class="d-block">Room: @reservation.RoomNumber</span>
+                                    }
+                                </dd>
+                            }
+
+                            <dt class="col-sm-4">Pickup details</dt>
+                            <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(reservation.PickupLocation) ? "We will confirm your pickup time shortly." : reservation.PickupLocation)</dd>
 
                             <dt class="col-sm-4">Contact</dt>
                             <dd class="col-sm-8">

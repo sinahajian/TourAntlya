@@ -7,4 +7,5 @@ public class TourBookingPageViewModel
     public IReadOnlyList<PaymentOptionDto> PaymentOptions { get; init; } = new List<PaymentOptionDto>();
     public string? ErrorMessage { get; set; }
     public string? SuccessMessage { get; set; }
+    public IReadOnlyList<string> AccommodationOptions { get; init; } = new List<string>();
 }

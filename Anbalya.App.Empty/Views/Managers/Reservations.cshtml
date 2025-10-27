@@ -77,11 +77,23 @@
                                 <div class="small text-muted">Ref: TA-@reservation.Id.ToString("D6")</div>
                             </td>
                             <td class="align-middle">
-                                <div>@reservation.CustomerName</div>
+                                <div>@reservation.FullName</div>
                                 <div class="small text-muted">@reservation.CustomerEmail</div>
                                 @if (!string.IsNullOrWhiteSpace(reservation.CustomerPhone))
                                 {
                                     <div class="small text-muted">@reservation.CustomerPhone</div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(reservation.HotelName))
+                                {
+                                    <div class="small text-muted">Hotel: @reservation.HotelName</div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(reservation.RoomNumber))
+                                {
+                                    <div class="small text-muted">Room: @reservation.RoomNumber</div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(reservation.PickupLocation))
+                                {
+                                    <div class="small text-muted">Pickup: @reservation.PickupLocation</div>
                                 }
                             </td>
                             <td class="align-middle">@reservation.PreferredDate?.ToString("yyyy-MM-dd") ?? "Flexible"</td>

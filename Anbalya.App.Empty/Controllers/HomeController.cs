@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Mvc;
@@ -99,9 +100,11 @@ namespace Controllers
                     Children = 0,
                     Infants = 0,
                     PickupLocation = string.Empty,
-                    PaymentMethod = defaultMethod
+                    PaymentMethod = defaultMethod,
+                    HotelName = "Select Your Hotel"
                 },
-                PaymentOptions = enabledOptions
+                PaymentOptions = enabledOptions,
+                AccommodationOptions = AccommodationCatalog.List()
             };
 
             return View("Tour", viewModel);
@@ -140,32 +143,52 @@ namespace Controllers
                     PaymentOptions = enabledOptions.Count > 0
                         ? enabledOptions
                         : paymentOptions.Select(PaymentOptionDto.FromEntity).ToList(),
-                    ErrorMessage = "Please correct the highlighted fields and try again."
+                    ErrorMessage = "Please correct the highlighted fields and try again.",
+                    AccommodationOptions = AccommodationCatalog.List()
                 };
 
                 return View("Tour", errorViewModel);
             }
 
             var totalPrice = CalculateTotalPrice(tour, form);
+            var firstName = form.FirstName?.Trim() ?? string.Empty;
+            var lastName = form.LastName?.Trim() ?? string.Empty;
+            var fullName = string.Join(" ", new[] { firstName, lastName }
+                .Where(part => !string.IsNullOrWhiteSpace(part)));
+            var hotelName = form.HotelName;
+            if (string.Equals(hotelName, "Select Your Hotel", StringComparison.OrdinalIgnoreCase))
+            {
+                hotelName = null;
+            }
+
+            var pickupLocation = string.IsNullOrWhiteSpace(form.PickupLocation)
+                ? hotelName ?? string.Empty
+                : form.PickupLocation.Trim();
 
             var reservation = new Reservation
             {
                 TourId = tour.Id,
-                CustomerName = form.CustomerName.Trim(),
+                CustomerFirstName = firstName,
+                CustomerLastName = lastName,
+                CustomerName = string.IsNullOrWhiteSpace(fullName)
+                    ? firstName
+                    : fullName,
                 CustomerEmail = form.CustomerEmail.Trim(),
                 CustomerPhone = string.IsNullOrWhiteSpace(form.CustomerPhone) ? null : form.CustomerPhone.Trim(),
                 PreferredDate = form.PreferredDate,
                 Adults = form.Adults,
                 Children = form.Children,
                 Infants = form.Infants,
-                PickupLocation = form.PickupLocation.Trim(),
+                PickupLocation = pickupLocation ?? string.Empty,
                 Notes = string.IsNullOrWhiteSpace(form.Notes) ? null : form.Notes.Trim(),
                 PaymentMethod = form.PaymentMethod,
                 PaymentStatus = PaymentStatus.Pending,
                 Status = ReservationStatus.Pending,
                 PaymentReference = string.IsNullOrWhiteSpace(form.PaymentReference) ? null : form.PaymentReference.Trim(),
                 TotalPrice = totalPrice,
-                Language = lang
+                Language = lang,
+                HotelName = hotelName,
+                RoomNumber = string.IsNullOrWhiteSpace(form.RoomNumber) ? null : form.RoomNumber.Trim()
             };
 
             var reservationId = await _reservationRepository.CreateAsync(reservation, ct);
@@ -201,6 +224,15 @@ namespace Controllers
             if (totalGuests <= 0)
             {
                 ModelState.AddModelError(nameof(form.Adults), "At least one guest is required.");
+            }
+
+            var hotelValue = form.HotelName?.Trim();
+            var hasHotelSelection = !string.IsNullOrWhiteSpace(hotelValue) &&
+                                     !string.Equals(hotelValue, "Select Your Hotel", StringComparison.OrdinalIgnoreCase);
+
+            if (!hasHotelSelection && string.IsNullOrWhiteSpace(form.PickupLocation))
+            {
+                ModelState.AddModelError(nameof(form.HotelName), "Please select your hotel or enter a pickup location.");
             }
         }
 

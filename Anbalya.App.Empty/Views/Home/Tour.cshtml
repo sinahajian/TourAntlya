@@ -10,6 +10,7 @@
     var form = Model.Form ?? new TourReservationInputModel();
     form.Language ??= tour.LanguageUsed;
     var paymentOptions = Model.PaymentOptions ?? Array.Empty<PaymentOptionDto>();
+    var accommodationOptions = Model.AccommodationOptions ?? Array.Empty<string>();
 
     Func<string?, string> resolvePhoto = path =>
     {
@@ -186,6 +187,7 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
                         <h4 class="card-title">Reserve your tour</h4>
+                        <p class="text-muted small">Complete the steps below to confirm your booking and receive payment instructions.</p>
 
                         @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
                         {
@@ -196,103 +198,161 @@
                             <div class="alert alert-success" role="alert">@Model.SuccessMessage</div>
                         }
 
-                        <form asp-action="BookTour" method="post" novalidate>
+                        <form asp-action="BookTour" method="post" novalidate class="booking-form">
                             @Html.AntiForgeryToken()
                             <input type="hidden" asp-for="Form.TourId" />
                             <input type="hidden" asp-for="Form.Language" />
 
                             <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
-                            <div class="form-group">
-                                <label asp-for="Form.CustomerName"></label>
-                                <input asp-for="Form.CustomerName" class="form-control" />
-                                <span asp-validation-for="Form.CustomerName" class="text-danger small"></span>
-                            </div>
-
-                            <div class="form-group">
-                                <label asp-for="Form.CustomerEmail"></label>
-                                <input asp-for="Form.CustomerEmail" class="form-control" />
-                                <span asp-validation-for="Form.CustomerEmail" class="text-danger small"></span>
-                            </div>
-
-                            <div class="form-group">
-                                <label asp-for="Form.CustomerPhone"></label>
-                                <input asp-for="Form.CustomerPhone" class="form-control" />
-                                <span asp-validation-for="Form.CustomerPhone" class="text-danger small"></span>
-                            </div>
-
-                            <div class="form-group">
-                                <label asp-for="Form.PreferredDate"></label>
-                                <input asp-for="Form.PreferredDate" class="form-control" />
-                                <span asp-validation-for="Form.PreferredDate" class="text-danger small"></span>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group col-4">
-                                    <label asp-for="Form.Adults"></label>
-                                    <input asp-for="Form.Adults" class="form-control" min="1" />
-                                    <span asp-validation-for="Form.Adults" class="text-danger small"></span>
+                            <div class="booking-progress d-flex justify-content-between mb-4">
+                                <div class="booking-progress-step" data-step-index="0">
+                                    <span class="badge badge-pill badge-primary mr-2">1</span> Guests
                                 </div>
-                                <div class="form-group col-4">
-                                    <label asp-for="Form.Children"></label>
-                                    <input asp-for="Form.Children" class="form-control" min="0" />
-                                    <span asp-validation-for="Form.Children" class="text-danger small"></span>
+                                <div class="booking-progress-step text-muted" data-step-index="1">
+                                    <span class="badge badge-pill badge-secondary mr-2">2</span> Traveller details
                                 </div>
-                                <div class="form-group col-4">
-                                    <label asp-for="Form.Infants"></label>
-                                    <input asp-for="Form.Infants" class="form-control" min="0" />
-                                    <span asp-validation-for="Form.Infants" class="text-danger small"></span>
+                                <div class="booking-progress-step text-muted" data-step-index="2">
+                                    <span class="badge badge-pill badge-secondary mr-2">3</span> Payment
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label asp-for="Form.PickupLocation"></label>
-                                <input asp-for="Form.PickupLocation" class="form-control" placeholder="Hotel name or meeting point" />
-                                <span asp-validation-for="Form.PickupLocation" class="text-danger small"></span>
+                            <div class="booking-step" data-step="0">
+                                <div class="form-group">
+                                    <label asp-for="Form.PreferredDate"></label>
+                                    <input asp-for="Form.PreferredDate" class="form-control" />
+                                    <span asp-validation-for="Form.PreferredDate" class="text-danger small"></span>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group col-4">
+                                        <label asp-for="Form.Adults"></label>
+                                        <input asp-for="Form.Adults" class="form-control" min="1" />
+                                        <span asp-validation-for="Form.Adults" class="text-danger small"></span>
+                                    </div>
+                                    <div class="form-group col-4">
+                                        <label asp-for="Form.Children"></label>
+                                        <input asp-for="Form.Children" class="form-control" min="0" />
+                                        <span asp-validation-for="Form.Children" class="text-danger small"></span>
+                                    </div>
+                                    <div class="form-group col-4">
+                                        <label asp-for="Form.Infants"></label>
+                                        <input asp-for="Form.Infants" class="form-control" min="0" />
+                                        <span asp-validation-for="Form.Infants" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn theme_btn button_hover btn-block" data-next-step>Continue</button>
                             </div>
 
-                            <div class="form-group">
-                                <label asp-for="Form.Notes"></label>
-                                <textarea asp-for="Form.Notes" class="form-control" rows="3" placeholder="Special requests or questions"></textarea>
-                                <span asp-validation-for="Form.Notes" class="text-danger small"></span>
+                            <div class="booking-step d-none" data-step="1">
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label asp-for="Form.FirstName"></label>
+                                        <input asp-for="Form.FirstName" class="form-control" />
+                                        <span asp-validation-for="Form.FirstName" class="text-danger small"></span>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label asp-for="Form.LastName"></label>
+                                        <input asp-for="Form.LastName" class="form-control" />
+                                        <span asp-validation-for="Form.LastName" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="Form.CustomerEmail"></label>
+                                    <input asp-for="Form.CustomerEmail" class="form-control" />
+                                    <span asp-validation-for="Form.CustomerEmail" class="text-danger small"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="Form.CustomerPhone"></label>
+                                    <input asp-for="Form.CustomerPhone" class="form-control" placeholder="WhatsApp or mobile number" />
+                                    <span asp-validation-for="Form.CustomerPhone" class="text-danger small"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="hotelSearch">Search your hotel</label>
+                                    <input type="text" id="hotelSearch" class="form-control" placeholder="Type hotel name to filter the list" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="Form.HotelName"></label>
+                                    <select asp-for="Form.HotelName" class="form-control" id="hotelSelect" size="1">
+                                        @foreach (var option in accommodationOptions)
+                                        {
+                                            <option value="@option" @(string.Equals(form.HotelName, option, StringComparison.OrdinalIgnoreCase) ? "selected" : null)>@option</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Form.HotelName" class="text-danger small"></span>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label asp-for="Form.RoomNumber"></label>
+                                        <input asp-for="Form.RoomNumber" class="form-control" />
+                                        <span asp-validation-for="Form.RoomNumber" class="text-danger small"></span>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label asp-for="Form.PickupLocation">Extra pickup notes</label>
+                                        <input asp-for="Form.PickupLocation" class="form-control" placeholder="e.g. lobby time, different address" />
+                                        <span asp-validation-for="Form.PickupLocation" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-outline-secondary" data-prev-step>Back</button>
+                                    <button type="button" class="btn theme_btn button_hover" data-next-step>Continue</button>
+                                </div>
                             </div>
 
-                            <div class="form-group">
-                                <label class="d-block">Payment method</label>
-                                @if (paymentOptions.Any())
-                                {
-                                    foreach (var option in paymentOptions)
+                            <div class="booking-step d-none" data-step="2">
+                                <div class="form-group">
+                                    <label class="d-block">Payment method</label>
+                                    @if (paymentOptions.Any())
                                     {
-                                        var paymentId = $"payment-{option.Method}";
-                                        <div class="custom-control custom-radio mb-2">
-                                            <input class="custom-control-input" type="radio" id="@paymentId" name="Form.PaymentMethod" value="@option.Method" @(form.PaymentMethod == option.Method ? "checked" : null) />
-                                            <label class="custom-control-label" for="@paymentId">
-                                                <strong>@option.DisplayName</strong>
-                                                <span class="d-block small text-muted">@option.AccountIdentifier</span>
-                                            </label>
-                                            <p class="small text-muted mt-1 mb-0">@option.Instructions</p>
-                                        </div>
+                                        foreach (var option in paymentOptions)
+                                        {
+                                            var paymentId = $"payment-{option.Method}";
+                                            <div class="custom-control custom-radio mb-2">
+                                                <input class="custom-control-input" type="radio" id="@paymentId" name="Form.PaymentMethod" value="@option.Method" @(form.PaymentMethod == option.Method ? "checked" : null) />
+                                                <label class="custom-control-label" for="@paymentId">
+                                                    <strong>@option.DisplayName</strong>
+                                                    <span class="d-block small text-muted">@option.AccountIdentifier</span>
+                                                </label>
+                                                <p class="small text-muted mt-1 mb-0">@option.Instructions</p>
+                                            </div>
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    <p class="small text-muted">Payment methods will be provided after booking confirmation.</p>
-                                }
-                                <span asp-validation-for="Form.PaymentMethod" class="text-danger small"></span>
-                            </div>
+                                    else
+                                    {
+                                        <p class="small text-muted">Payment methods will be provided after booking confirmation.</p>
+                                    }
+                                    <span asp-validation-for="Form.PaymentMethod" class="text-danger small"></span>
+                                </div>
 
-                            <div class="form-group">
-                                <label asp-for="Form.PaymentReference"></label>
-                                <input asp-for="Form.PaymentReference" class="form-control" placeholder="Optional transaction reference" />
-                                <span asp-validation-for="Form.PaymentReference" class="text-danger small"></span>
-                            </div>
+                                <div class="form-group">
+                                    <label asp-for="Form.PaymentReference"></label>
+                                    <input asp-for="Form.PaymentReference" class="form-control" placeholder="Optional transaction reference" />
+                                    <span asp-validation-for="Form.PaymentReference" class="text-danger small"></span>
+                                </div>
 
-                            <div class="alert alert-secondary d-flex justify-content-between align-items-center" id="reservation-total" data-adult="@tour.Price" data-child="@tour.KinderPrice" data-infant="@tour.InfantPrice">
-                                <span class="mb-0">Estimated total</span>
-                                <strong class="h5 mb-0">€<span id="reservation-total-value">@estimatedTotal</span></strong>
-                            </div>
+                                <div class="form-group">
+                                    <label asp-for="Form.Notes"></label>
+                                    <textarea asp-for="Form.Notes" class="form-control" rows="3" placeholder="Special requests or questions"></textarea>
+                                    <span asp-validation-for="Form.Notes" class="text-danger small"></span>
+                                </div>
 
-                            <button type="submit" class="btn theme_btn button_hover btn-block">Reserve now</button>
+                                <div class="alert alert-secondary d-flex justify-content-between align-items-center" id="reservation-total" data-adult="@tour.Price" data-child="@tour.KinderPrice" data-infant="@tour.InfantPrice">
+                                    <span class="mb-0">Estimated total</span>
+                                    <strong class="h5 mb-0">€<span id="reservation-total-value">@estimatedTotal</span></strong>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <button type="button" class="btn btn-outline-secondary" data-prev-step>Back</button>
+                                    <button type="submit" class="btn theme_btn button_hover">Reserve now</button>
+                                </div>
+                            </div>
                         </form>
 
                         <hr class="my-4" />
@@ -309,10 +369,16 @@
 @section Scripts {
     <script>
         (function () {
-            const form = document.querySelector('form[asp-action="BookTour"]') || document.querySelector('form[action*="BookTour"]');
+            const form = document.querySelector('.booking-form');
             if (!form) {
                 return;
             }
+
+            const steps = Array.from(form.querySelectorAll('.booking-step'));
+            const progressSteps = Array.from(form.querySelectorAll('.booking-progress-step'));
+            const nextButtons = Array.from(form.querySelectorAll('[data-next-step]'));
+            const prevButtons = Array.from(form.querySelectorAll('[data-prev-step]'));
+            let currentStep = 0;
 
             const totalContainer = document.getElementById('reservation-total');
             const totalValue = document.getElementById('reservation-total-value');
@@ -334,6 +400,73 @@
                 }
             };
 
+            const setStep = (index) => {
+                currentStep = Math.min(Math.max(index, 0), steps.length - 1);
+                steps.forEach((step, idx) => {
+                    if (idx === currentStep) {
+                        step.classList.remove('d-none');
+                    } else {
+                        step.classList.add('d-none');
+                    }
+                });
+
+                progressSteps.forEach((progressStep, idx) => {
+                    const badge = progressStep.querySelector('.badge');
+                    if (!badge) {
+                        return;
+                    }
+
+                    if (idx < currentStep) {
+                        progressStep.classList.remove('text-muted');
+                        progressStep.classList.add('text-success');
+                        badge.classList.remove('badge-secondary', 'badge-primary');
+                        badge.classList.add('badge-success');
+                    } else if (idx === currentStep) {
+                        progressStep.classList.remove('text-muted', 'text-success');
+                        badge.classList.remove('badge-secondary', 'badge-success');
+                        badge.classList.add('badge-primary');
+                    } else {
+                        progressStep.classList.add('text-muted');
+                        progressStep.classList.remove('text-success');
+                        badge.classList.remove('badge-primary', 'badge-success');
+                        badge.classList.add('badge-secondary');
+                    }
+                });
+            };
+
+            const validateStep = (index) => {
+                const step = steps[index];
+                if (!step) {
+                    return true;
+                }
+
+                const fields = Array.from(step.querySelectorAll('input, select, textarea'))
+                    .filter(el => !el.disabled && el.offsetParent !== null);
+
+                for (const field of fields) {
+                    if (!field.checkValidity()) {
+                        field.reportValidity();
+                        return false;
+                    }
+                }
+
+                return true;
+            };
+
+            nextButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    if (validateStep(currentStep)) {
+                        setStep(currentStep + 1);
+                    }
+                });
+            });
+
+            prevButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    setStep(currentStep - 1);
+                });
+            });
+
             [adultInput, childInput, infantInput].forEach(input => {
                 if (!input) {
                     return;
@@ -342,6 +475,56 @@
                 input.addEventListener('keyup', updateTotal);
             });
 
+            const hotelSelect = document.getElementById('hotelSelect');
+            const hotelSearch = document.getElementById('hotelSearch');
+
+            if (hotelSelect && hotelSearch) {
+                const originalOptions = Array.from(hotelSelect.options).map(option => ({
+                    value: option.value,
+                    text: option.text,
+                    selected: option.selected
+                }));
+
+                const rebuildOptions = (filterValue) => {
+                    const selectedValue = originalOptions.find(option => option.selected)?.value ?? hotelSelect.value;
+                    const normalized = (filterValue || '').trim().toLowerCase();
+                    const fragment = document.createDocumentFragment();
+                    originalOptions.forEach(option => {
+                        if (!normalized || option.text.toLowerCase().includes(normalized) || option.value.toLowerCase().includes(normalized)) {
+                            const newOption = document.createElement('option');
+                            newOption.value = option.value;
+                            newOption.textContent = option.text;
+                            if (option.value === selectedValue) {
+                                newOption.selected = true;
+                            }
+                            fragment.appendChild(newOption);
+                        }
+                    });
+
+                    if (!fragment.childNodes.length) {
+                        const placeholder = document.createElement('option');
+                        placeholder.disabled = true;
+                        placeholder.textContent = 'No matches found';
+                        fragment.appendChild(placeholder);
+                    }
+
+                    hotelSelect.innerHTML = '';
+                    hotelSelect.appendChild(fragment);
+                };
+
+                hotelSearch.addEventListener('input', (event) => {
+                    rebuildOptions(event.target.value);
+                });
+
+                hotelSelect.addEventListener('change', () => {
+                    const selected = hotelSelect.value;
+                    originalOptions.forEach(option => {
+                        option.selected = option.value === selected;
+                    });
+                });
+            }
+
+            setStep(0);
             updateTotal();
         })();
     </script>

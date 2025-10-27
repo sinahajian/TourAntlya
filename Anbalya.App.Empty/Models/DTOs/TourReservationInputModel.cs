@@ -10,9 +10,14 @@ public class TourReservationInputModel
     public string? Language { get; set; }
 
     [Required]
-    [Display(Name = "Name")]
-    [StringLength(100)]
-    public string CustomerName { get; set; } = string.Empty;
+    [Display(Name = "First name")]
+    [StringLength(80)]
+    public string FirstName { get; set; } = string.Empty;
+
+    [Required]
+    [Display(Name = "Last name")]
+    [StringLength(80)]
+    public string LastName { get; set; } = string.Empty;
 
     [Required]
     [EmailAddress]
@@ -39,10 +44,17 @@ public class TourReservationInputModel
     [Display(Name = "Infants")]
     public int Infants { get; set; }
 
-    [Required]
     [StringLength(160)]
     [Display(Name = "Pickup location")]
     public string PickupLocation { get; set; } = string.Empty;
+
+    [Display(Name = "Hotel or accommodation")]
+    [StringLength(160)]
+    public string? HotelName { get; set; }
+
+    [Display(Name = "Room number")]
+    [StringLength(40)]
+    public string? RoomNumber { get; set; }
 
     [StringLength(400)]
     [Display(Name = "Notes")]
