@@ -13,6 +13,7 @@ namespace Models.DbContexts
         public DbSet<LandingContent> LandingContents { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<PaymentOption> PaymentOptions { get; set; }
+        public DbSet<PayPalSettings> PayPalSettings { get; set; }
         public TourDbContext(DbContextOptions<TourDbContext> options) : base(options)
         {
 
@@ -30,6 +31,18 @@ namespace Models.DbContexts
             modelBuilder.Entity<PaymentOption>()
                 .HasIndex(p => p.Method)
                 .IsUnique();
+
+            modelBuilder.Entity<PayPalSettings>()
+                .HasData(new PayPalSettings
+                {
+                    Id = 1,
+                    BusinessEmail = "paypal@example.com",
+                    Currency = "EUR",
+                    ReturnUrl = "https://tourantalya.com/paypal/success",
+                    CancelUrl = "https://tourantalya.com/paypal/cancel",
+                    UseSandbox = true,
+                    CreationTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                });
 
             var paymentSeedTimestamp = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
 

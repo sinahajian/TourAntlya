@@ -184,10 +184,42 @@
                     </div>
                 </div>
 
-                <div class="card border-0 shadow-sm">
+                <div class="card border-0 shadow-sm booking-card">
                     <div class="card-body">
                         <h4 class="card-title">Reserve your tour</h4>
-                        <p class="text-muted small">Complete the steps below to confirm your booking and receive payment instructions.</p>
+                        <p class="text-muted small mb-4">Complete the three quick steps to secure your seats and receive payment instructions.</p>
+
+                        <style>
+                            .booking-card .booking-progress {
+                                gap: 0.5rem;
+                                border: 1px solid #e8e8e8;
+                                border-radius: 50px;
+                                padding: 0.4rem 0.6rem;
+                                background: #fafafa;
+                            }
+                            .booking-card .booking-progress-step {
+                                display: flex;
+                                align-items: center;
+                                font-weight: 600;
+                                font-size: 0.9rem;
+                            }
+                            .booking-card .booking-progress-step .badge {
+                                width: 28px;
+                                height: 28px;
+                                display: inline-flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 0.85rem;
+                            }
+                            .booking-card .booking-step {
+                                transition: opacity 0.25s ease-in-out;
+                            }
+                            .booking-card .booking-step.d-none {
+                                opacity: 0;
+                                height: 0;
+                                overflow: hidden;
+                            }
+                        </style>
 
                         @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
                         {
@@ -198,7 +230,21 @@
                             <div class="alert alert-success" role="alert">@Model.SuccessMessage</div>
                         }
 
-                        <form asp-action="BookTour" method="post" novalidate class="booking-form">
+                        <form asp-action="BookTour"
+                              method="post"
+                              novalidate
+                              class="booking-form"
+                              data-tour-id="@tour.Id"
+                              data-tour-name="@tour.TourName"
+                              data-adult-price="@tour.Price"
+                              data-child-price="@tour.KinderPrice"
+                              data-infant-price="@tour.InfantPrice"
+                              data-paypal-enabled="@Model.PayPal.Enabled.ToString().ToLowerInvariant()"
+                              data-paypal-base-url="@Model.PayPal.BaseUrl"
+                              data-paypal-email="@Model.PayPal.BusinessEmail"
+                              data-paypal-currency="@Model.PayPal.Currency"
+                              data-paypal-return="@Model.PayPal.ReturnUrl"
+                              data-paypal-cancel="@Model.PayPal.CancelUrl">
                             @Html.AntiForgeryToken()
                             <input type="hidden" asp-for="Form.TourId" />
                             <input type="hidden" asp-for="Form.Language" />
@@ -219,83 +265,96 @@
 
                             <div class="booking-step" data-step="0">
                                 <div class="form-group">
-                                    <label asp-for="Form.PreferredDate"></label>
-                                    <input asp-for="Form.PreferredDate" class="form-control" />
+                                    <label asp-for="Form.PreferredDate">Choose your tour date</label>
+                                    <input asp-for="Form.PreferredDate" type="date" class="form-control" />
+                                    <small class="form-text text-muted">Pick your preferred day or leave empty if travel dates are flexible.</small>
                                     <span asp-validation-for="Form.PreferredDate" class="text-danger small"></span>
                                 </div>
 
                                 <div class="form-row">
-                                    <div class="form-group col-4">
-                                        <label asp-for="Form.Adults"></label>
-                                        <input asp-for="Form.Adults" class="form-control" min="1" />
+                                    <div class="form-group col-md-4">
+                                    <label asp-for="Form.Adults"></label>
+                                    <input asp-for="Form.Adults" type="number" class="form-control" min="1" placeholder="Adults" />
+                                        <small class="form-text text-muted">Enter number of guests aged 12+</small>
                                         <span asp-validation-for="Form.Adults" class="text-danger small"></span>
                                     </div>
-                                    <div class="form-group col-4">
-                                        <label asp-for="Form.Children"></label>
-                                        <input asp-for="Form.Children" class="form-control" min="0" />
+                                    <div class="form-group col-md-4">
+                                    <label asp-for="Form.Children"></label>
+                                    <input asp-for="Form.Children" type="number" class="form-control" min="0" placeholder="Children" />
+                                        <small class="form-text text-muted">Guests aged 3–11</small>
                                         <span asp-validation-for="Form.Children" class="text-danger small"></span>
                                     </div>
-                                    <div class="form-group col-4">
-                                        <label asp-for="Form.Infants"></label>
-                                        <input asp-for="Form.Infants" class="form-control" min="0" />
+                                    <div class="form-group col-md-4">
+                                    <label asp-for="Form.Infants"></label>
+                                    <input asp-for="Form.Infants" type="number" class="form-control" min="0" placeholder="Infants" />
+                                        <small class="form-text text-muted">Guests under 3</small>
                                         <span asp-validation-for="Form.Infants" class="text-danger small"></span>
                                     </div>
                                 </div>
 
-                                <button type="button" class="btn theme_btn button_hover btn-block" data-next-step>Continue</button>
+                                <div class="alert alert-light border mt-3" id="reservation-summary">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="mb-0">Estimated total for your group</span>
+                                        <strong class="h5 mb-0">€<span id="reservation-total-value">@estimatedTotal</span></strong>
+                                    </div>
+                                    <small class="text-muted d-block" id="reservation-total-hint">Add guests to see your estimated total.</small>
+                                </div>
+
+                                <button type="button" class="btn theme_btn button_hover btn-block mt-3" data-next-step>Continue</button>
                             </div>
 
                             <div class="booking-step d-none" data-step="1">
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
                                         <label asp-for="Form.FirstName"></label>
-                                        <input asp-for="Form.FirstName" class="form-control" />
+                                        <input asp-for="Form.FirstName" class="form-control" placeholder="Traveler’s first name" />
                                         <span asp-validation-for="Form.FirstName" class="text-danger small"></span>
                                     </div>
                                     <div class="form-group col-md-6">
                                         <label asp-for="Form.LastName"></label>
-                                        <input asp-for="Form.LastName" class="form-control" />
+                                        <input asp-for="Form.LastName" class="form-control" placeholder="Traveler’s last name" />
                                         <span asp-validation-for="Form.LastName" class="text-danger small"></span>
                                     </div>
                                 </div>
 
                                 <div class="form-group">
                                     <label asp-for="Form.CustomerEmail"></label>
-                                    <input asp-for="Form.CustomerEmail" class="form-control" />
+                                    <input asp-for="Form.CustomerEmail" class="form-control" placeholder="Confirmation email" />
                                     <span asp-validation-for="Form.CustomerEmail" class="text-danger small"></span>
                                 </div>
 
                                 <div class="form-group">
                                     <label asp-for="Form.CustomerPhone"></label>
-                                    <input asp-for="Form.CustomerPhone" class="form-control" placeholder="WhatsApp or mobile number" />
+                                    <input asp-for="Form.CustomerPhone" class="form-control" placeholder="WhatsApp or mobile (e.g. +90 555 123 45 67)" />
                                     <span asp-validation-for="Form.CustomerPhone" class="text-danger small"></span>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="hotelSearch">Search your hotel</label>
-                                    <input type="text" id="hotelSearch" class="form-control" placeholder="Type hotel name to filter the list" />
-                                </div>
-
-                                <div class="form-group">
-                                    <label asp-for="Form.HotelName"></label>
-                                    <select asp-for="Form.HotelName" class="form-control" id="hotelSelect" size="1">
+                                    <label asp-for="Form.HotelName">Hotel or accommodation</label>
+                                    <input asp-for="Form.HotelName"
+                                           class="form-control"
+                                           id="hotelField"
+                                           list="hotelList"
+                                           placeholder="Start typing to search or pick from the list" />
+                                    <datalist id="hotelList">
                                         @foreach (var option in accommodationOptions)
                                         {
-                                            <option value="@option" @(string.Equals(form.HotelName, option, StringComparison.OrdinalIgnoreCase) ? "selected" : null)>@option</option>
+                                            <option value="@option"></option>
                                         }
-                                    </select>
+                                    </datalist>
+                                    <small class="form-text text-muted">Type a few letters to find your hotel or pick from the suggestions.</small>
                                     <span asp-validation-for="Form.HotelName" class="text-danger small"></span>
                                 </div>
 
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
                                         <label asp-for="Form.RoomNumber"></label>
-                                        <input asp-for="Form.RoomNumber" class="form-control" />
+                                        <input asp-for="Form.RoomNumber" class="form-control" placeholder="Room number (optional)" />
                                         <span asp-validation-for="Form.RoomNumber" class="text-danger small"></span>
                                     </div>
                                     <div class="form-group col-md-6">
                                         <label asp-for="Form.PickupLocation">Extra pickup notes</label>
-                                        <input asp-for="Form.PickupLocation" class="form-control" placeholder="e.g. lobby time, different address" />
+                                        <input asp-for="Form.PickupLocation" class="form-control" placeholder="Lobby meeting time or alternate pickup" />
                                         <span asp-validation-for="Form.PickupLocation" class="text-danger small"></span>
                                     </div>
                                 </div>
@@ -307,7 +366,7 @@
                             </div>
 
                             <div class="booking-step d-none" data-step="2">
-                                <div class="form-group">
+                                <div class="form-group mb-3">
                                     <label class="d-block">Payment method</label>
                                     @if (paymentOptions.Any())
                                     {
@@ -331,9 +390,22 @@
                                     <span asp-validation-for="Form.PaymentMethod" class="text-danger small"></span>
                                 </div>
 
+                                @if (Model.PayPal.Enabled)
+                                {
+                                    <div class="alert alert-info" id="paypalCheckoutContainer" style="display:none;">
+                                        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+                                            <div class="mr-md-3 mb-2 mb-md-0">
+                                                <strong>Instant PayPal checkout</strong>
+                                                <p class="small mb-0">Use PayPal for immediate confirmation once you review the amount.</p>
+                                            </div>
+                                            <a id="paypalCheckoutButton" class="btn btn-warning" target="_blank" rel="noopener">Pay with PayPal</a>
+                                        </div>
+                                    </div>
+                                }
+
                                 <div class="form-group">
                                     <label asp-for="Form.PaymentReference"></label>
-                                    <input asp-for="Form.PaymentReference" class="form-control" placeholder="Optional transaction reference" />
+                                    <input asp-for="Form.PaymentReference" class="form-control" placeholder="Optional payment reference" />
                                     <span asp-validation-for="Form.PaymentReference" class="text-danger small"></span>
                                 </div>
 
@@ -343,14 +415,9 @@
                                     <span asp-validation-for="Form.Notes" class="text-danger small"></span>
                                 </div>
 
-                                <div class="alert alert-secondary d-flex justify-content-between align-items-center" id="reservation-total" data-adult="@tour.Price" data-child="@tour.KinderPrice" data-infant="@tour.InfantPrice">
-                                    <span class="mb-0">Estimated total</span>
-                                    <strong class="h5 mb-0">€<span id="reservation-total-value">@estimatedTotal</span></strong>
-                                </div>
-
-                                <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex justify-content-between align-items-center mt-4">
                                     <button type="button" class="btn btn-outline-secondary" data-prev-step>Back</button>
-                                    <button type="submit" class="btn theme_btn button_hover">Reserve now</button>
+                                    <button type="submit" class="btn theme_btn button_hover px-4">Reserve now</button>
                                 </div>
                             </div>
                         </form>
@@ -358,7 +425,7 @@
                         <hr class="my-4" />
                         <p class="small mb-1">Prefer to talk?</p>
                         <a href="mailto:info@tourantalya.com" class="btn btn-outline-primary btn-block">Email us</a>
-                        <a href="tel:+902422000000" class="btn btn-outline-secondary btn-block mt-2">Call +90 242 200 00 00</a>
+                        <a href="tel:+905013411029" class="btn btn-outline-secondary btn-block mt-2">Call +90 (501) 341 10 29</a>
                     </div>
                 </div>
             </div>
@@ -380,23 +447,90 @@
             const prevButtons = Array.from(form.querySelectorAll('[data-prev-step]'));
             let currentStep = 0;
 
-            const totalContainer = document.getElementById('reservation-total');
             const totalValue = document.getElementById('reservation-total-value');
+            const totalHint = document.getElementById('reservation-total-hint');
             const adultInput = form.querySelector('[name="Form.Adults"]');
             const childInput = form.querySelector('[name="Form.Children"]');
             const infantInput = form.querySelector('[name="Form.Infants"]');
+            const payPalEnabled = form.dataset.paypalEnabled === 'true';
+            const payPalButton = document.getElementById('paypalCheckoutButton');
+            const payPalContainer = document.getElementById('paypalCheckoutContainer');
+            const paymentRadios = Array.from(form.querySelectorAll('input[name="Form.PaymentMethod"]'));
 
-            const adultPrice = parseInt(totalContainer?.dataset.adult ?? '0', 10);
-            const childPrice = parseInt(totalContainer?.dataset.child ?? '0', 10);
-            const infantPrice = parseInt(totalContainer?.dataset.infant ?? '0', 10);
+            const adultPrice = parseInt(form.dataset.adultPrice ?? '0', 10);
+            const childPrice = parseInt(form.dataset.childPrice ?? '0', 10);
+            const infantPrice = parseInt(form.dataset.infantPrice ?? '0', 10);
+            const payPalBaseUrl = form.dataset.paypalBaseUrl ?? '';
+            const payPalEmail = form.dataset.paypalEmail ?? '';
+            const payPalCurrency = form.dataset.paypalCurrency ?? 'EUR';
+            const payPalReturn = form.dataset.paypalReturn ?? '';
+            const payPalCancel = form.dataset.paypalCancel ?? '';
+            const tourName = form.dataset.tourName ?? 'Tour Reservation';
+            const tourId = form.dataset.tourId ?? '0';
+
+            const togglePayPalVisibility = () => {
+                if (!payPalContainer) {
+                    return;
+                }
+                const selected = paymentRadios.find(r => r.checked)?.value;
+                if (selected === 'PayPal' && payPalEnabled) {
+                    payPalContainer.style.display = '';
+                } else {
+                    payPalContainer.style.display = 'none';
+                }
+            };
+
+            const valueOf = (input) => {
+                if (!input) return 0;
+                const raw = (input.value ?? '').toString().replace(',', '.');
+                const parsed = Number(raw);
+                return Number.isFinite(parsed) ? parsed : 0;
+            };
 
             const updateTotal = () => {
-                const adults = parseInt(adultInput?.value ?? '0', 10) || 0;
-                const children = parseInt(childInput?.value ?? '0', 10) || 0;
-                const infants = parseInt(infantInput?.value ?? '0', 10) || 0;
-                const total = Math.max(0, adults) * adultPrice + Math.max(0, children) * childPrice + Math.max(0, infants) * infantPrice;
+                const adults = Math.max(0, valueOf(adultInput));
+                const children = Math.max(0, valueOf(childInput));
+                const infants = Math.max(0, valueOf(infantInput));
+                const total = adults * adultPrice + children * childPrice + infants * infantPrice;
                 if (totalValue) {
-                    totalValue.textContent = total.toString();
+                    totalValue.textContent = total.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                }
+                if (totalHint) {
+                    totalHint.textContent = total > 0
+                        ? 'Proceed to payment to receive confirmation details in your inbox.'
+                        : 'Add guests to see your estimated total.';
+                }
+
+                if (payPalEnabled && payPalButton) {
+                    if (total > 0 && payPalEmail) {
+                        const amount = (total || 0).toFixed(2);
+                        const params = new URLSearchParams({
+                            cmd: '_xclick',
+                            business: payPalEmail,
+                            currency_code: payPalCurrency,
+                            amount,
+                            item_name: tourName,
+                            invoice: `TA-${tourId}-${Date.now()}`
+                        });
+                        if (payPalReturn) {
+                            params.set('return', payPalReturn);
+                        }
+                        if (payPalCancel) {
+                            params.set('cancel_return', payPalCancel);
+                        }
+                        payPalButton.href = `${payPalBaseUrl}?${params.toString()}`;
+                        payPalButton.classList.remove('disabled');
+                        payPalButton.setAttribute('aria-disabled', 'false');
+                        if (payPalContainer) {
+                            payPalContainer.style.display = '';
+                        }
+                    }
+                    else {
+                        payPalButton.href = '#';
+                        payPalButton.classList.add('disabled');
+                        payPalButton.setAttribute('aria-disabled', 'true');
+                    }
+                    togglePayPalVisibility();
                 }
             };
 
@@ -471,61 +605,14 @@
                 if (!input) {
                     return;
                 }
-                input.addEventListener('change', updateTotal);
-                input.addEventListener('keyup', updateTotal);
+                ['change', 'keyup', 'input'].forEach(evt => input.addEventListener(evt, updateTotal));
             });
 
-            const hotelSelect = document.getElementById('hotelSelect');
-            const hotelSearch = document.getElementById('hotelSearch');
-
-            if (hotelSelect && hotelSearch) {
-                const originalOptions = Array.from(hotelSelect.options).map(option => ({
-                    value: option.value,
-                    text: option.text,
-                    selected: option.selected
-                }));
-
-                const rebuildOptions = (filterValue) => {
-                    const selectedValue = originalOptions.find(option => option.selected)?.value ?? hotelSelect.value;
-                    const normalized = (filterValue || '').trim().toLowerCase();
-                    const fragment = document.createDocumentFragment();
-                    originalOptions.forEach(option => {
-                        if (!normalized || option.text.toLowerCase().includes(normalized) || option.value.toLowerCase().includes(normalized)) {
-                            const newOption = document.createElement('option');
-                            newOption.value = option.value;
-                            newOption.textContent = option.text;
-                            if (option.value === selectedValue) {
-                                newOption.selected = true;
-                            }
-                            fragment.appendChild(newOption);
-                        }
-                    });
-
-                    if (!fragment.childNodes.length) {
-                        const placeholder = document.createElement('option');
-                        placeholder.disabled = true;
-                        placeholder.textContent = 'No matches found';
-                        fragment.appendChild(placeholder);
-                    }
-
-                    hotelSelect.innerHTML = '';
-                    hotelSelect.appendChild(fragment);
-                };
-
-                hotelSearch.addEventListener('input', (event) => {
-                    rebuildOptions(event.target.value);
-                });
-
-                hotelSelect.addEventListener('change', () => {
-                    const selected = hotelSelect.value;
-                    originalOptions.forEach(option => {
-                        option.selected = option.value === selected;
-                    });
-                });
-            }
+            paymentRadios.forEach(radio => radio.addEventListener('change', togglePayPalVisibility));
 
             setStep(0);
             updateTotal();
+            togglePayPalVisibility();
         })();
     </script>
 }

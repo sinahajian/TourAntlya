@@ -21,6 +21,7 @@ namespace Controllers
         private readonly IWebHostEnvironment _environment;
         private readonly IReservationRepository _reservationRepository;
         private readonly IPaymentOptionRepository _paymentOptionRepository;
+        private readonly IPayPalSettingsRepository _payPalSettingsRepository;
 
         public ManagersController(
             IManagerRepository managerRepository,
@@ -28,7 +29,8 @@ namespace Controllers
             ILandingContentRepository landingContentRepository,
             IWebHostEnvironment environment,
             IReservationRepository reservationRepository,
-            IPaymentOptionRepository paymentOptionRepository)
+            IPaymentOptionRepository paymentOptionRepository,
+            IPayPalSettingsRepository payPalSettingsRepository)
         {
             _managerRepository = managerRepository;
             _managerTourRepository = managerTourRepository;
@@ -36,6 +38,7 @@ namespace Controllers
             _environment = environment;
             _reservationRepository = reservationRepository;
             _paymentOptionRepository = paymentOptionRepository;
+            _payPalSettingsRepository = payPalSettingsRepository;
         }
 
         [HttpGet]
@@ -331,7 +334,8 @@ namespace Controllers
             }
 
             var options = await _paymentOptionRepository.ListAsync(ct);
-            var viewModel = PaymentOptionsViewModel.FromOptions(manager.UserName, options);
+            var payPalSettings = await _payPalSettingsRepository.GetAsync(ct);
+            var viewModel = PaymentOptionsViewModel.FromOptions(manager.UserName, options, payPalSettings);
 
             if (TempData.TryGetValue("ManagerPaymentFeedback", out var feedback) && feedback is string feedbackMessage)
             {
@@ -365,6 +369,12 @@ namespace Controllers
             {
                 ViewData["Manager"] = manager;
                 ViewData["Title"] = "Payment Settings";
+                if (model.Options is null || model.Options.Count == 0)
+                {
+                    var currentOptions = await _paymentOptionRepository.ListAsync(ct);
+                    model.Options = currentOptions.OrderBy(o => o.Method).Select(PaymentOptionInputModel.FromEntity).ToList();
+                }
+                model.PayPal ??= PayPalSettingsInputModel.FromEntity(await _payPalSettingsRepository.GetAsync(ct));
                 return View(model);
             }
 
@@ -383,6 +393,9 @@ namespace Controllers
 
                 await _paymentOptionRepository.UpdateAsync(entity, ct);
             }
+
+            var payPalEntity = model.PayPal?.ToEntity() ?? new PayPalSettings();
+            await _payPalSettingsRepository.UpdateAsync(payPalEntity, ct);
 
             TempData["ManagerPaymentFeedback"] = "Payment methods updated.";
             return RedirectToAction(nameof(PaymentOptions), new { userName = manager.UserName });

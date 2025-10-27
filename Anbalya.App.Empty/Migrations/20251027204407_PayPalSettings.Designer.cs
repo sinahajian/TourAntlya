@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Models.DbContexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Anbalya.App.Empty.Migrations
 {
     [DbContext(typeof(TourDbContext))]
-    partial class TourDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251027204407_PayPalSettings")]
+    partial class PayPalSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -270,7 +273,7 @@ namespace Anbalya.App.Empty.Migrations
                             Id = 1,
                             BusinessEmail = "paypal@example.com",
                             CancelUrl = "https://tourantalya.com/paypal/cancel",
-                            CreationTime = 1761598172L,
+                            CreationTime = 1761597846L,
                             Currency = "EUR",
                             ReturnUrl = "https://tourantalya.com/paypal/success",
                             UseSandbox = true

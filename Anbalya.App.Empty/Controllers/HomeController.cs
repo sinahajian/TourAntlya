@@ -16,18 +16,21 @@ namespace Controllers
         private readonly ILandingContentRepository _landingContentRepository;
         private readonly IReservationRepository _reservationRepository;
         private readonly IPaymentOptionRepository _paymentOptionRepository;
+        private readonly IPayPalSettingsRepository _payPalSettingsRepository;
         public HomeController(
             ITourRepository tourRepository,
             ILanguageResolver langResolver,
             ILandingContentRepository landingContentRepository,
             IReservationRepository reservationRepository,
-            IPaymentOptionRepository paymentOptionRepository)
+            IPaymentOptionRepository paymentOptionRepository,
+            IPayPalSettingsRepository payPalSettingsRepository)
         {
             _tourRepository = tourRepository;
             _langResolver = langResolver;
             _landingContentRepository = landingContentRepository;
             _reservationRepository = reservationRepository;
             _paymentOptionRepository = paymentOptionRepository;
+            _payPalSettingsRepository = payPalSettingsRepository;
         }
 
         public async Task<IActionResult> Index(CancellationToken ct)
@@ -77,6 +80,16 @@ namespace Controllers
             }
 
             var paymentOptions = await _paymentOptionRepository.ListAsync(ct);
+            var payPalSettings = await _payPalSettingsRepository.GetAsync(ct);
+            var payPalInfo = string.IsNullOrWhiteSpace(payPalSettings.BusinessEmail)
+                ? PayPalCheckoutInfo.Disabled
+                : new PayPalCheckoutInfo(
+                    true,
+                    payPalSettings.BusinessEmail,
+                    string.IsNullOrWhiteSpace(payPalSettings.Currency) ? "EUR" : payPalSettings.Currency,
+                    payPalSettings.ReturnUrl ?? string.Empty,
+                    payPalSettings.CancelUrl ?? string.Empty,
+                    payPalSettings.UseSandbox);
             var enabledOptions = paymentOptions
                 .Where(o => o.IsEnabled)
                 .Select(PaymentOptionDto.FromEntity)
@@ -104,7 +117,8 @@ namespace Controllers
                     HotelName = "Select Your Hotel"
                 },
                 PaymentOptions = enabledOptions,
-                AccommodationOptions = AccommodationCatalog.List()
+                AccommodationOptions = AccommodationCatalog.List(),
+                PayPal = payPalInfo
             };
 
             return View("Tour", viewModel);
@@ -124,6 +138,16 @@ namespace Controllers
             ValidateReservationForm(form);
 
             var paymentOptions = await _paymentOptionRepository.ListAsync(ct);
+            var payPalSettings = await _payPalSettingsRepository.GetAsync(ct);
+            var payPalInfo = string.IsNullOrWhiteSpace(payPalSettings.BusinessEmail)
+                ? PayPalCheckoutInfo.Disabled
+                : new PayPalCheckoutInfo(
+                    true,
+                    payPalSettings.BusinessEmail,
+                    string.IsNullOrWhiteSpace(payPalSettings.Currency) ? "EUR" : payPalSettings.Currency,
+                    payPalSettings.ReturnUrl ?? string.Empty,
+                    payPalSettings.CancelUrl ?? string.Empty,
+                    payPalSettings.UseSandbox);
             var enabledOptions = paymentOptions
                 .Where(o => o.IsEnabled)
                 .Select(PaymentOptionDto.FromEntity)
@@ -144,7 +168,8 @@ namespace Controllers
                         ? enabledOptions
                         : paymentOptions.Select(PaymentOptionDto.FromEntity).ToList(),
                     ErrorMessage = "Please correct the highlighted fields and try again.",
-                    AccommodationOptions = AccommodationCatalog.List()
+                    AccommodationOptions = AccommodationCatalog.List(),
+                    PayPal = payPalInfo
                 };
 
                 return View("Tour", errorViewModel);

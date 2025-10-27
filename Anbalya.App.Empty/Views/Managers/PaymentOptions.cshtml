@@ -21,7 +21,7 @@
     <div class="card-body">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-        <div class="table-responsive">
+        <div class="table-responsive mb-4">
             <table class="table table-bordered">
                 <thead class="thead-light">
                     <tr>
@@ -62,6 +62,44 @@
                     }
                 </tbody>
             </table>
+        </div>
+
+        <div class="card border mb-3">
+            <div class="card-header bg-light">
+                <strong>PayPal Checkout</strong>
+                <span class="small text-muted d-block">Configure the PayPal business account used for direct payments.</span>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label asp-for="PayPal.BusinessEmail"></label>
+                        <input asp-for="PayPal.BusinessEmail" class="form-control" placeholder="business@example.com" />
+                        <span asp-validation-for="PayPal.BusinessEmail" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label asp-for="PayPal.Currency"></label>
+                        <input asp-for="PayPal.Currency" class="form-control" placeholder="EUR" />
+                        <span asp-validation-for="PayPal.Currency" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group col-md-3 d-flex align-items-center">
+                        <div class="custom-control custom-switch mt-3 mt-md-4">
+                            <input asp-for="PayPal.UseSandbox" class="custom-control-input" id="paypalSandbox" />
+                            <label class="custom-control-label" for="paypalSandbox">@Html.DisplayNameFor(m => m.PayPal.UseSandbox)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="PayPal.ReturnUrl"></label>
+                    <input asp-for="PayPal.ReturnUrl" class="form-control" placeholder="https://yourdomain.com/paypal/success" />
+                    <span asp-validation-for="PayPal.ReturnUrl" class="text-danger small"></span>
+                </div>
+                <div class="form-group mb-0">
+                    <label asp-for="PayPal.CancelUrl"></label>
+                    <input asp-for="PayPal.CancelUrl" class="form-control" placeholder="https://yourdomain.com/paypal/cancel" />
+                    <span asp-validation-for="PayPal.CancelUrl" class="text-danger small"></span>
+                </div>
+            </div>
         </div>
     </div>
     <div class="card-footer text-right">
