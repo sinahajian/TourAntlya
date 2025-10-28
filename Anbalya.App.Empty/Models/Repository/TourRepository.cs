@@ -107,6 +107,7 @@ namespace Models.Repository
                 "fa" => t.DescriptionPe,
                 "ru" => t.DescriptionRu,
                 "pl" => t.DescriptionPo,
+                "tr" => t.DescriptionTr,
                 "ar" => t.DescriptionAr,
                 _ => t.DescriptionEn
             };
@@ -119,6 +120,7 @@ namespace Models.Repository
             if (!string.IsNullOrWhiteSpace(t.DescriptionPe)) return t.DescriptionPe;
             if (!string.IsNullOrWhiteSpace(t.DescriptionRu)) return t.DescriptionRu;
             if (!string.IsNullOrWhiteSpace(t.DescriptionPo)) return t.DescriptionPo;
+            if (!string.IsNullOrWhiteSpace(t.DescriptionTr)) return t.DescriptionTr;
             if (!string.IsNullOrWhiteSpace(t.DescriptionAr)) return t.DescriptionAr;
 
             return string.Empty;
@@ -131,6 +133,7 @@ namespace Models.Repository
                 "fa" => t.MiniDescriptionPe,
                 "ru" => t.MiniDescriptionRu,
                 "pl" => t.MiniDescriptionPo,
+                "tr" => t.MiniDescriptionTr,
                 "ar" => t.MiniDescriptionAr,
                 _ => t.MiniDescriptionEn
             };
@@ -143,6 +146,7 @@ namespace Models.Repository
             if (!string.IsNullOrWhiteSpace(t.MiniDescriptionPe)) return t.MiniDescriptionPe;
             if (!string.IsNullOrWhiteSpace(t.MiniDescriptionRu)) return t.MiniDescriptionRu;
             if (!string.IsNullOrWhiteSpace(t.MiniDescriptionPo)) return t.MiniDescriptionPo;
+            if (!string.IsNullOrWhiteSpace(t.MiniDescriptionTr)) return t.MiniDescriptionTr;
             if (!string.IsNullOrWhiteSpace(t.MiniDescriptionAr)) return t.MiniDescriptionAr;
 
             return string.Empty;

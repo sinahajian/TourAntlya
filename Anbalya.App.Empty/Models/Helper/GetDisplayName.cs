@@ -25,6 +25,16 @@ namespace Models.Helper
                     Category.Special => "Spezial",
                     _ => category.ToString()
                 },
+                "tr" => category switch
+                {
+                    Category.Relaxing => "Rahatlama",
+                    Category.Adventure => "Macera",
+                    Category.History => "Tarih",
+                    Category.Nature => "Doğa",
+                    Category.Family => "Aile",
+                    Category.Special => "Özel",
+                    _ => category.ToString()
+                },
                 "fa" => category switch
                 {
                     Category.Relaxing => "آرامش",
@@ -72,5 +82,4 @@ namespace Models.Helper
 
     }
 }
-
 

@@ -51,6 +51,30 @@ namespace Controllers
         }
 
         [HttpGet]
+        public IActionResult Contact()
+        {
+            var lang = _langResolver.Resolve(HttpContext);
+            var model = new ContactRequestInputModel { Language = lang };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Contact(ContactRequestInputModel form)
+        {
+            var lang = _langResolver.Resolve(HttpContext);
+            form.Language ??= lang;
+
+            if (!ModelState.IsValid)
+            {
+                return View(form);
+            }
+
+            TempData["ContactSuccess"] = true;
+            return RedirectToAction(nameof(Contact));
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Category(string category, CancellationToken ct)
         {
             if (!Enum.TryParse<Category>(category, true, out var parsedCategory))

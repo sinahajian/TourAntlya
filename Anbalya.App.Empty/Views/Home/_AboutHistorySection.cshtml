@@ -1,14 +1,26 @@
-<section class="about_history_area section_gap">
+@using Models.Helper
+@inject Models.Interface.ILanguageResolver LanguageResolver
+@{
+    var lang = LanguageCatalog.Normalize(LanguageResolver.Resolve(Context));
+    var isRtl = LanguageCatalog.IsRtl(lang);
+    var sectionDir = isRtl ? "rtl" : "ltr";
+    var textAlignClass = isRtl ? "text-md-right" : "text-md-left";
+}
+
+<section class="about_history_area section_gap" dir="@sectionDir">
     <div class="container">
         <div class="row">
-            <div class="col-md-6 d_flex align-items-center">
-                <div class="about_content ">
-                    <h2 class="title title_color">About Us <br>Our History<br>Mission & Vision</h2>
-                    <p>inappropriate behavior is often laughed off as “boys will be boys,” women face higher conduct standards especially in the workplace. That’s why it’s crucial that, as women, our behavior on the job is beyond reproach. inappropriate behavior is often laughed.</p>
-                    <a href="#" class="button_hover theme_btn_two">Request Custom Price</a>
+            <div class="col-md-6 d_flex align-items-center order-2 order-md-1">
+                <div class="about_content @textAlignClass">
+                    <h2 class="title title_color">
+                        @StaticTextCatalog.Get(lang, "home.about.title") <br />
+                        @StaticTextCatalog.Get(lang, "home.about.subtitle")
+                    </h2>
+                    <p>@StaticTextCatalog.Get(lang, "home.about.body")</p>
+                    <a href="#" class="button_hover theme_btn_two">@StaticTextCatalog.Get(lang, "home.about.button")</a>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0">
                 <img class="img-fluid" src="image/about_bg.jpg" alt="img">
             </div>
         </div>

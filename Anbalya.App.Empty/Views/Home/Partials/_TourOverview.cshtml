@@ -1,0 +1,76 @@
+@model TourBookingPageViewModel
+@using System.Linq
+
+<div class="mb-4">
+    <h2 class="mb-3">Tour Overview</h2>
+    <p>@Model.Tour.Description</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">Duration</h5>
+                <p class="card-text mb-0">@Model.Tour.DurationHours hour(s)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">Available Days</h5>
+                @if (Model.ActiveDayNames.Any())
+                {
+                    <p class="card-text mb-0">@string.Join(", ", Model.ActiveDayNames)</p>
+                }
+                else
+                {
+                    <p class="card-text mb-0">Schedule on request</p>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">Meeting Point</h5>
+                @if (Model.HasCoordinates)
+                {
+                    <p class="card-text mb-0">Latitude @Model.Tour.LocLat, Longitude @Model.Tour.LocLon</p>
+                }
+                else
+                {
+                    <p class="card-text mb-0">Details provided after booking</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Tour.Services.Any())
+{
+    <div class="mb-5">
+        <h3 class="mb-3">What's Included</h3>
+        <ul class="list_style">
+            @foreach (var service in Model.Tour.Services)
+            {
+                <li>@service</li>
+            }
+        </ul>
+    </div>
+}
+
+@if (Model.HasAdditionalPhotos)
+{
+    <div class="mb-4">
+        <h3 class="mb-3">Gallery</h3>
+        <div class="row">
+            @foreach (var image in Model.Gallery.Skip(1))
+            {
+                <div class="col-md-6 mb-3">
+                    <img src="@Url.Content(image)" class="img-fluid rounded shadow-sm" alt="Photo from @Model.Tour.TourName">
+                </div>
+            }
+        </div>
+    </div>
+}

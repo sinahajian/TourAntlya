@@ -1,0 +1,33 @@
+.booking-card .booking-progress {
+    gap: 0.5rem;
+    border: 1px solid #e8e8e8;
+    border-radius: 50px;
+    padding: 0.4rem 0.6rem;
+    background: #fafafa;
+}
+
+.booking-card .booking-progress-step {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.booking-card .booking-progress-step .badge {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+}
+
+.booking-card .booking-step {
+    transition: opacity 0.25s ease-in-out;
+}
+
+.booking-card .booking-step.d-none {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+}

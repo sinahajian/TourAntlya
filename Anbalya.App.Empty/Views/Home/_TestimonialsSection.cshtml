@@ -1,8 +1,17 @@
-<section class="testimonial_area section_gap">
+@using Models.Helper
+@inject Models.Interface.ILanguageResolver LanguageResolver
+@{
+    var lang = LanguageCatalog.Normalize(LanguageResolver.Resolve(Context));
+    var isRtl = LanguageCatalog.IsRtl(lang);
+    var sectionDir = isRtl ? "rtl" : "ltr";
+    var textAlignClass = isRtl ? "text-right" : "text-center";
+}
+
+<section class="testimonial_area section_gap" dir="@sectionDir">
     <div class="container">
-        <div class="section_title text-center">
-            <h2 class="title_color">Testimonial from our Clients</h2>
-            <p>The French Revolution constituted for the conscience of the dominant aristocratic class a fall from </p>
+        <div class="section_title @textAlignClass">
+            <h2 class="title_color">@StaticTextCatalog.Get(lang, "home.testimonials.title")</h2>
+            <p>@StaticTextCatalog.Get(lang, "home.testimonials.caption")</p>
         </div>
         <div class="testimonial_slider owl-carousel">
             <div class="media testimonial_item">

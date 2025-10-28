@@ -1,0 +1,27 @@
+@model TourBookingPageViewModel
+@using Models.Helper
+
+@{
+    var heroPhotoUrl = Url.Content(Model.HeroPhotoPath);
+}
+
+<section class="tour-hero d-flex align-items-end" style="background-image:url('@heroPhotoUrl'); background-size:cover; background-position:center; min-height:360px;">
+    <div class="w-100" style="background:rgba(0, 0, 0, 0.55);">
+        <div class="container py-5 text-white">
+            <div class="row align-items-end">
+                <div class="col-lg-8">
+                    <span class="badge badge-pill badge-light text-uppercase mb-3">@Model.Tour.CategoryString</span>
+                    <h1 class="display-4">@Model.Tour.TourName</h1>
+                    <p class="lead mb-0">@Model.Tour.MiniDescription</p>
+                </div>
+                <div class="col-lg-4 text-lg-right mt-4 mt-lg-0">
+                    <div class="d-inline-block px-4 py-3 bg-white text-dark rounded shadow">
+                        <div class="h5 mb-1">Adult @Model.Tour.Price EUR</div>
+                        <div>Child @Model.Tour.KinderPrice EUR</div>
+                        <div>Infant @Model.Tour.InfantPrice EUR</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

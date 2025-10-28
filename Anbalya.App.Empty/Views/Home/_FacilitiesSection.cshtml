@@ -1,47 +1,38 @@
-<section class="facilities_area section_gap">
+@using Models.Helper
+@inject Models.Interface.ILanguageResolver LanguageResolver
+@{
+    var lang = LanguageCatalog.Normalize(LanguageResolver.Resolve(Context));
+    var isRtl = LanguageCatalog.IsRtl(lang);
+    var sectionDir = isRtl ? "rtl" : "ltr";
+    var textAlignClass = isRtl ? "text-right" : "text-center";
+    var facilities = new[]
+    {
+        new { Icon = "lnr lnr-dinner", Title = StaticTextCatalog.Get(lang, "home.facilities.item.restaurant"), Text = StaticTextCatalog.Get(lang, "home.facilities.item.restaurant.text") },
+        new { Icon = "lnr lnr-bicycle", Title = StaticTextCatalog.Get(lang, "home.facilities.item.sports"), Text = StaticTextCatalog.Get(lang, "home.facilities.item.sports.text") },
+        new { Icon = "lnr lnr-shirt", Title = StaticTextCatalog.Get(lang, "home.facilities.item.pool"), Text = StaticTextCatalog.Get(lang, "home.facilities.item.pool.text") },
+        new { Icon = "lnr lnr-car", Title = StaticTextCatalog.Get(lang, "home.facilities.item.car"), Text = StaticTextCatalog.Get(lang, "home.facilities.item.car.text") },
+        new { Icon = "lnr lnr-construction", Title = StaticTextCatalog.Get(lang, "home.facilities.item.gym"), Text = StaticTextCatalog.Get(lang, "home.facilities.item.gym.text") },
+        new { Icon = "lnr lnr-coffee-cup", Title = StaticTextCatalog.Get(lang, "home.facilities.item.bar"), Text = StaticTextCatalog.Get(lang, "home.facilities.item.bar.text") }
+    };
+}
+
+<section class="facilities_area section_gap" dir="@sectionDir">
     <div class="overlay bg-parallax" data-stellar-ratio="0.8" data-stellar-vertical-offset="0" data-background=""></div>
     <div class="container">
-        <div class="section_title text-center">
-            <h2 class="title_w">Royal Facilities</h2>
-            <p>Who are in extremely love with eco friendly system.</p>
+        <div class="section_title @textAlignClass">
+            <h2 class="title_w">@StaticTextCatalog.Get(lang, "home.facilities.title")</h2>
+            <p>@StaticTextCatalog.Get(lang, "home.facilities.caption")</p>
         </div>
         <div class="row mb_30">
-            <div class="col-lg-4 col-md-6">
-                <div class="facilities_item">
-                    <h4 class="sec_h4"><i class="lnr lnr-dinner"></i>Restaurant</h4>
-                    <p>Usage of the Internet is becoming more common due to rapid advancement of technology and power.</p>
+            @foreach (var facility in facilities)
+            {
+                <div class="col-lg-4 col-md-6">
+                    <div class="facilities_item">
+                        <h4 class="sec_h4"><i class="@facility.Icon"></i> @facility.Title</h4>
+                        <p>@facility.Text</p>
+                    </div>
                 </div>
-            </div>
-            <div class="col-lg-4 col-md-6">
-                <div class="facilities_item">
-                    <h4 class="sec_h4"><i class="lnr lnr-bicycle"></i>Sports CLub</h4>
-                    <p>Usage of the Internet is becoming more common due to rapid advancement of technology and power.</p>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6">
-                <div class="facilities_item">
-                    <h4 class="sec_h4"><i class="lnr lnr-shirt"></i>Swimming Pool</h4>
-                    <p>Usage of the Internet is becoming more common due to rapid advancement of technology and power.</p>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6">
-                <div class="facilities_item">
-                    <h4 class="sec_h4"><i class="lnr lnr-car"></i>Rent a Car</h4>
-                    <p>Usage of the Internet is becoming more common due to rapid advancement of technology and power.</p>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6">
-                <div class="facilities_item">
-                    <h4 class="sec_h4"><i class="lnr lnr-construction"></i>Gymnesium</h4>
-                    <p>Usage of the Internet is becoming more common due to rapid advancement of technology and power.</p>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6">
-                <div class="facilities_item">
-                    <h4 class="sec_h4"><i class="lnr lnr-coffee-cup"></i>Bar</h4>
-                    <p>Usage of the Internet is becoming more common due to rapid advancement of technology and power.</p>
-                </div>
-            </div>
+            }
         </div>
     </div>
 </section>

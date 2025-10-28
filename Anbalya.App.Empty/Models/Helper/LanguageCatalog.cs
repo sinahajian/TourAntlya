@@ -10,6 +10,7 @@ namespace Models.Helper
         {
             new("en", "English"),
             new("de", "Deutsch"),
+            new("tr", "Türkçe"),
             new("fa", "فارسی"),
             new("ru", "Русский"),
             new("pl", "Polski"),

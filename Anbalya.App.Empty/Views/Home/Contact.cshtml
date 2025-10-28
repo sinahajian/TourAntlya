@@ -1,0 +1,91 @@
+@model ContactRequestInputModel
+@using Models.Helper
+@inject Models.Interface.ILanguageResolver LanguageResolver
+@{
+    var lang = LanguageCatalog.Normalize(Model?.Language ?? LanguageResolver.Resolve(Context));
+    var isRtl = LanguageCatalog.IsRtl(lang);
+    var dir = isRtl ? "rtl" : "ltr";
+    var textAlignClass = isRtl ? "text-right" : "text-left";
+    var contactTitle = StaticTextCatalog.Get(lang, "contact.title");
+    var contactSubtitle = StaticTextCatalog.Get(lang, "contact.subtitle");
+    var addressTitle = StaticTextCatalog.Get(lang, "contact.address.title");
+    var phoneTitle = StaticTextCatalog.Get(lang, "contact.phone.title");
+    var emailTitle = StaticTextCatalog.Get(lang, "contact.email.title");
+    var hoursTitle = StaticTextCatalog.Get(lang, "contact.hours.title");
+    var hoursValue = StaticTextCatalog.Get(lang, "contact.hours.value");
+    var nameLabel = StaticTextCatalog.Get(lang, "contact.form.name");
+    var emailLabel = StaticTextCatalog.Get(lang, "contact.form.email");
+    var messageLabel = StaticTextCatalog.Get(lang, "contact.form.message");
+    var submitLabel = StaticTextCatalog.Get(lang, "contact.form.submit");
+    var success = TempData["ContactSuccess"] as bool? ?? false;
+    var officeAddress = "Selçuk Mah. Uzun Çarşı Sk. No:10, 07100 Antalya";
+    var phoneNumber = "+90 532 555 00 00";
+    var emailAddress = "hello@tourantalya.com";
+}
+
+<section class="contact_area section_gap" dir="@dir">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 @textAlignClass">
+                <h2 class="mb-3 title_color">@contactTitle</h2>
+                <p class="text-muted mb-0">@contactSubtitle</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4 mb-5 mb-lg-0">
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title font-weight-bold">@addressTitle</h5>
+                        <p class="card-text mb-0">@officeAddress</p>
+                    </div>
+                </div>
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title font-weight-bold">@phoneTitle</h5>
+                        <p class="card-text mb-1"><a href="tel:@phoneNumber" class="text-decoration-none">@phoneNumber</a></p>
+                        <h5 class="card-title font-weight-bold mt-3">@emailTitle</h5>
+                        <p class="card-text mb-0"><a href="mailto:@emailAddress" class="text-decoration-none">@emailAddress</a></p>
+                    </div>
+                </div>
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title font-weight-bold">@hoursTitle</h5>
+                        <p class="card-text mb-0">@hoursValue</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                @if (success)
+                {
+                    <div class="alert alert-success" role="alert">
+                        @StaticTextCatalog.Get(lang, "contact.success")
+                    </div>
+                }
+
+                <form asp-action="Contact" method="post" class="contact_form" novalidate>
+                    @Html.AntiForgeryToken()
+                    <input asp-for="Language" type="hidden" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="form-group">
+                        <label asp-for="FullName" class="font-weight-semibold">@nameLabel</label>
+                        <input asp-for="FullName" class="form-control" />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Email" class="font-weight-semibold">@emailLabel</label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Message" class="font-weight-semibold">@messageLabel</label>
+                        <textarea asp-for="Message" class="form-control" rows="6"></textarea>
+                        <span asp-validation-for="Message" class="text-danger small"></span>
+                    </div>
+                    <button type="submit" class="btn theme_btn button_hover">@submitLabel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

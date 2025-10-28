@@ -126,6 +126,7 @@ namespace Models.Repository
             string tagline = normalized switch
             {
                 "de" => entity.TaglineDe,
+                "tr" => entity.TaglineTr,
                 "fa" => entity.TaglineFa,
                 "ru" => entity.TaglineRu,
                 "pl" => entity.TaglinePl,
@@ -136,6 +137,7 @@ namespace Models.Repository
             string title = normalized switch
             {
                 "de" => entity.TitleDe,
+                "tr" => entity.TitleTr,
                 "fa" => entity.TitleFa,
                 "ru" => entity.TitleRu,
                 "pl" => entity.TitlePl,
@@ -146,6 +148,7 @@ namespace Models.Repository
             string description = normalized switch
             {
                 "de" => entity.DescriptionDe,
+                "tr" => entity.DescriptionTr,
                 "fa" => entity.DescriptionFa,
                 "ru" => entity.DescriptionRu,
                 "pl" => entity.DescriptionPl,
@@ -159,6 +162,7 @@ namespace Models.Repository
                     entity.TaglineEn,
                     entity.Tagline,
                     entity.TaglineDe,
+                    entity.TaglineTr,
                     entity.TaglineFa,
                     entity.TaglineRu,
                     entity.TaglinePl,
@@ -167,6 +171,7 @@ namespace Models.Repository
                     entity.TitleEn,
                     entity.Title,
                     entity.TitleDe,
+                    entity.TitleTr,
                     entity.TitleFa,
                     entity.TitleRu,
                     entity.TitlePl,
@@ -175,6 +180,7 @@ namespace Models.Repository
                     entity.DescriptionEn,
                     entity.Description,
                     entity.DescriptionDe,
+                    entity.DescriptionTr,
                     entity.DescriptionFa,
                     entity.DescriptionRu,
                     entity.DescriptionPl,
@@ -201,6 +207,7 @@ namespace Models.Repository
             {
                 composite.TaglineEn = Assign(composite.TaglineEn, record.TaglineEn);
                 composite.TaglineDe = Assign(composite.TaglineDe, record.TaglineDe);
+                composite.TaglineTr = Assign(composite.TaglineTr, record.TaglineTr);
                 composite.TaglineFa = Assign(composite.TaglineFa, record.TaglineFa);
                 composite.TaglineRu = Assign(composite.TaglineRu, record.TaglineRu);
                 composite.TaglinePl = Assign(composite.TaglinePl, record.TaglinePl);
@@ -208,6 +215,7 @@ namespace Models.Repository
 
                 composite.TitleEn = Assign(composite.TitleEn, record.TitleEn);
                 composite.TitleDe = Assign(composite.TitleDe, record.TitleDe);
+                composite.TitleTr = Assign(composite.TitleTr, record.TitleTr);
                 composite.TitleFa = Assign(composite.TitleFa, record.TitleFa);
                 composite.TitleRu = Assign(composite.TitleRu, record.TitleRu);
                 composite.TitlePl = Assign(composite.TitlePl, record.TitlePl);
@@ -215,6 +223,7 @@ namespace Models.Repository
 
                 composite.DescriptionEn = Assign(composite.DescriptionEn, record.DescriptionEn);
                 composite.DescriptionDe = Assign(composite.DescriptionDe, record.DescriptionDe);
+                composite.DescriptionTr = Assign(composite.DescriptionTr, record.DescriptionTr);
                 composite.DescriptionFa = Assign(composite.DescriptionFa, record.DescriptionFa);
                 composite.DescriptionRu = Assign(composite.DescriptionRu, record.DescriptionRu);
                 composite.DescriptionPl = Assign(composite.DescriptionPl, record.DescriptionPl);
@@ -227,6 +236,11 @@ namespace Models.Repository
                         composite.TaglineDe = Assign(composite.TaglineDe, record.Tagline);
                         composite.TitleDe = Assign(composite.TitleDe, record.Title);
                         composite.DescriptionDe = Assign(composite.DescriptionDe, record.Description);
+                        break;
+                    case "tr":
+                        composite.TaglineTr = Assign(composite.TaglineTr, record.Tagline);
+                        composite.TitleTr = Assign(composite.TitleTr, record.Title);
+                        composite.DescriptionTr = Assign(composite.DescriptionTr, record.Description);
                         break;
                     case "fa":
                         composite.TaglineFa = Assign(composite.TaglineFa, record.Tagline);
@@ -266,6 +280,10 @@ namespace Models.Repository
             composite.TitleDe = Resolve(composite.TitleDe, defaults.TitleDe, composite.TitleEn);
             composite.DescriptionDe = Resolve(composite.DescriptionDe, defaults.DescriptionDe, composite.DescriptionEn);
 
+            composite.TaglineTr = Resolve(composite.TaglineTr, defaults.TaglineTr, composite.TaglineEn);
+            composite.TitleTr = Resolve(composite.TitleTr, defaults.TitleTr, composite.TitleEn);
+            composite.DescriptionTr = Resolve(composite.DescriptionTr, defaults.DescriptionTr, composite.DescriptionEn);
+
             composite.TaglineFa = Resolve(composite.TaglineFa, defaults.TaglineFa, composite.TaglineEn);
             composite.TitleFa = Resolve(composite.TitleFa, defaults.TitleFa, composite.TitleEn);
             composite.DescriptionFa = Resolve(composite.DescriptionFa, defaults.DescriptionFa, composite.DescriptionEn);
@@ -299,6 +317,11 @@ namespace Models.Repository
                     entity.TaglineDe = tagline;
                     entity.TitleDe = title;
                     entity.DescriptionDe = description;
+                    break;
+                case "tr":
+                    entity.TaglineTr = tagline;
+                    entity.TitleTr = title;
+                    entity.DescriptionTr = description;
                     break;
                 case "fa":
                     entity.TaglineFa = tagline;
@@ -380,6 +403,9 @@ namespace Models.Repository
                 TaglineDe = "Raus aus dem Alltag",
                 TitleDe = "Entspann deinen Geist",
                 DescriptionDe = "Lass den Alltag hinter dir: sanfte Bootstouren, Naturerlebnisse und Ausflüge voller Sonne warten bereits auf dich.",
+                TaglineTr = "Monoton hayattan uzaklaşın",
+                TitleTr = "Zihninizi rahatlatın",
+                DescriptionTr = "Rutinden uzaklaşın: sakin tekne gezileri, macera dolu aktiviteler ve güneşli kaçamaklar sizi bekliyor.",
                 TaglineFa = "دور از زندگی یکنواخت",
                 TitleFa = "ذهن خود را آرام کنید",
                 DescriptionFa = "با تورهای ما از شلوغی دور شوید؛ سفرهایی آرام، ماجراجویانه و سرشار از تجربه‌های تازه.",

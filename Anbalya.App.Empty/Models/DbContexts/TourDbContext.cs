@@ -96,6 +96,9 @@ namespace Models.DbContexts
                     TaglineDe = "Raus aus dem Alltag",
                     TitleDe = "Entspann deinen Geist",
                     DescriptionDe = "Lass den Alltag hinter dir: sanfte Bootstouren, Naturerlebnisse und Ausflüge voller Sonne warten bereits auf dich.",
+                    TaglineTr = "Monoton hayattan uzaklaşın",
+                    TitleTr = "Zihninizi rahatlatın",
+                    DescriptionTr = "Rutinden uzaklaşın: sakin tekne turları, macera dolu aktiviteler ve güneşli kaçamaklar sizi bekliyor.",
                     TaglineFa = "دور از زندگی یکنواخت",
                     TitleFa = "ذهن خود را آرام کنید",
                     DescriptionFa = "با تورهای ما از شلوغی دور شوید؛ سفرهایی آرام، ماجراجویانه و سرشار از تجربه‌های تازه.",
@@ -169,6 +172,12 @@ Krótka i łatwa wycieczka – idealna na pływanie, relaks i złapanie opaleniz
 لديك فرصة رائعة للسباحة والغوص في المياه الصافية، ثم تناول الغداء في خليج أوليمبوس. 
 بعدها استمتع بجولة عند الجزر الثلاث قبل العودة إلى مرسى كيمر. 
 رحلة قصيرة وسهلة – مثالية للسباحة والاسترخاء واكتساب سمرة رائعة!",
+    descriptionTr:
+@"Denizde huzurlu bir günün tadını çıkarın! Antalya'daki otelinizden alındıktan sonra Kemer Limanı'na transfer edilirsiniz. 
+Korsan temalı tekneye binerek Türkiye Rivierası'nın turkuaz kıyıları boyunca yol alın. 
+Çam ormanları ve Toros Dağları manzaraları eşliğinde Phaselis'e doğru ilerlerken berrak sularda yüzün ve şnorkelle keşfe çıkın. 
+Olympos Körfezi'nde öğle yemeğinin tadını çıkarın, ardından Kemer'e dönmeden önce Üç Adalar'ın manzaralı koylarını keşfedin. 
+Kısa ve zahmetsiz bir tur – yüzmek, dinlenmek ve tatil bronzluğunu tamamlamak için ideal!",
 
     miniDescriptionEn: "Gentle cruise from Antalya to Kemer: swim & snorkel in turquoise bays, lunch at Olympos, and views of the Three Islands. Easy, sun-kissed day.",
     miniDescriptionDe: "Sanfte Bootstour von Antalya nach Kemer: Schwimmen & Schnorcheln, Mittag an der Olympos-Bucht und Ausblicke auf die Drei Inseln – entspannt und sonnig.",
@@ -176,6 +185,7 @@ Krótka i łatwa wycieczka – idealna na pływanie, relaks i złapanie opaleniz
     miniDescriptionPo: "Spokojny rejs z Antalyi do Kemer: kąpiele i snorkeling w turkusowych zatokach, lunch w Olympos i widoki Trzech Wysp. Luźny, słoneczny dzień.",
     miniDescriptionPe: "کروز آرام از آنتالیا تا کمر: شنا و اسنورکل در آب‌های فیروزه‌ای، ناهار در الیمپوس و چشم‌انداز «سه جزیره». یک روز راحت و آفتابی.",
     miniDescriptionAr: "رحلة بحرية هادئة من أنطاليا إلى كيمر: سباحة وغوص سطحي في خلجان فيروزية، غداء في أوليمبوس وإطلالات على الجزر الثلاث. يوم سهل ومشمس.",
+    miniDescriptionTr: "Antalya'dan Kemer'e sakin tekne turu: turkuaz koylarda yüzme ve şnorkel, Olympos'ta öğle yemeği, Üç Adalar manzaraları. Kolay ve güneşli bir gün.",
 
     fotos: new List<Foto>
     {
@@ -262,6 +272,14 @@ Krótka, łatwa wycieczka – ale wystarczająco długa, by popływać, opalić 
 يمكنك السباحة هنا أو استئجار قارب صغير (نشاط اختياري) للذهاب تحت الشلالات. 
 بعدها، استمتع بحفلة رغوة على متن السفينة – ارقص، استمتع، وخذ دشاً قبل العودة إلى مرسى أنطاليا. 
 رحلة قصيرة وسهلة – لكنها كافية للسباحة، الاسترخاء، وحفلة مليئة بالمرح!",
+    descriptionTr:
+@"Denizde eğlence dolu bir gün sizi bekliyor! Antalya'daki otelinizden alındıktan sonra Antalya Limanı'na gidip geniş korsan temalı tekneye geçiyorsunuz. 
+Türkiye'nin turkuaz güney kıyıları boyunca Düden Şelaleleri'ne doğru yol alırken, mağara yanındaki küçük adada yüzme molası veriyorsunuz. 
+Berrak sularda yüzüp şnorkelle keşif yaparken Türk Rivierası manzaralarının keyfine varın. 
+Şelalelere yaklaşırken teknede taze hazırlanmış öğle yemeği servis ediliyor. 
+Şelalenin denizle buluştuğu noktada demirleyip bu etkileyici manzarayı izleyebilir, dilerseniz küçük bir tekneyle şelalenin altına kadar gidebilirsiniz. 
+Dönüşte güvertede köpük partisine katılın, dans edip eğlendikten sonra duş alıp Antalya Limanı'na geri dönün. 
+Kısa ama dopdolu bir tur – yüzme, güneşlenme ve bol kahkaha için birebir!",
 
     // Mini summaries
     miniDescriptionEn: "Family-friendly pirate cruise to Düden Waterfalls with swim stops, foam party, and lunch on board – easy, splashy fun all day.",
@@ -270,6 +288,7 @@ Krótka, łatwa wycieczka – ale wystarczająco długa, by popływać, opalić 
     miniDescriptionPo: "Rodzinny rejs piracki do wodospadów Düden: kąpiele, impreza z pianą i lunch na pokładzie – lekko i pełne zabawy.",
     miniDescriptionPe: "کروز خانوادگی به آبشار دودن با توقف‌های شنا، پارتی کف و ناهار روی عرشه – آسان، شاد و پر آب‌تنی.",
     miniDescriptionAr: "رحلة قراصنة عائلية إلى شلالات دودان مع محطات سباحة وحفلة رغوة وغداء على المتن – يوم ممتع وسهل للجميع.",
+    miniDescriptionTr: "Düden Şelalesi'ne korsan teknesiyle aile turu: yüzme molaları, köpük partisi ve teknede öğle yemeği. Kısa ama enerji dolu.",
 
     fotos: new List<Foto> {
         new Foto("/tourimage/Antalya Pirate Boat Trip.jpg")
@@ -385,6 +404,8 @@ Brak ograniczeń wiekowych – wszyscy to uwielbiają!",
 
 في نهاية اليوم ستعود إلى الفندق محملاً بالذكريات والانطباعات الرائعة. 
 لا يوجد حد للعمر – الجميع يعشق هذه المغامرة!",
+    descriptionTr:
+@"Toros Dağları'nda jeep safari ile doğayla buluşun. Otelinizden alındıktan sonra rehberinizle buluşup günün planını öğrenirsiniz. Tozlu dağ yollarından köylerin arasına ilerlerken çam kokulu havayı solur, panoramik manzaralarda fotoğraf molaları verirsiniz. Haciosmanlar köyünde geleneksel bir evi gezip kırsal yaşamı tanır, öğle yemeğinde ızgara balık, tavuk ya da omlet ile ev yapımı lezzetler tadarsınız. Ardından Akdeniz kırsalında heyecanlı off-road sürüşü ve Hatipler'de serinletici yüzme molası sizi bekler. Gün sonunda her yaşa hitap eden bu maceradan dopdolu anılarla otele dönersiniz.",
 
     // Mini summaries
     miniDescriptionEn: "Dusty trails, pine-scented air, village visit and a cool swim stop – a full-day off-road escape in the Taurus Mountains.",
@@ -393,6 +414,7 @@ Brak ograniczeń wiekowych – wszyscy to uwielbiają!",
     miniDescriptionPo: "Piaszczyste szlaki, zapach sosen, wizyta w wiosce i kąpiel – całodniowa off-road przygoda w Taurach.",
     miniDescriptionPe: "جاده‌های خاکی، عطر کاج، بازدید روستا و یک توقف خنک برای شنا – یک روز تمام آفرود در کوه‌های توروس.",
     miniDescriptionAr: "مسارات ترابية، عبير الصنوبر، زيارة قرية وتوقف للسباحة – يوم كامل من الطرق الوعرة في جبال طوروس.",
+    miniDescriptionTr: "Toroslarda jeep safari: köy durakları, çam kokusu, lezzetli öğle yemeği ve Hatipler'de yüzme molası.",
 
     fotos: new List<Foto> {
         new Foto("/tourimage/Jeep Safari and Off-road Adventures.jpg")
@@ -492,6 +514,11 @@ Każda fala i każdy nurt to czysta ekscytacja, bez czasu na nudę!",
 
 قليل من الرياضات تمنحك هذا الكم من التجارب في وقت واحد – تحدٍ جسدي، تركيز ذهني، ومناظر طبيعية لا تُنسى. 
 كل منحدر مائي مليء بالمفاجآت والإثارة، فلا وقت للملل!",
+    descriptionTr:
+@"Manavgat Nehri'nde adrenalin dolu bir güne hazır olun! Köpüklü akıntılarda profesyonel rehberler eşliğinde rafting yaparken köprü kanyonunu geçecek, iki yakadaki milli park manzaralarına hayran kalacaksınız. 
+1970'lerden beri en heyecan verici doğa sporlarından biri olan rafting, deneyimli ekibin güvenliği ve enerjisiyle daha keyifli hale geliyor. 
+Öğle arasında nehir kenarında açık büfe ve mangal eşliğinde dinleniyor, serin sulara girerek şehrin stresinden uzaklaşıyorsunuz. 
+Her yeni rapid sizi hem fiziksel olarak zorluyor hem de zihninizi tazeliyor; heyecan, doğa ve eğlence tek turda birleşiyor.",
 
   miniDescriptionEn: "Whitewater thrills on the Manavgat: pro guides, canyon views, swim breaks and riverside BBQ lunch – pure adrenaline in nature.",
     miniDescriptionDe: "Wildwasser auf dem Manavgat: Profibegleitung, Canyonblicke, Badestopps & BBQ am Ufer – Adrenalin pur in der Natur.",
@@ -499,6 +526,7 @@ Każda fala i każdy nurt to czysta ekscytacja, bez czasu na nudę!",
     miniDescriptionPo: "Rafting na Manavgat: profesjonaliści, widoki kanionu, przerwy na kąpiel i BBQ nad rzeką – czysta adrenalina.",
     miniDescriptionPe: "رفتینگ ماناوگات با راهنمای حرفه‌ای، مناظر کانین، توقف‌های شنا و ناهار BBQ کنار رود – آدرنالین ناب در دل طبیعت.",
     miniDescriptionAr: "تجديف مانافغات مع مرشدين محترفين، مناظر الوادي، محطات سباحة وغداء شواء على الضفة – أدرينالين وسط الطبيعة.",
+    miniDescriptionTr: "Manavgat'ta rafting: köpüklü akıntılar, kanyon manzarası ve nehir kenarında BBQ. Doğada saf adrenalin.",
 
     fotos: new List<Foto> {
         new Foto("/tourimage/Rafting Manavgat River Tour.jpg")

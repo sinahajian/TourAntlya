@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class TourBookingPageViewModel
+public partial class TourBookingPageViewModel
 {
     public TourDto Tour { get; init; } = null!;
     public TourReservationInputModel Form { get; set; } = new();

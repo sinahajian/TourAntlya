@@ -1,0 +1,243 @@
+@model TourBookingPageViewModel
+@using Models.Helper
+
+@{
+    var form = Model.Form ?? new TourReservationInputModel();
+    form.Language ??= Model.Tour.LanguageUsed;
+    var paymentOptions = Model.PaymentOptions ?? Array.Empty<PaymentOptionDto>();
+    var accommodationOptions = Model.AccommodationOptions ?? Array.Empty<string>();
+}
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h4 class="card-title">Need to know</h4>
+        <ul class="list_style">
+            <li>Category: @Model.Tour.CategoryString</li>
+            <li>Language: @Model.LanguageLabel</li>
+            @if (Model.ActiveDayNames.Any())
+            {
+                <li>Operates: @string.Join(", ", Model.ActiveDayNames)</li>
+            }
+            <li>Duration: @Model.Tour.DurationHours hour(s)</li>
+        </ul>
+        <a href="@Url.Action("Category", "Home", new { category = Model.Tour.Category })" class="btn theme_btn button_hover btn-block">More @Model.Tour.CategoryString Tours</a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm booking-card">
+    <div class="card-body">
+        <h4 class="card-title">Reserve your tour</h4>
+        <p class="text-muted small mb-4">Complete the three quick steps to secure your seats and receive payment instructions.</p>
+
+        @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger" role="alert">@Model.ErrorMessage</div>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.SuccessMessage))
+        {
+            <div class="alert alert-success" role="alert">@Model.SuccessMessage</div>
+        }
+
+        <form asp-action="BookTour"
+              method="post"
+              novalidate
+              class="booking-form"
+              data-tour-id="@Model.Tour.Id"
+              data-tour-name="@Model.Tour.TourName"
+              data-adult-price="@Model.Tour.Price"
+              data-child-price="@Model.Tour.KinderPrice"
+              data-infant-price="@Model.Tour.InfantPrice"
+              data-total-hint-empty="Add guests to see your estimated total."
+              data-total-hint-ready="Proceed to payment to receive confirmation details in your inbox."
+              data-paypal-enabled="@Model.PayPal.Enabled.ToString().ToLowerInvariant()"
+              data-paypal-base-url="@Model.PayPal.BaseUrl"
+              data-paypal-email="@Model.PayPal.BusinessEmail"
+              data-paypal-currency="@Model.PayPal.Currency"
+              data-paypal-return="@Model.PayPal.ReturnUrl"
+              data-paypal-cancel="@Model.PayPal.CancelUrl">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Form.TourId" />
+            <input type="hidden" asp-for="Form.Language" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+            <div class="booking-progress d-flex justify-content-between mb-4">
+                <div class="booking-progress-step" data-step-index="0">
+                    <span class="badge badge-pill badge-primary mr-2">1</span> Guests
+                </div>
+                <div class="booking-progress-step text-muted" data-step-index="1">
+                    <span class="badge badge-pill badge-secondary mr-2">2</span> Traveller details
+                </div>
+                <div class="booking-progress-step text-muted" data-step-index="2">
+                    <span class="badge badge-pill badge-secondary mr-2">3</span> Payment
+                </div>
+            </div>
+
+            <div class="booking-step" data-step="0">
+                <div class="form-group">
+                    <label asp-for="Form.PreferredDate">Choose your tour date</label>
+                    <input asp-for="Form.PreferredDate" type="date" class="form-control" />
+                    <small class="form-text text-muted">Pick your preferred day or leave empty if travel dates are flexible.</small>
+                    <span asp-validation-for="Form.PreferredDate" class="text-danger small"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label asp-for="Form.Adults"></label>
+                        <input asp-for="Form.Adults" type="number" class="form-control js-booking-input js-booking-adults" min="1" placeholder="Adults" />
+                        <small class="form-text text-muted">Enter number of guests aged 12+</small>
+                        <span asp-validation-for="Form.Adults" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label asp-for="Form.Children"></label>
+                        <input asp-for="Form.Children" type="number" class="form-control js-booking-input js-booking-children" min="0" placeholder="Children" />
+                        <small class="form-text text-muted">Guests aged 3–11</small>
+                        <span asp-validation-for="Form.Children" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label asp-for="Form.Infants"></label>
+                        <input asp-for="Form.Infants" type="number" class="form-control js-booking-input js-booking-infants" min="0" placeholder="Infants" />
+                        <small class="form-text text-muted">Guests under 3</small>
+                        <span asp-validation-for="Form.Infants" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="alert alert-light border mt-3" id="reservation-summary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="mb-0">Estimated total for your group</span>
+                        <strong class="h5 mb-0">€<span id="reservation-total-value">@Model.EstimatedTotal</span></strong>
+                    </div>
+                    <small class="text-muted d-block" id="reservation-total-hint">Add guests to see your estimated total.</small>
+                </div>
+
+                <button type="button" class="btn theme_btn button_hover btn-block mt-3" data-next-step>Continue</button>
+            </div>
+
+            <div class="booking-step d-none" data-step="1">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label asp-for="Form.FirstName"></label>
+                        <input asp-for="Form.FirstName" class="form-control" placeholder="Traveler’s first name" />
+                        <span asp-validation-for="Form.FirstName" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="Form.LastName"></label>
+                        <input asp-for="Form.LastName" class="form-control" placeholder="Traveler’s last name" />
+                        <span asp-validation-for="Form.LastName" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Form.CustomerEmail"></label>
+                    <input asp-for="Form.CustomerEmail" class="form-control" placeholder="Confirmation email" />
+                    <span asp-validation-for="Form.CustomerEmail" class="text-danger small"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Form.CustomerPhone"></label>
+                    <input asp-for="Form.CustomerPhone" class="form-control" placeholder="WhatsApp or mobile (e.g. +90 555 123 45 67)" />
+                    <span asp-validation-for="Form.CustomerPhone" class="text-danger small"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Form.HotelName">Hotel or accommodation</label>
+                    <input asp-for="Form.HotelName"
+                           class="form-control"
+                           id="hotelField"
+                           list="hotelList"
+                           placeholder="Start typing to search or pick from the list" />
+                    <datalist id="hotelList">
+                        @foreach (var option in accommodationOptions)
+                        {
+                            <option value="@option"></option>
+                        }
+                    </datalist>
+                    <small class="form-text text-muted">Type a few letters to find your hotel or pick from the suggestions.</small>
+                    <span asp-validation-for="Form.HotelName" class="text-danger small"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label asp-for="Form.RoomNumber"></label>
+                        <input asp-for="Form.RoomNumber" class="form-control" placeholder="Room number (optional)" />
+                        <span asp-validation-for="Form.RoomNumber" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="Form.PickupLocation">Extra pickup notes</label>
+                        <input asp-for="Form.PickupLocation" class="form-control" placeholder="Lobby meeting time or alternate pickup" />
+                        <span asp-validation-for="Form.PickupLocation" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary" data-prev-step>Back</button>
+                    <button type="button" class="btn theme_btn button_hover" data-next-step>Continue</button>
+                </div>
+            </div>
+
+            <div class="booking-step d-none" data-step="2">
+                <div class="form-group mb-3">
+                    <label class="d-block">Payment method</label>
+                    @if (paymentOptions.Any())
+                    {
+                        foreach (var option in paymentOptions)
+                        {
+                            var paymentId = $"payment-{option.Method}";
+                            <div class="custom-control custom-radio mb-2">
+                                <input class="custom-control-input" type="radio" id="@paymentId" name="Form.PaymentMethod" value="@option.Method" @(form.PaymentMethod == option.Method ? "checked" : null) />
+                                <label class="custom-control-label" for="@paymentId">
+                                    <strong>@option.DisplayName</strong>
+                                    <span class="d-block small text-muted">@option.AccountIdentifier</span>
+                                </label>
+                                <p class="small text-muted mt-1 mb-0">@option.Instructions</p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="small text-muted">Payment methods will be provided after booking confirmation.</p>
+                    }
+                    <span asp-validation-for="Form.PaymentMethod" class="text-danger small"></span>
+                </div>
+
+                @if (Model.PayPal.Enabled)
+                {
+                    <div class="alert alert-info" id="paypalCheckoutContainer" style="display:none;">
+                        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+                            <div class="mr-md-3 mb-2 mb-md-0">
+                                <strong>Instant PayPal checkout</strong>
+                                <p class="small mb-0">Use PayPal for immediate confirmation once you review the amount.</p>
+                            </div>
+                            <a id="paypalCheckoutButton"
+                               class="btn btn-warning text-uppercase font-weight-bold disabled"
+                               href="#"
+                               aria-disabled="true"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                <i class="fa fa-paypal mr-2"></i> Pay with PayPal
+                            </a>
+                        </div>
+                    </div>
+                }
+
+                <div class="alert alert-light">
+                    <strong>Summary</strong>
+                    <ul class="list-unstyled mb-0 small">
+                        <li>Total guests: <span id="summary-total-guests">@((form.Adults + form.Children + form.Infants))</span></li>
+                        <li>Estimated total: €<span id="summary-total-price">@Model.EstimatedTotal</span></li>
+                    </ul>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <button type="button" class="btn btn-outline-secondary" data-prev-step>Back</button>
+                    <button type="submit" class="btn theme_btn button_hover px-4">Reserve now</button>
+                </div>
+            </div>
+        </form>
+
+        <hr class="my-4" />
+        <p class="small mb-1">Prefer to talk?</p>
+        <a href="mailto:info@tourantalya.com" class="btn btn-outline-primary btn-block">Email us</a>
+        <a href="tel:+905013411029" class="btn btn-outline-secondary btn-block mt-2">Call +90 (501) 341 10 29</a>
+    </div>
+</div>

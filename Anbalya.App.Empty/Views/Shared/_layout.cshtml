@@ -7,6 +7,20 @@
     var languageReturnUrl = (Context.Request.Path + Context.Request.QueryString).ToString();
     var isRtl = LanguageCatalog.IsRtl(currentLanguageCode);
     var navAlignmentClass = isRtl ? "mr-auto" : "ml-auto";
+    var navHome = StaticTextCatalog.Get(currentLanguageCode, "nav.home");
+    var navAbout = StaticTextCatalog.Get(currentLanguageCode, "nav.about");
+    var navAccommodation = StaticTextCatalog.Get(currentLanguageCode, "nav.accommodation");
+    var navGallery = StaticTextCatalog.Get(currentLanguageCode, "nav.gallery");
+    var navBlog = StaticTextCatalog.Get(currentLanguageCode, "nav.blog");
+    var navBlogDetails = StaticTextCatalog.Get(currentLanguageCode, "nav.blogDetails");
+    var navElements = StaticTextCatalog.Get(currentLanguageCode, "nav.elements");
+    var navContact = StaticTextCatalog.Get(currentLanguageCode, "nav.contact");
+    var navManagerLogin = StaticTextCatalog.Get(currentLanguageCode, "nav.managerLogin");
+    var footerNewsletterTitle = StaticTextCatalog.Get(currentLanguageCode, "footer.newsletter.title");
+    var footerNewsletterCaption = StaticTextCatalog.Get(currentLanguageCode, "footer.newsletter.caption");
+    var footerNewsletterPlaceholder = StaticTextCatalog.Get(currentLanguageCode, "footer.newsletter.placeholder");
+    var footerNewsletterSubmit = StaticTextCatalog.Get(currentLanguageCode, "footer.newsletter.submit");
+    var footerFollow = StaticTextCatalog.Get(currentLanguageCode, "footer.follow");
 }
 
 <!DOCTYPE html>
@@ -48,20 +62,20 @@
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div class="collapse navbar-collapse offset" id="navbarSupportedContent">
                     <ul class="nav navbar-nav menu_nav @navAlignmentClass">
-                        <li class="nav-item active"><a class="nav-link" href="@Url.Action("Index", "Home")">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">About us</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Accomodation</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Gallery</a></li>
+                        <li class="nav-item active"><a class="nav-link" href="@Url.Action("Index", "Home")">@navHome</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">@navAbout</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">@navAccommodation</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">@navGallery</a></li>
                         <li class="nav-item submenu dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button"
-                                aria-haspopup="true" aria-expanded="false">Blog</a>
+                                aria-haspopup="true" aria-expanded="false">@navBlog</a>
                             <ul class="dropdown-menu">
-                                <li class="nav-item"><a class="nav-link" href="#">Blog</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Blog Details</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#">@navBlog</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#">@navBlogDetails</a></li>
                             </ul>
                         </li>
-                        <li class="nav-item"><a class="nav-link" href="#">Elemests</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">@navElements</a></li>
+                        <li class="nav-item"><a class="nav-link" href="@Url.Action("Contact", "Home")">@navContact</a></li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -78,7 +92,7 @@
                                 }
                             </div>
                         </li>
-                        <li class="nav-item"><a class="nav-link" href="@Url.Action("LoginManagers", "Managers")">Manager Login</a></li>
+                        <li class="nav-item"><a class="nav-link" href="@Url.Action("LoginManagers", "Managers")">@navManagerLogin</a></li>
                     </ul>
                 </div>
             </nav>
@@ -126,17 +140,16 @@
                 </div>
                 <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="single-footer-widget">
-                        <h6 class="footer_title">Newsletter</h6>
-                        <p>For business professionals caught between high OEM price and mediocre print and graphic
-                            output, </p>
+                        <h6 class="footer_title">@footerNewsletterTitle</h6>
+                        <p>@footerNewsletterCaption</p>
                         <div id="mc_embed_signup">
                             <form target="_blank"
                                 action="https://spondonit.us12.list-manage.com/subscribe/post?u=1462626880ade1ac87bd9c93a&amp;id=92a4423d01"
                                 method="get" class="subscribe_form relative">
                                 <div class="input-group d-flex flex-row">
-                                    <input name="EMAIL" placeholder="Email Address" onfocus="this.placeholder = ''"
-                                        onblur="this.placeholder = 'Email Address '" required="" type="email">
-                                    <button class="btn sub-btn"><span class="lnr lnr-location"></span></button>
+                                    <input name="EMAIL" placeholder="@footerNewsletterPlaceholder" onfocus="this.placeholder = ''"
+                                        onblur="this.placeholder = '@footerNewsletterPlaceholder '" required="" type="email">
+                                    <button class="btn sub-btn" type="submit">@footerNewsletterSubmit</button>
                                 </div>
                                 <div class="mt-10 info"></div>
                             </form>
@@ -170,6 +183,7 @@
                     <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
                 </p>
                 <div class="col-lg-4 col-sm-12 footer-social">
+                    <span class="d-block mb-2 text-uppercase font-weight-bold">@footerFollow</span>
                     <a href="#"><i class="fa fa-facebook"></i></a>
                     <a href="#"><i class="fa fa-twitter"></i></a>
                     <a href="#"><i class="fa fa-dribbble"></i></a>
