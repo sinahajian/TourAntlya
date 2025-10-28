@@ -1,0 +1,219 @@
+@model AboutContentEditViewModel
+@using System.Text.Json
+@{
+    Layout = "_ManagerLayout";
+    ViewData["Title"] = "About Us";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">About Us</h2>
+        <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Managers", new { userName = Model.UserName })">Back to dashboard</a>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.FeedbackMessage))
+    {
+        <div class="alert alert-success">@Model.FeedbackMessage</div>
+    }
+
+    <form asp-action="About" method="post" enctype="multipart/form-data" novalidate>
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="UserName" />
+        <input type="hidden" asp-for="Id" />
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <strong>General settings</strong>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label d-block">Current image</label>
+                        <div class="mb-3">
+                            <img src="@Model.ImagePath" alt="About hero" class="img-fluid rounded border">
+                        </div>
+                        <label asp-for="ImageFile" class="form-label"></label>
+                        <input asp-for="ImageFile" class="form-control" type="file" accept=".jpg,.jpeg,.png,.webp,.gif" />
+                        <small class="form-text text-muted">Upload a new hero image (JPG, PNG, WEBP or GIF, max 5&nbsp;MB). Leave empty to keep the current image.</small>
+                        <span asp-validation-for="ImageFile" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ImagePath" class="form-label"></label>
+                        <input asp-for="ImagePath" class="form-control" />
+                        <small class="form-text text-muted">Relative path used on the public site (e.g. <code>/image/about_bg.jpg</code>). This updates automatically after uploading.</small>
+                        <span asp-validation-for="ImagePath" class="text-danger small"></span>
+
+                        <label asp-for="ButtonUrl" class="form-label mt-3"></label>
+                        <input asp-for="ButtonUrl" class="form-control" />
+                        <small class="form-text text-muted">Destination link for the call-to-action button (absolute or relative URL).</small>
+                        <span asp-validation-for="ButtonUrl" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @{ var languages = new[]{ ("en","English"), ("de","Deutsch"), ("tr","Türkçe"), ("fa","فارسی"), ("ru","Русский"), ("pl","Polski"), ("ar","العربية") }; }
+        <ul class="nav nav-tabs" role="tablist">
+            @for (var i = 0; i < languages.Length; i++)
+            {
+                var (code, name) = languages[i];
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link @(i == 0 ? "active" : string.Empty)" data-toggle="tab" href="#about-lang-@code" role="tab" aria-selected="@(i == 0)" aria-controls="about-lang-@code">@name</a>
+                </li>
+            }
+        </ul>
+        <div class="tab-content border border-top-0 p-3">
+            @for (var i = 0; i < languages.Length; i++)
+            {
+                var (code, name) = languages[i];
+                var activeClass = i == 0 ? "show active" : string.Empty;
+                <div class="tab-pane fade @activeClass" id="about-lang-@code" role="tabpanel">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Title line 1 (@name)</label>
+                            @if (code == "en")
+                            {
+                                <input name="TitleLine1En" class="form-control" value="@Model.TitleLine1En" />
+                                <span asp-validation-for="TitleLine1En" class="text-danger small"></span>
+                            }
+                            else if (code == "de")
+                            {
+                                <input name="TitleLine1De" class="form-control" value="@Model.TitleLine1De" />
+                            }
+                            else if (code == "tr")
+                            {
+                                <input name="TitleLine1Tr" class="form-control" value="@Model.TitleLine1Tr" />
+                            }
+                            else if (code == "fa")
+                            {
+                                <input name="TitleLine1Fa" class="form-control" dir="rtl" value="@Model.TitleLine1Fa" />
+                            }
+                            else if (code == "ru")
+                            {
+                                <input name="TitleLine1Ru" class="form-control" value="@Model.TitleLine1Ru" />
+                            }
+                            else if (code == "pl")
+                            {
+                                <input name="TitleLine1Pl" class="form-control" value="@Model.TitleLine1Pl" />
+                            }
+                            else
+                            {
+                                <input name="TitleLine1Ar" class="form-control" dir="rtl" value="@Model.TitleLine1Ar" />
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Title line 2 (@name)</label>
+                            @if (code == "en")
+                            {
+                                <input name="TitleLine2En" class="form-control" value="@Model.TitleLine2En" />
+                                <span asp-validation-for="TitleLine2En" class="text-danger small"></span>
+                            }
+                            else if (code == "de")
+                            {
+                                <input name="TitleLine2De" class="form-control" value="@Model.TitleLine2De" />
+                            }
+                            else if (code == "tr")
+                            {
+                                <input name="TitleLine2Tr" class="form-control" value="@Model.TitleLine2Tr" />
+                            }
+                            else if (code == "fa")
+                            {
+                                <input name="TitleLine2Fa" class="form-control" dir="rtl" value="@Model.TitleLine2Fa" />
+                            }
+                            else if (code == "ru")
+                            {
+                                <input name="TitleLine2Ru" class="form-control" value="@Model.TitleLine2Ru" />
+                            }
+                            else if (code == "pl")
+                            {
+                                <input name="TitleLine2Pl" class="form-control" value="@Model.TitleLine2Pl" />
+                            }
+                            else
+                            {
+                                <input name="TitleLine2Ar" class="form-control" dir="rtl" value="@Model.TitleLine2Ar" />
+                            }
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Body (@name)</label>
+                        @if (code == "en")
+                        {
+                            <textarea name="BodyEn" class="form-control" rows="4">@Model.BodyEn</textarea>
+                            <span asp-validation-for="BodyEn" class="text-danger small"></span>
+                        }
+                        else if (code == "de")
+                        {
+                            <textarea name="BodyDe" class="form-control" rows="4">@Model.BodyDe</textarea>
+                        }
+                        else if (code == "tr")
+                        {
+                            <textarea name="BodyTr" class="form-control" rows="4">@Model.BodyTr</textarea>
+                        }
+                        else if (code == "fa")
+                        {
+                            <textarea name="BodyFa" class="form-control" rows="4" dir="rtl">@Model.BodyFa</textarea>
+                        }
+                        else if (code == "ru")
+                        {
+                            <textarea name="BodyRu" class="form-control" rows="4">@Model.BodyRu</textarea>
+                        }
+                        else if (code == "pl")
+                        {
+                            <textarea name="BodyPl" class="form-control" rows="4">@Model.BodyPl</textarea>
+                        }
+                        else
+                        {
+                            <textarea name="BodyAr" class="form-control" rows="4" dir="rtl">@Model.BodyAr</textarea>
+                        }
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Button text (@name)</label>
+                        @if (code == "en")
+                        {
+                            <input name="ButtonTextEn" class="form-control" value="@Model.ButtonTextEn" />
+                            <span asp-validation-for="ButtonTextEn" class="text-danger small"></span>
+                        }
+                        else if (code == "de")
+                        {
+                            <input name="ButtonTextDe" class="form-control" value="@Model.ButtonTextDe" />
+                        }
+                        else if (code == "tr")
+                        {
+                            <input name="ButtonTextTr" class="form-control" value="@Model.ButtonTextTr" />
+                        }
+                        else if (code == "fa")
+                        {
+                            <input name="ButtonTextFa" class="form-control" dir="rtl" value="@Model.ButtonTextFa" />
+                        }
+                        else if (code == "ru")
+                        {
+                            <input name="ButtonTextRu" class="form-control" value="@Model.ButtonTextRu" />
+                        }
+                        else if (code == "pl")
+                        {
+                            <input name="ButtonTextPl" class="form-control" value="@Model.ButtonTextPl" />
+                        }
+                        else
+                        {
+                            <input name="ButtonTextAr" class="form-control" dir="rtl" value="@Model.ButtonTextAr" />
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="text-end mt-3">
+            <button type="submit" class="btn btn-primary">Save about content</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        console.group('Managers/About');
+        console.log('About TitleLine1En', @Html.Raw(JsonSerializer.Serialize(Model.TitleLine1En)));
+        console.log('About model', @Html.Raw(JsonSerializer.Serialize(Model)));
+        console.groupEnd();
+    </script>
+}

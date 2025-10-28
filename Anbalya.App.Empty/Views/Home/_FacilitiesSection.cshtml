@@ -1,19 +1,11 @@
+@model HomePageViewModel
 @using Models.Helper
-@inject Models.Interface.ILanguageResolver LanguageResolver
 @{
-    var lang = LanguageCatalog.Normalize(LanguageResolver.Resolve(Context));
+    var lang = LanguageCatalog.Normalize(Model?.Language ?? "en");
     var isRtl = LanguageCatalog.IsRtl(lang);
     var sectionDir = isRtl ? "rtl" : "ltr";
     var textAlignClass = isRtl ? "text-right" : "text-center";
-    var facilities = new[]
-    {
-        new { Icon = "lnr lnr-dinner", Title = StaticTextCatalog.Get(lang, "home.facilities.item.restaurant"), Text = StaticTextCatalog.Get(lang, "home.facilities.item.restaurant.text") },
-        new { Icon = "lnr lnr-bicycle", Title = StaticTextCatalog.Get(lang, "home.facilities.item.sports"), Text = StaticTextCatalog.Get(lang, "home.facilities.item.sports.text") },
-        new { Icon = "lnr lnr-shirt", Title = StaticTextCatalog.Get(lang, "home.facilities.item.pool"), Text = StaticTextCatalog.Get(lang, "home.facilities.item.pool.text") },
-        new { Icon = "lnr lnr-car", Title = StaticTextCatalog.Get(lang, "home.facilities.item.car"), Text = StaticTextCatalog.Get(lang, "home.facilities.item.car.text") },
-        new { Icon = "lnr lnr-construction", Title = StaticTextCatalog.Get(lang, "home.facilities.item.gym"), Text = StaticTextCatalog.Get(lang, "home.facilities.item.gym.text") },
-        new { Icon = "lnr lnr-coffee-cup", Title = StaticTextCatalog.Get(lang, "home.facilities.item.bar"), Text = StaticTextCatalog.Get(lang, "home.facilities.item.bar.text") }
-    };
+    var facilities = Model?.Facilities ?? Array.Empty<RoyalFacilityDto>();
 }
 
 <section class="facilities_area section_gap" dir="@sectionDir">
@@ -28,8 +20,8 @@
             {
                 <div class="col-lg-4 col-md-6">
                     <div class="facilities_item">
-                        <h4 class="sec_h4"><i class="@facility.Icon"></i> @facility.Title</h4>
-                        <p>@facility.Text</p>
+                        <h4 class="sec_h4"><i class="@facility.IconClass"></i> @facility.Title</h4>
+                        <p>@facility.Description</p>
                     </div>
                 </div>
             }

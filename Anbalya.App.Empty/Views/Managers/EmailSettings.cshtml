@@ -1,0 +1,170 @@
+@model EmailSettingsViewModel
+@{
+    Layout = "_ManagerLayout";
+    ViewData["Title"] = "Email Settings";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Email & Notifications</h2>
+        <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Managers", new { userName = Model.UserName })">Back to dashboard</a>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.FeedbackMessage))
+    {
+        <div class="alert alert-success">@Model.FeedbackMessage</div>
+    }
+
+    <form asp-action="EmailSettings" method="post" novalidate>
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="UserName" />
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header">
+                <strong>SMTP server</strong>
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label asp-for="Host" class="form-label"></label>
+                        <input asp-for="Host" class="form-control" placeholder="smtp.example.com" />
+                        <span asp-validation-for="Host" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label asp-for="Port" class="form-label"></label>
+                        <input asp-for="Port" class="form-control" type="number" min="1" max="65535" />
+                        <span asp-validation-for="Port" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label asp-for="Username" class="form-label"></label>
+                        <input asp-for="Username" class="form-control" placeholder="SMTP username" />
+                        <span asp-validation-for="Username" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" type="password" placeholder="SMTP password" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label asp-for="FromEmail" class="form-label"></label>
+                        <input asp-for="FromEmail" class="form-control" placeholder="no-reply@tourantalya.com" />
+                        <span asp-validation-for="FromEmail" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label asp-for="FromName" class="form-label"></label>
+                        <input asp-for="FromName" class="form-control" placeholder="Tour Antalya" />
+                        <span asp-validation-for="FromName" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label asp-for="NotificationEmail" class="form-label"></label>
+                        <input asp-for="NotificationEmail" class="form-control" placeholder="alerts@tourantalya.com" />
+                        <small class="form-text text-muted">Admin notifications (contact & reservations) will be sent to this address.</small>
+                        <span asp-validation-for="NotificationEmail" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label asp-for="ReplyToEmail" class="form-label"></label>
+                        <input asp-for="ReplyToEmail" class="form-control" placeholder="Optional reply-to address" />
+                        <span asp-validation-for="ReplyToEmail" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group col-md-6 d-flex align-items-center">
+                        <div class="form-check">
+                            <input asp-for="EnableSsl" class="form-check-input" />
+                            <label asp-for="EnableSsl" class="form-check-label"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header">
+                <strong>Email templates</strong>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Customize the subject and body for each automated email. You can use placeholders like <code>{FullName}</code>, <code>{TourName}</code>, <code>{ReservationId}</code>, <code>{PreferredDate}</code>, <code>{Email}</code>, <code>{Phone}</code>, <code>{Adults}</code>, <code>{Children}</code>, and <code>{Infants}</code>.</p>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="border rounded p-3 h-100">
+                            <h5>Contact form confirmation (guest)</h5>
+                            <div class="form-group">
+                                <label asp-for="ContactUser.Subject" class="form-label"></label>
+                                <input asp-for="ContactUser.Subject" class="form-control" />
+                                <span asp-validation-for="ContactUser.Subject" class="text-danger small"></span>
+                            </div>
+                            <div class="form-group mb-0">
+                                <label asp-for="ContactUser.Body" class="form-label"></label>
+                                <textarea asp-for="ContactUser.Body" class="form-control" rows="6"></textarea>
+                                <span asp-validation-for="ContactUser.Body" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <div class="border rounded p-3 h-100">
+                            <h5>Contact form notification (manager)</h5>
+                            <div class="form-group">
+                                <label asp-for="ContactAdmin.Subject" class="form-label"></label>
+                                <input asp-for="ContactAdmin.Subject" class="form-control" />
+                                <span asp-validation-for="ContactAdmin.Subject" class="text-danger small"></span>
+                            </div>
+                            <div class="form-group mb-0">
+                                <label asp-for="ContactAdmin.Body" class="form-label"></label>
+                                <textarea asp-for="ContactAdmin.Body" class="form-control" rows="6"></textarea>
+                                <span asp-validation-for="ContactAdmin.Body" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <div class="border rounded p-3 h-100">
+                            <h5>Reservation confirmation (guest)</h5>
+                            <div class="form-group">
+                                <label asp-for="ReservationUser.Subject" class="form-label"></label>
+                                <input asp-for="ReservationUser.Subject" class="form-control" />
+                                <span asp-validation-for="ReservationUser.Subject" class="text-danger small"></span>
+                            </div>
+                            <div class="form-group mb-0">
+                                <label asp-for="ReservationUser.Body" class="form-label"></label>
+                                <textarea asp-for="ReservationUser.Body" class="form-control" rows="8"></textarea>
+                                <span asp-validation-for="ReservationUser.Body" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <div class="border rounded p-3 h-100">
+                            <h5>Reservation notification (manager)</h5>
+                            <div class="form-group">
+                                <label asp-for="ReservationAdmin.Subject" class="form-label"></label>
+                                <input asp-for="ReservationAdmin.Subject" class="form-control" />
+                                <span asp-validation-for="ReservationAdmin.Subject" class="text-danger small"></span>
+                            </div>
+                            <div class="form-group mb-0">
+                                <label asp-for="ReservationAdmin.Body" class="form-label"></label>
+                                <textarea asp-for="ReservationAdmin.Body" class="form-control" rows="8"></textarea>
+                                <span asp-validation-for="ReservationAdmin.Body" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-primary">Save email settings</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

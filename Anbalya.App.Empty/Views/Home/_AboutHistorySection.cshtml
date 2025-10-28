@@ -1,3 +1,4 @@
+@model AboutContentDto
 @using Models.Helper
 @inject Models.Interface.ILanguageResolver LanguageResolver
 @{
@@ -13,15 +14,15 @@
             <div class="col-md-6 d_flex align-items-center order-2 order-md-1">
                 <div class="about_content @textAlignClass">
                     <h2 class="title title_color">
-                        @StaticTextCatalog.Get(lang, "home.about.title") <br />
-                        @StaticTextCatalog.Get(lang, "home.about.subtitle")
+                        @Model.TitleLine1 <br />
+                        @Model.TitleLine2
                     </h2>
-                    <p>@StaticTextCatalog.Get(lang, "home.about.body")</p>
-                    <a href="#" class="button_hover theme_btn_two">@StaticTextCatalog.Get(lang, "home.about.button")</a>
+                    <p>@Model.Body</p>
+                    <a href="@Model.ButtonUrl" class="button_hover theme_btn_two">@Model.ButtonText</a>
                 </div>
             </div>
             <div class="col-md-6 order-1 order-md-2 mb-4 mb-md-0">
-                <img class="img-fluid" src="image/about_bg.jpg" alt="img">
+                <img class="img-fluid" src="@Model.ImagePath" alt="about section">
             </div>
         </div>
     </div>

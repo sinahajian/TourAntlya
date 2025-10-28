@@ -1,0 +1,7 @@
+@model AboutContentDto
+
+@{
+    ViewData["Title"] ??= "About Antalya Tours";
+}
+
+@await Html.PartialAsync("_AboutHistorySection", Model)

@@ -1,0 +1,145 @@
+@model ContactMessageListViewModel
+@using Models.Entities
+@{
+    Layout = "_ManagerLayout";
+    ViewData["Title"] = "Contact Messages";
+    var filterValue = ViewData["FilterStatus"] as string;
+    ContactMessageStatus? activeStatus = null;
+    if (!string.IsNullOrWhiteSpace(filterValue) && Enum.TryParse(filterValue, out ContactMessageStatus parsed))
+    {
+        activeStatus = parsed;
+    }
+
+    string StatusClass(string status) => status switch
+    {
+        nameof(ContactMessageStatus.New) => "badge badge-info",
+        nameof(ContactMessageStatus.Read) => "badge badge-secondary",
+        nameof(ContactMessageStatus.Archived) => "badge badge-dark",
+        _ => "badge badge-light"
+    };
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Contact Messages</h2>
+        <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Managers", new { userName = Model.UserName })">Back to dashboard</a>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.FeedbackMessage))
+    {
+        <div class="alert alert-success">@Model.FeedbackMessage</div>
+    }
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap align-items-center mb-3">
+                <span class="mr-3 font-weight-semibold">Filter:</span>
+                <div class="btn-group btn-group-sm" role="group">
+                    <a class="btn @(activeStatus is null ? "btn-primary" : "btn-outline-primary")"
+                       href="@Url.Action("ContactMessages", new { userName = Model.UserName })">
+                        All
+                    </a>
+                    @foreach (ContactMessageStatus statusOption in Enum.GetValues(typeof(ContactMessageStatus)))
+                    {
+                        var isActive = activeStatus == statusOption;
+                        <a class="btn @(isActive ? "btn-primary" : "btn-outline-primary")"
+                           href="@Url.Action("ContactMessages", new { userName = Model.UserName, status = statusOption })">
+                            @statusOption
+                        </a>
+                    }
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th scope="col">Guest</th>
+                            <th scope="col">Contact</th>
+                            <th scope="col" style="min-width: 280px;">Message</th>
+                            <th scope="col">Language</th>
+                            <th scope="col">Created</th>
+                            <th scope="col">Updated</th>
+                            <th scope="col">Status</th>
+                            <th scope="col" class="text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Messages.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    No messages found for the selected filter.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var message in Model.Messages)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@message.FullName</strong>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <a href="mailto:@message.Email">@message.Email</a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 320px;" title="@message.Message">
+                                            @message.Message
+                                        </div>
+                                    </td>
+                                    <td>@(string.IsNullOrWhiteSpace(message.Language) ? "—" : message.Language!.ToUpperInvariant())</td>
+                                    <td>@message.CreatedAt.ToLocalTime().ToString("g")</td>
+                                    <td>@(message.UpdatedAt?.ToLocalTime().ToString("g") ?? "—")</td>
+                                    <td>
+                                        <span class="@StatusClass(message.Status)">@message.Status</span>
+                                    </td>
+                                    <td class="text-right">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            @if (message.Status != nameof(ContactMessageStatus.New))
+                                            {
+                                                <form asp-action="UpdateContactMessageStatus" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="userName" value="@Model.UserName" />
+                                                    <input type="hidden" name="messageId" value="@message.Id" />
+                                                    <input type="hidden" name="status" value="@ContactMessageStatus.New" />
+                                                    <input type="hidden" name="filter" value="@activeStatus" />
+                                                    <button type="submit" class="btn btn-outline-secondary">Mark new</button>
+                                                </form>
+                                            }
+                                            @if (message.Status != nameof(ContactMessageStatus.Read))
+                                            {
+                                                <form asp-action="UpdateContactMessageStatus" method="post" class="d-inline ml-1">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="userName" value="@Model.UserName" />
+                                                    <input type="hidden" name="messageId" value="@message.Id" />
+                                                    <input type="hidden" name="status" value="@ContactMessageStatus.Read" />
+                                                    <input type="hidden" name="filter" value="@activeStatus" />
+                                                    <button type="submit" class="btn btn-outline-primary">Mark read</button>
+                                                </form>
+                                            }
+                                            @if (message.Status != nameof(ContactMessageStatus.Archived))
+                                            {
+                                                <form asp-action="UpdateContactMessageStatus" method="post" class="d-inline ml-1">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="userName" value="@Model.UserName" />
+                                                    <input type="hidden" name="messageId" value="@message.Id" />
+                                                    <input type="hidden" name="status" value="@ContactMessageStatus.Archived" />
+                                                    <input type="hidden" name="filter" value="@activeStatus" />
+                                                    <button type="submit" class="btn btn-outline-dark">Archive</button>
+                                                </form>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

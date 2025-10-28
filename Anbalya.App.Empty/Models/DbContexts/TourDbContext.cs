@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Models.Entities;
+using Models.Helper;
 namespace Models.DbContexts
 {
 
@@ -14,6 +15,11 @@ namespace Models.DbContexts
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<PaymentOption> PaymentOptions { get; set; }
         public DbSet<PayPalSettings> PayPalSettings { get; set; }
+        public DbSet<RoyalFacility> RoyalFacilities { get; set; }
+        public DbSet<AboutContent> AboutContents { get; set; }
+        public DbSet<ContactMessage> ContactMessages { get; set; }
+        public DbSet<EmailTemplate> EmailTemplates { get; set; }
+        public DbSet<SmtpSettings> SmtpSettings { get; set; }
         public TourDbContext(DbContextOptions<TourDbContext> options) : base(options)
         {
 
@@ -76,6 +82,231 @@ namespace Models.DbContexts
                     Instructions = "Use Revolut transfer and note your reservation ID for quick confirmation.",
                     IsEnabled = true,
                     UpdatedAt = paymentSeedTimestamp
+                });
+
+            var facilitiesSeedTime = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
+
+            modelBuilder.Entity<RoyalFacility>().HasData(
+                new RoyalFacility
+                {
+                    Id = 1,
+                    IconClass = "lnr lnr-bus",
+                    DisplayOrder = 1,
+                    TitleEn = "Hotel Pick-Up & Drop-Off",
+                    TitleDe = "Hotelabholung & Rücktransfer",
+                    TitleTr = "Otelden Alım & Bırakma",
+                    TitleFa = "ترنسفر رفت و برگشت هتل",
+                    TitleRu = "Трансфер из отеля и обратно",
+                    TitlePl = "Transfer z hotelu w cenie",
+                    TitleAr = "خدمة نقل من وإلى الفندق",
+                    DescriptionEn = "Complimentary transfer from your Antalya hotel to the Kemer yacht harbor and back.",
+                    DescriptionDe = "Kostenloser Transfer von Ihrem Hotel in Antalya zum Hafen von Kemer und zurück.",
+                    DescriptionTr = "Antalya'daki otelinizden Kemer limanına ve dönüşte tekrar otele ücretsiz transfer.",
+                    DescriptionFa = "حمل‌ونقل رایگان از هتل شما در آنتالیا تا بندر یات کمر و بالعکس.",
+                    DescriptionRu = "Бесплатный трансфер из вашего отеля в Анталье до яхтенной марины Кемера и обратно.",
+                    DescriptionPl = "Bezpłatny dojazd z hotelu w Antalyi do mariny w Kemer i z powrotem.",
+                    DescriptionAr = "نقل مجاني من فندقك في أنطاليا إلى مرسى كيمر لليخوت والعودة مرة أخرى.",
+                    CreationTime = facilitiesSeedTime
+                },
+                new RoyalFacility
+                {
+                    Id = 2,
+                    IconClass = "lnr lnr-dinner",
+                    DisplayOrder = 2,
+                    TitleEn = "Fresh Lunch on Board",
+                    TitleDe = "Frisches Mittagessen an Bord",
+                    TitleTr = "Teknede Sıcak Öğle Yemeği",
+                    TitleFa = "ناهار تازه روی عرشه",
+                    TitleRu = "Свежий обед на борту",
+                    TitlePl = "Świeży obiad na pokładzie",
+                    TitleAr = "غداء طازج على متن القارب",
+                    DescriptionEn = "Grilled chicken, salads, and seasonal fruit served during the cruise.",
+                    DescriptionDe = "Gegrilltes Hähnchen, Salate und saisonales Obst während der Kreuzfahrt.",
+                    DescriptionTr = "Tur boyunca ızgara tavuk, salatalar ve mevsim meyveleri servis edilir.",
+                    DescriptionFa = "در طول کروز مرغ کبابی، سالاد و میوه فصل سرو می‌شود.",
+                    DescriptionRu = "Во время круиза подают жареную курицу, салаты и сезонные фрукты.",
+                    DescriptionPl = "Podczas rejsu serwujemy grillowanego kurczaka, sałatki i sezonowe owoce.",
+                    DescriptionAr = "يُقدَّم خلال الرحلة دجاج مشوي وسلطات وفواكه موسمية.",
+                    CreationTime = facilitiesSeedTime
+                },
+                new RoyalFacility
+                {
+                    Id = 3,
+                    IconClass = "lnr lnr-coffee-cup",
+                    DisplayOrder = 3,
+                    TitleEn = "Unlimited Soft Drinks",
+                    TitleDe = "Unbegrenzte Softdrinks",
+                    TitleTr = "Sınırsız Alkolsüz İçecekler",
+                    TitleFa = "نوشیدنی نامحدود",
+                    TitleRu = "Неограниченные напитки",
+                    TitlePl = "Nielimitowane napoje",
+                    TitleAr = "مشروبات بلا حدود",
+                    DescriptionEn = "Tea, coffee, and refreshing soft drinks available throughout the day.",
+                    DescriptionDe = "Tee, Kaffee und erfrischende Softdrinks stehen den ganzen Tag bereit.",
+                    DescriptionTr = "Gün boyu çay, kahve ve ferahlatıcı içecekler sunulur.",
+                    DescriptionFa = "چای، قهوه و نوشیدنی‌های خنک تمام روز در دسترس است.",
+                    DescriptionRu = "Чай, кофе и освежающие безалкогольные напитки доступны весь день.",
+                    DescriptionPl = "Herbata, kawa i orzeźwiające napoje bezalkoholowe dostępne przez cały dzień.",
+                    DescriptionAr = "شاي وقهوة ومشروبات منعشة متاحة طوال اليوم.",
+                    CreationTime = facilitiesSeedTime
+                },
+                new RoyalFacility
+                {
+                    Id = 4,
+                    IconClass = "lnr lnr-sun",
+                    DisplayOrder = 4,
+                    TitleEn = "Paradise Bays Swim Stops",
+                    TitleDe = "Badestopps in Paradiesbuchten",
+                    TitleTr = "Cennet Koylarında Yüzme Molaları",
+                    TitleFa = "توقف برای شنا در خلیج‌های بهشتی",
+                    TitleRu = "Купание в райских бухтах",
+                    TitlePl = "Przystanki na kąpiel w rajskich zatokach",
+                    TitleAr = "توقفات سباحة في خلجان الجنة",
+                    DescriptionEn = "Dive into crystal bays like Phaselis Island and Cennet Cove with 45-minute breaks.",
+                    DescriptionDe = "Schwimmen in kristallklaren Buchten wie Phaselis Island und Cennet Cove mit 45-Minuten-Pausen.",
+                    DescriptionTr = "Phaselis Adası ve Cennet Koyu gibi turkuaz koylarda 45 dakikalık yüzme molaları.",
+                    DescriptionFa = "با توقف‌های ۴۵ دقیقه‌ای در آب‌های شفاف جزیره فاسلیس و خلیج جنّت شنا کنید.",
+                    DescriptionRu = "Купание в прозрачных водах бухт Фазелис и Дженнет с остановками по 45 минут.",
+                    DescriptionPl = "45-minutowe postoje na kąpiel w krystalicznych wodach Phaselis i Cennet.",
+                    DescriptionAr = "اسبح في مياه فيروزية عند جزيرة فاسيليس وخليج جنّت مع توقفات لمدة 45 دقيقة.",
+                    CreationTime = facilitiesSeedTime
+                },
+                new RoyalFacility
+                {
+                    Id = 5,
+                    IconClass = "lnr lnr-users",
+                    DisplayOrder = 5,
+                    TitleEn = "Live Multilingual Guide",
+                    TitleDe = "Live-Guide in mehreren Sprachen",
+                    TitleTr = "Canlı Çok Dilli Rehber",
+                    TitleFa = "راهنمای زنده چندزبانه",
+                    TitleRu = "Живой многоязычный гид",
+                    TitlePl = "Żywy przewodnik wielojęzyczny",
+                    TitleAr = "مرشد حي متعدد اللغات",
+                    DescriptionEn = "Live English, French, German, Polish, Russian speaking guide shares stories and safety tips.",
+                    DescriptionDe = "Moderation auf Englisch, Französisch, Deutsch, Polnisch und Russisch mit Geschichten und Sicherheitstipps.",
+                    DescriptionTr = "İngilizce, Fransızca, Almanca, Lehçe ve Rusça konuşan rehber hikayeler ve güvenlik bilgileri paylaşır.",
+                    DescriptionFa = "میزبان انگلیسی، فرانسوی، آلمانی، لهستانی و روسی داستان‌ها و نکات ایمنی را بیان می‌کند.",
+                    DescriptionRu = "Гид на английском, французском, немецком, польском и русском делится историями и советами по безопасности.",
+                    DescriptionPl = "Prowadzący mówi po angielsku, francusku, niemiecku, polsku i rosyjsku, dzieląc się historiami i zasadami bezpieczeństwa.",
+                    DescriptionAr = "مرشد يتحدث الإنجليزية والفرنسية والألمانية والبولندية والروسية يشارك القصص وإرشادات السلامة.",
+                    CreationTime = facilitiesSeedTime
+                },
+                new RoyalFacility
+                {
+                    Id = 6,
+                    IconClass = "lnr lnr-music-note",
+                    DisplayOrder = 6,
+                    TitleEn = "Sun Deck Loungers & Music",
+                    TitleDe = "Sonnendeck-Liegen & Musik",
+                    TitleTr = "Güneşlenme Güvertesi ve Müzik",
+                    TitleFa = "آفتاب‌گرفتن و موسیقی روی عرشه",
+                    TitleRu = "Солярий и музыка на палубе",
+                    TitlePl = "Leżaki słoneczne i muzyka",
+                    TitleAr = "سطح شمسي وموسيقى",
+                    DescriptionEn = "Relax on upper-deck sunbeds with chill-out music and an optional foam party.",
+                    DescriptionDe = "Entspannen Sie auf dem Oberdeck mit Liegen, Chill-out-Musik und optionaler Schaumparty.",
+                    DescriptionTr = "Üst güvertede şezlonglarda dinlenin, chill-out müzik ve isteğe bağlı köpük partisiyle eğlenin.",
+                    DescriptionFa = "روی صندلی‌های آفتاب‌گیر عرشه بالا استراحت کنید و از موسیقی و فوم‌پارٹی اختیاری لذت ببرید.",
+                    DescriptionRu = "Отдыхайте на лежаках верхней палубы под расслабляющую музыку и пенную вечеринку по желанию.",
+                    DescriptionPl = "Relaks na górnym pokładzie z leżakami, chilloutową muzyką i opcjonalną imprezą pianową.",
+                    DescriptionAr = "استرخِ على أسرة التشمس في السطح العلوي مع موسيقى هادئة وحفلة رغوة اختيارية.",
+                    CreationTime = facilitiesSeedTime
+                }
+            );
+
+            modelBuilder.Entity<AboutContent>().HasData(new AboutContent
+            {
+                Id = 1,
+                ImagePath = "/image/about_bg.jpg",
+                ButtonUrl = "#contact",
+                TitleLine1En = "About Us",
+                TitleLine1De = "Über uns",
+                TitleLine1Tr = "Hakkımızda",
+                TitleLine1Fa = "درباره ما",
+                TitleLine1Ru = "О нас",
+                TitleLine1Pl = "O nas",
+                TitleLine1Ar = "من نحن",
+                TitleLine2En = "Our History · Mission & Vision",
+                TitleLine2De = "Unsere Geschichte · Mission & Vision",
+                TitleLine2Tr = "Hikayemiz · Misyon & Vizyon",
+                TitleLine2Fa = "تاریخچه · ماموریت و چشم‌انداز",
+                TitleLine2Ru = "Наша история · Миссия и видение",
+                TitleLine2Pl = "Nasza historia · Misja i wizja",
+                TitleLine2Ar = "تاريخنا · رسالتنا ورؤيتنا",
+                BodyEn = "From bespoke Antalya experiences to curated tours across Turkey, we craft journeys that blend comfort with discovery.",
+                BodyDe = "Von maßgeschneiderten Antalya-Erlebnissen bis zu kuratierten Türkei-Rundreisen – wir verbinden Komfort mit Entdeckung.",
+                BodyTr = "Antalya'daki özel deneyimlerden Türkiye genelindeki seçkin turlara kadar, konforu keşif duygusuyla harmanlayan yolculuklar tasarlıyoruz.",
+                BodyFa = "از تجربه‌های اختصاصی آنتالیا تا تورهای خاص سراسر ترکیه، سفری می‌سازیم که راحتی و کشف را در کنار هم قرار می‌دهد.",
+                BodyRu = "От индивидуальных впечатлений в Анталии до авторских туров по всей Турции — мы соединяем комфорт и открытие нового.",
+                BodyPl = "Od szytych na miarę przeżyć w Antalyi po starannie dobrane wycieczki po Turcji – łączymy komfort z odkrywaniem.",
+                BodyAr = "من تجارب أنطاليا المصممة حسب الطلب إلى جولات منسقة في عموم تركيا، نصنع رحلات تجمع الراحة بالاكتشاف.",
+                ButtonTextEn = "Request Custom Price",
+                ButtonTextDe = "Individuelles Angebot",
+                ButtonTextTr = "Özel Fiyat Talebi",
+                ButtonTextFa = "درخواست قیمت اختصاصی",
+                ButtonTextRu = "Запросить индивидуальную цену",
+                ButtonTextPl = "Poproś o wycenę",
+                ButtonTextAr = "اطلب عرض سعر خاص"
+            });
+
+            modelBuilder.Entity<EmailTemplate>()
+                .HasIndex(e => new { e.TemplateKey, e.Language })
+                .IsUnique();
+
+            var messagingSeedTime = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero).ToUnixTimeSeconds();
+
+            modelBuilder.Entity<SmtpSettings>().HasData(new SmtpSettings
+            {
+                Id = 1,
+                Host = string.Empty,
+                Port = 587,
+                EnableSsl = true,
+                Username = string.Empty,
+                Password = string.Empty,
+                FromEmail = "no-reply@tourantalya.com",
+                FromName = "Tour Antalya",
+                NotificationEmail = "hello@tourantalya.com",
+                ReplyToEmail = null,
+                CreationTime = messagingSeedTime
+            });
+
+            modelBuilder.Entity<EmailTemplate>().HasData(
+                new EmailTemplate
+                {
+                    Id = 1,
+                    TemplateKey = EmailTemplateKeys.ContactUser,
+                    Subject = "Thank you for contacting Tour Antalya",
+                    Body = "Hello {FullName},\\n\\nThank you for your message. Our team will get back to you shortly.\\n\\nBest regards,\\nTour Antalya",
+                    Language = null,
+                    CreationTime = messagingSeedTime
+                },
+                new EmailTemplate
+                {
+                    Id = 2,
+                    TemplateKey = EmailTemplateKeys.ContactAdmin,
+                    Subject = "New contact request from {FullName}",
+                    Body = "A new contact request has been submitted.\\n\\nName: {FullName}\\nEmail: {Email}\\nMessage:\\n{Message}",
+                    Language = null,
+                    CreationTime = messagingSeedTime
+                },
+                new EmailTemplate
+                {
+                    Id = 3,
+                    TemplateKey = EmailTemplateKeys.ReservationUser,
+                    Subject = "Reservation received – {TourName}",
+                    Body = "Hello {FullName},\\n\\nThank you for booking {TourName} with Tour Antalya. We will confirm the details soon.\\n\\nReservation ID: {ReservationId}\\nPreferred date: {PreferredDate}\\n\\nBest regards,\\nTour Antalya",
+                    Language = null,
+                    CreationTime = messagingSeedTime
+                },
+                new EmailTemplate
+                {
+                    Id = 4,
+                    TemplateKey = EmailTemplateKeys.ReservationAdmin,
+                    Subject = "New reservation – {TourName}",
+                    Body = "A new reservation has been placed.\\n\\nTour: {TourName}\\nCustomer: {FullName}\\nEmail: {Email}\\nPhone: {Phone}\\nReservation ID: {ReservationId}\\nPreferred date: {PreferredDate}\\nAdults: {Adults}\\nChildren: {Children}\\nInfants: {Infants}",
+                    Language = null,
+                    CreationTime = messagingSeedTime
                 });
 
             modelBuilder.Entity<Foto>().HasOne(t => t.Tour).WithMany(t => t.Fotos).HasForeignKey(t => t.TourId);

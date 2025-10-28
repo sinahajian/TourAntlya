@@ -23,6 +23,284 @@ namespace Anbalya.App.Empty.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Models.Entities.AboutContent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BodyAr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BodyDe")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BodyEn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BodyFa")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BodyPl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BodyRu")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BodyTr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ButtonTextAr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ButtonTextDe")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ButtonTextEn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ButtonTextFa")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ButtonTextPl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ButtonTextRu")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ButtonTextTr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ButtonUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("CreationTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleLine1Ar")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleLine1De")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleLine1En")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleLine1Fa")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleLine1Pl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleLine1Ru")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleLine1Tr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleLine2Ar")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleLine2De")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleLine2En")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleLine2Fa")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleLine2Pl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleLine2Ru")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleLine2Tr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AboutContents");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BodyAr = "من تجارب أنطاليا المصممة حسب الطلب إلى جولات منسقة في عموم تركيا، نصنع رحلات تجمع الراحة بالاكتشاف.",
+                            BodyDe = "Von maßgeschneiderten Antalya-Erlebnissen bis zu kuratierten Türkei-Rundreisen – wir verbinden Komfort mit Entdeckung.",
+                            BodyEn = "From bespoke Antalya experiences to curated tours across Turkey, we craft journeys that blend comfort with discovery.",
+                            BodyFa = "از تجربه‌های اختصاصی آنتالیا تا تورهای خاص سراسر ترکیه، سفری می‌سازیم که راحتی و کشف را در کنار هم قرار می‌دهد.",
+                            BodyPl = "Od szytych na miarę przeżyć w Antalyi po starannie dobrane wycieczki po Turcji – łączymy komfort z odkrywaniem.",
+                            BodyRu = "От индивидуальных впечатлений в Анталии до авторских туров по всей Турции — мы соединяем комфорт и открытие нового.",
+                            BodyTr = "Antalya'daki özel deneyimlerden Türkiye genelindeki seçkin turlara kadar, konforu keşif duygusuyla harmanlayan yolculuklar tasarlıyoruz.",
+                            ButtonTextAr = "اطلب عرض سعر خاص",
+                            ButtonTextDe = "Individuelles Angebot",
+                            ButtonTextEn = "Request Custom Price",
+                            ButtonTextFa = "درخواست قیمت اختصاصی",
+                            ButtonTextPl = "Poproś o wycenę",
+                            ButtonTextRu = "Запросить индивидуальную цену",
+                            ButtonTextTr = "Özel Fiyat Talebi",
+                            ButtonUrl = "#contact",
+                            CreationTime = 0L,
+                            ImagePath = "/image/about_bg.jpg",
+                            TitleLine1Ar = "من نحن",
+                            TitleLine1De = "Über uns",
+                            TitleLine1En = "About Us",
+                            TitleLine1Fa = "درباره ما",
+                            TitleLine1Pl = "O nas",
+                            TitleLine1Ru = "О нас",
+                            TitleLine1Tr = "Hakkımızda",
+                            TitleLine2Ar = "تاريخنا · رسالتنا ورؤيتنا",
+                            TitleLine2De = "Unsere Geschichte · Mission & Vision",
+                            TitleLine2En = "Our History · Mission & Vision",
+                            TitleLine2Fa = "تاریخچه · ماموریت و چشم‌انداز",
+                            TitleLine2Pl = "Nasza historia · Misja i wizja",
+                            TitleLine2Ru = "Наша история · Миссия и видение",
+                            TitleLine2Tr = "Hikayemiz · Misyon & Vizyon"
+                        });
+                });
+
+            modelBuilder.Entity("Models.Entities.ContactMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<long>("CreationTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Language")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("UpdatedTime")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ContactMessages");
+                });
+
+            modelBuilder.Entity("Models.Entities.EmailTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("CreationTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Language")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TemplateKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TemplateKey", "Language")
+                        .IsUnique();
+
+                    b.ToTable("EmailTemplates");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Body = "Hello {FullName},\\n\\nThank you for your message. Our team will get back to you shortly.\\n\\nBest regards,\\nTour Antalya",
+                            CreationTime = 1735689600L,
+                            Subject = "Thank you for contacting Tour Antalya",
+                            TemplateKey = "ContactUser"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Body = "A new contact request has been submitted.\\n\\nName: {FullName}\\nEmail: {Email}\\nMessage:\\n{Message}",
+                            CreationTime = 1735689600L,
+                            Subject = "New contact request from {FullName}",
+                            TemplateKey = "ContactAdmin"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Body = "Hello {FullName},\\n\\nThank you for booking {TourName} with Tour Antalya. We will confirm the details soon.\\n\\nReservation ID: {ReservationId}\\nPreferred date: {PreferredDate}\\n\\nBest regards,\\nTour Antalya",
+                            CreationTime = 1735689600L,
+                            Subject = "Reservation received – {TourName}",
+                            TemplateKey = "ReservationUser"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Body = "A new reservation has been placed.\\n\\nTour: {TourName}\\nCustomer: {FullName}\\nEmail: {Email}\\nPhone: {Phone}\\nReservation ID: {ReservationId}\\nPreferred date: {PreferredDate}\\nAdults: {Adults}\\nChildren: {Children}\\nInfants: {Infants}",
+                            CreationTime = 1735689600L,
+                            Subject = "New reservation – {TourName}",
+                            TemplateKey = "ReservationAdmin"
+                        });
+                });
+
             modelBuilder.Entity("Models.Entities.Foto", b =>
                 {
                     b.Property<int>("Id")
@@ -285,7 +563,7 @@ namespace Anbalya.App.Empty.Migrations
                             Id = 1,
                             BusinessEmail = "paypal@example.com",
                             CancelUrl = "https://tourantalya.com/paypal/cancel",
-                            CreationTime = 1761646360L,
+                            CreationTime = 1761690682L,
                             Currency = "EUR",
                             ReturnUrl = "https://tourantalya.com/paypal/success",
                             UseSandbox = true
@@ -454,6 +732,277 @@ namespace Anbalya.App.Empty.Migrations
                     b.HasIndex("TourId");
 
                     b.ToTable("Reservations");
+                });
+
+            modelBuilder.Entity("Models.Entities.RoyalFacility", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<long>("CreationTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("DescriptionAr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DescriptionDe")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DescriptionEn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DescriptionFa")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DescriptionPl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DescriptionRu")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DescriptionTr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("IconClass")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleAr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleDe")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleEn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleFa")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitlePl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleRu")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TitleTr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RoyalFacilities");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreationTime = 1735689600L,
+                            DescriptionAr = "نقل مجاني من فندقك في أنطاليا إلى مرسى كيمر لليخوت والعودة مرة أخرى.",
+                            DescriptionDe = "Kostenloser Transfer von Ihrem Hotel in Antalya zum Hafen von Kemer und zurück.",
+                            DescriptionEn = "Complimentary transfer from your Antalya hotel to the Kemer yacht harbor and back.",
+                            DescriptionFa = "حمل‌ونقل رایگان از هتل شما در آنتالیا تا بندر یات کمر و بالعکس.",
+                            DescriptionPl = "Bezpłatny dojazd z hotelu w Antalyi do mariny w Kemer i z powrotem.",
+                            DescriptionRu = "Бесплатный трансфер из вашего отеля в Анталье до яхтенной марины Кемера и обратно.",
+                            DescriptionTr = "Antalya'daki otelinizden Kemer limanına ve dönüşte tekrar otele ücretsiz transfer.",
+                            DisplayOrder = 1,
+                            IconClass = "lnr lnr-bus",
+                            TitleAr = "خدمة نقل من وإلى الفندق",
+                            TitleDe = "Hotelabholung & Rücktransfer",
+                            TitleEn = "Hotel Pick-Up & Drop-Off",
+                            TitleFa = "ترنسفر رفت و برگشت هتل",
+                            TitlePl = "Transfer z hotelu w cenie",
+                            TitleRu = "Трансфер из отеля и обратно",
+                            TitleTr = "Otelden Alım & Bırakma"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreationTime = 1735689600L,
+                            DescriptionAr = "يُقدَّم خلال الرحلة دجاج مشوي وسلطات وفواكه موسمية.",
+                            DescriptionDe = "Gegrilltes Hähnchen, Salate und saisonales Obst während der Kreuzfahrt.",
+                            DescriptionEn = "Grilled chicken, salads, and seasonal fruit served during the cruise.",
+                            DescriptionFa = "در طول کروز مرغ کبابی، سالاد و میوه فصل سرو می‌شود.",
+                            DescriptionPl = "Podczas rejsu serwujemy grillowanego kurczaka, sałatki i sezonowe owoce.",
+                            DescriptionRu = "Во время круиза подают жареную курицу, салаты и сезонные фрукты.",
+                            DescriptionTr = "Tur boyunca ızgara tavuk, salatalar ve mevsim meyveleri servis edilir.",
+                            DisplayOrder = 2,
+                            IconClass = "lnr lnr-dinner",
+                            TitleAr = "غداء طازج على متن القارب",
+                            TitleDe = "Frisches Mittagessen an Bord",
+                            TitleEn = "Fresh Lunch on Board",
+                            TitleFa = "ناهار تازه روی عرشه",
+                            TitlePl = "Świeży obiad na pokładzie",
+                            TitleRu = "Свежий обед на борту",
+                            TitleTr = "Teknede Sıcak Öğle Yemeği"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreationTime = 1735689600L,
+                            DescriptionAr = "شاي وقهوة ومشروبات منعشة متاحة طوال اليوم.",
+                            DescriptionDe = "Tee, Kaffee und erfrischende Softdrinks stehen den ganzen Tag bereit.",
+                            DescriptionEn = "Tea, coffee, and refreshing soft drinks available throughout the day.",
+                            DescriptionFa = "چای، قهوه و نوشیدنی‌های خنک تمام روز در دسترس است.",
+                            DescriptionPl = "Herbata, kawa i orzeźwiające napoje bezalkoholowe dostępne przez cały dzień.",
+                            DescriptionRu = "Чай, кофе и освежающие безалкогольные напитки доступны весь день.",
+                            DescriptionTr = "Gün boyu çay, kahve ve ferahlatıcı içecekler sunulur.",
+                            DisplayOrder = 3,
+                            IconClass = "lnr lnr-coffee-cup",
+                            TitleAr = "مشروبات بلا حدود",
+                            TitleDe = "Unbegrenzte Softdrinks",
+                            TitleEn = "Unlimited Soft Drinks",
+                            TitleFa = "نوشیدنی نامحدود",
+                            TitlePl = "Nielimitowane napoje",
+                            TitleRu = "Неограниченные напитки",
+                            TitleTr = "Sınırsız Alkolsüz İçecekler"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreationTime = 1735689600L,
+                            DescriptionAr = "اسبح في مياه فيروزية عند جزيرة فاسيليس وخليج جنّت مع توقفات لمدة 45 دقيقة.",
+                            DescriptionDe = "Schwimmen in kristallklaren Buchten wie Phaselis Island und Cennet Cove mit 45-Minuten-Pausen.",
+                            DescriptionEn = "Dive into crystal bays like Phaselis Island and Cennet Cove with 45-minute breaks.",
+                            DescriptionFa = "با توقف‌های ۴۵ دقیقه‌ای در آب‌های شفاف جزیره فاسلیس و خلیج جنّت شنا کنید.",
+                            DescriptionPl = "45-minutowe postoje na kąpiel w krystalicznych wodach Phaselis i Cennet.",
+                            DescriptionRu = "Купание в прозрачных водах бухт Фазелис и Дженнет с остановками по 45 минут.",
+                            DescriptionTr = "Phaselis Adası ve Cennet Koyu gibi turkuaz koylarda 45 dakikalık yüzme molaları.",
+                            DisplayOrder = 4,
+                            IconClass = "lnr lnr-sun",
+                            TitleAr = "توقفات سباحة في خلجان الجنة",
+                            TitleDe = "Badestopps in Paradiesbuchten",
+                            TitleEn = "Paradise Bays Swim Stops",
+                            TitleFa = "توقف برای شنا در خلیج‌های بهشتی",
+                            TitlePl = "Przystanki na kąpiel w rajskich zatokach",
+                            TitleRu = "Купание в райских бухтах",
+                            TitleTr = "Cennet Koylarında Yüzme Molaları"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreationTime = 1735689600L,
+                            DescriptionAr = "مرشد يتحدث الإنجليزية والفرنسية والألمانية والبولندية والروسية يشارك القصص وإرشادات السلامة.",
+                            DescriptionDe = "Moderation auf Englisch, Französisch, Deutsch, Polnisch und Russisch mit Geschichten und Sicherheitstipps.",
+                            DescriptionEn = "Live English, French, German, Polish, Russian speaking guide shares stories and safety tips.",
+                            DescriptionFa = "میزبان انگلیسی، فرانسوی، آلمانی، لهستانی و روسی داستان‌ها و نکات ایمنی را بیان می‌کند.",
+                            DescriptionPl = "Prowadzący mówi po angielsku, francusku, niemiecku, polsku i rosyjsku, dzieląc się historiami i zasadami bezpieczeństwa.",
+                            DescriptionRu = "Гид на английском, французском, немецком, польском и русском делится историями и советами по безопасности.",
+                            DescriptionTr = "İngilizce, Fransızca, Almanca, Lehçe ve Rusça konuşan rehber hikayeler ve güvenlik bilgileri paylaşır.",
+                            DisplayOrder = 5,
+                            IconClass = "lnr lnr-users",
+                            TitleAr = "مرشد حي متعدد اللغات",
+                            TitleDe = "Live-Guide in mehreren Sprachen",
+                            TitleEn = "Live Multilingual Guide",
+                            TitleFa = "راهنمای زنده چندزبانه",
+                            TitlePl = "Żywy przewodnik wielojęzyczny",
+                            TitleRu = "Живой многоязычный гид",
+                            TitleTr = "Canlı Çok Dilli Rehber"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreationTime = 1735689600L,
+                            DescriptionAr = "استرخِ على أسرة التشمس في السطح العلوي مع موسيقى هادئة وحفلة رغوة اختيارية.",
+                            DescriptionDe = "Entspannen Sie auf dem Oberdeck mit Liegen, Chill-out-Musik und optionaler Schaumparty.",
+                            DescriptionEn = "Relax on upper-deck sunbeds with chill-out music and an optional foam party.",
+                            DescriptionFa = "روی صندلی‌های آفتاب‌گیر عرشه بالا استراحت کنید و از موسیقی و فوم‌پارٹی اختیاری لذت ببرید.",
+                            DescriptionPl = "Relaks na górnym pokładzie z leżakami, chilloutową muzyką i opcjonalną imprezą pianową.",
+                            DescriptionRu = "Отдыхайте на лежаках верхней палубы под расслабляющую музыку и пенную вечеринку по желанию.",
+                            DescriptionTr = "Üst güvertede şezlonglarda dinlenin, chill-out müzik ve isteğe bağlı köpük partisiyle eğlenin.",
+                            DisplayOrder = 6,
+                            IconClass = "lnr lnr-music-note",
+                            TitleAr = "سطح شمسي وموسيقى",
+                            TitleDe = "Sonnendeck-Liegen & Musik",
+                            TitleEn = "Sun Deck Loungers & Music",
+                            TitleFa = "آفتاب‌گرفتن و موسیقی روی عرشه",
+                            TitlePl = "Leżaki słoneczne i muzyka",
+                            TitleRu = "Солярий и музыка на палубе",
+                            TitleTr = "Güneşlenme Güvertesi ve Müzik"
+                        });
+                });
+
+            modelBuilder.Entity("Models.Entities.SmtpSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<long>("CreationTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("EnableSsl")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("FromEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FromName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Host")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("NotificationEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Port")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ReplyToEmail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SmtpSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreationTime = 1735689600L,
+                            EnableSsl = true,
+                            FromEmail = "no-reply@tourantalya.com",
+                            FromName = "Tour Antalya",
+                            Host = "",
+                            NotificationEmail = "hello@tourantalya.com",
+                            Password = "",
+                            Port = 587,
+                            Username = ""
+                        });
                 });
 
             modelBuilder.Entity("Models.Entities.Tour", b =>

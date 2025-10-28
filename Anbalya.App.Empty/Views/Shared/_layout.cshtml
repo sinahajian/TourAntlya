@@ -21,6 +21,10 @@
     var footerNewsletterPlaceholder = StaticTextCatalog.Get(currentLanguageCode, "footer.newsletter.placeholder");
     var footerNewsletterSubmit = StaticTextCatalog.Get(currentLanguageCode, "footer.newsletter.submit");
     var footerFollow = StaticTextCatalog.Get(currentLanguageCode, "footer.follow");
+    var rawTitle = ViewData["Title"] as string;
+    var seoTitle = string.IsNullOrWhiteSpace(rawTitle)
+        ? "Antalya Tours | Anbalya Tour"
+        : $"{rawTitle} | Antalya Tours | Anbalya Tour";
 }
 
 <!DOCTYPE html>
@@ -31,7 +35,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>Royal Hotel</title>
+    <title>@seoTitle</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="@Url.Content("~/css/bootstrap.css")">
     <link rel="stylesheet" href="@Url.Content("~/vendors/linericon/style.css")">
@@ -63,7 +67,7 @@
                 <div class="collapse navbar-collapse offset" id="navbarSupportedContent">
                     <ul class="nav navbar-nav menu_nav @navAlignmentClass">
                         <li class="nav-item active"><a class="nav-link" href="@Url.Action("Index", "Home")">@navHome</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">@navAbout</a></li>
+                        <li class="nav-item"><a class="nav-link" href="@Url.Action("About", "Home")">@navAbout</a></li>
                         <li class="nav-item"><a class="nav-link" href="#">@navAccommodation</a></li>
                         <li class="nav-item"><a class="nav-link" href="#">@navGallery</a></li>
                         <li class="nav-item submenu dropdown">

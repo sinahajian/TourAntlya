@@ -17,6 +17,7 @@
     <title>@pageTitle</title>
 
     <link rel="stylesheet" href="~/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/vendors/linericon/style.css" />
     <link rel="stylesheet" href="~/css/font-awesome.min.css" />
     <link rel="stylesheet" href="~/css/manager-dashboard.css" />
 
@@ -63,10 +64,34 @@
                     <span>Landing Content</span>
                 </a>
             </li>
+            <li class="nav-item @(string.Equals(currentAction, "About", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+                <a class="nav-link" href="@Url.Action("About", "Managers", new { userName = manager?.UserName })">
+                    <i class="fa fa-fw fa-address-card"></i>
+                    <span>About Us</span>
+                </a>
+            </li>
             <li class="nav-item @(string.Equals(currentAction, "PaymentOptions", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
                 <a class="nav-link" href="@Url.Action("PaymentOptions", "Managers", new { userName = manager?.UserName })">
                     <i class="fa fa-fw fa-credit-card"></i>
                     <span>Payment Settings</span>
+                </a>
+            </li>
+            <li class="nav-item @(string.Equals(currentAction, "Facilities", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+                <a class="nav-link" href="@Url.Action("Facilities", "Managers", new { userName = manager?.UserName })">
+                    <i class="fa fa-fw fa-building"></i>
+                    <span>Royal Facilities</span>
+                </a>
+            </li>
+            <li class="nav-item @(string.Equals(currentAction, "ContactMessages", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+                <a class="nav-link" href="@Url.Action("ContactMessages", "Managers", new { userName = manager?.UserName })">
+                    <i class="fa fa-fw fa-envelope-open"></i>
+                    <span>Contact Messages</span>
+                </a>
+            </li>
+            <li class="nav-item @(string.Equals(currentAction, "EmailSettings", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+                <a class="nav-link" href="@Url.Action("EmailSettings", "Managers", new { userName = manager?.UserName })">
+                    <i class="fa fa-fw fa-paper-plane"></i>
+                    <span>Email Settings</span>
                 </a>
             </li>
 

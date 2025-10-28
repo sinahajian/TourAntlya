@@ -1,0 +1,42 @@
+public record AboutContentDto(
+    string TitleLine1,
+    string TitleLine2,
+    string Body,
+    string ButtonText,
+    string ButtonUrl,
+    string ImagePath
+);
+
+public record AboutContentEditDto(
+    int Id,
+    string ImagePath,
+    string ButtonUrl,
+    string TitleLine1En,
+    string TitleLine1De,
+    string TitleLine1Tr,
+    string TitleLine1Fa,
+    string TitleLine1Ru,
+    string TitleLine1Pl,
+    string TitleLine1Ar,
+    string TitleLine2En,
+    string TitleLine2De,
+    string TitleLine2Tr,
+    string TitleLine2Fa,
+    string TitleLine2Ru,
+    string TitleLine2Pl,
+    string TitleLine2Ar,
+    string BodyEn,
+    string BodyDe,
+    string BodyTr,
+    string BodyFa,
+    string BodyRu,
+    string BodyPl,
+    string BodyAr,
+    string ButtonTextEn,
+    string ButtonTextDe,
+    string ButtonTextTr,
+    string ButtonTextFa,
+    string ButtonTextRu,
+    string ButtonTextPl,
+    string ButtonTextAr
+);

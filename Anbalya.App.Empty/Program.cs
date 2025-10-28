@@ -3,6 +3,7 @@ using Models.DbContexts;
 using Models.Helper;
 using Models.Interface;
 using Models.Repository;
+using Models.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,13 +27,18 @@ builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddScoped<IPaymentOptionRepository, PaymentOptionRepository>();
 builder.Services.AddScoped<IPayPalSettingsRepository, PayPalSettingsRepository>();
 builder.Services.AddScoped<ILanguageResolver, LanguageResolver>();
+builder.Services.AddScoped<IRoyalFacilityRepository, RoyalFacilityRepository>();
+builder.Services.AddScoped<IAboutContentRepository, AboutContentRepository>();
+builder.Services.AddScoped<IContactMessageRepository, ContactMessageRepository>();
+builder.Services.AddScoped<IEmailConfigurationRepository, EmailConfigurationRepository>();
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TourDbContext>();
-    db.Database.Migrate("turkish");        // جداول را می‌سازد/آپدیت می‌کند
+    db.Database.Migrate("contactus");        // جداول را می‌سازد/آپدیت می‌کند
     // (اختیاری) اگر Seed داده نیاز داری، اینجا انجام بده
 }
 
