@@ -78,8 +78,11 @@
             <div class="booking-step" data-step="0">
                 <div class="form-group">
                     <label asp-for="Form.PreferredDate">Choose your tour date</label>
-                    <input asp-for="Form.PreferredDate" type="date" class="form-control" />
-                    <small class="form-text text-muted">Pick your preferred day or leave empty if travel dates are flexible.</small>
+                    @{
+                        var earliestDate = DateTime.UtcNow.Date.AddDays(1).ToString("yyyy-MM-dd");
+                    }
+                    <input asp-for="Form.PreferredDate" type="date" class="form-control" min="@earliestDate" />
+                    <small class="form-text text-muted">Pick a date at least one day from now, or leave empty if flexible.</small>
                     <span asp-validation-for="Form.PreferredDate" class="text-danger small"></span>
                 </div>
 

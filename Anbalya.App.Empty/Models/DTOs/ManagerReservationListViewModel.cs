@@ -25,4 +25,6 @@ public class ManagerReservationListViewModel
     public int PendingCount => Reservations.Count(r => r.Status == ReservationStatus.Pending);
     public int ConfirmedCount => Reservations.Count(r => r.Status == ReservationStatus.Confirmed);
     public int PaidCount => Reservations.Count(r => r.PaymentStatus == PaymentStatus.Paid);
+    public int CancelledCount => Reservations.Count(r => r.Status == ReservationStatus.Cancelled);
+    public int FailedCount => Reservations.Count(r => r.PaymentStatus == PaymentStatus.Failed);
 }

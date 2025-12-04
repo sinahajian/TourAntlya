@@ -10,10 +10,29 @@
     var paymentStatuses = Enum.GetValues(typeof(PaymentStatus)).Cast<PaymentStatus>().ToList();
 }
 
+@functions {
+    public string PaymentBadgeClass(PaymentStatus status) => status switch
+    {
+        PaymentStatus.Paid => "badge badge-success",
+        PaymentStatus.Pending => "badge badge-warning",
+        PaymentStatus.Failed => "badge badge-danger",
+        PaymentStatus.Refunded => "badge badge-info",
+        _ => "badge badge-secondary"
+    };
+
+    public string ReservationBadgeClass(ReservationStatus status) => status switch
+    {
+        ReservationStatus.Confirmed => "badge badge-success",
+        ReservationStatus.Pending => "badge badge-warning",
+        ReservationStatus.Cancelled => "badge badge-secondary",
+        _ => "badge badge-light"
+    };
+}
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h3 mb-0">Reservations</h1>
     <div class="text-muted small">
-        Pending: <strong>@Model.PendingCount</strong> · Confirmed: <strong>@Model.ConfirmedCount</strong> · Paid: <strong>@Model.PaidCount</strong>
+        Pending: <strong>@Model.PendingCount</strong> · Confirmed: <strong>@Model.ConfirmedCount</strong> · Paid: <strong>@Model.PaidCount</strong> · Cancelled: <strong>@Model.CancelledCount</strong> · Failed: <strong>@Model.FailedCount</strong>
     </div>
 </div>
 
@@ -74,7 +93,7 @@
                             </td>
                             <td class="align-middle">
                                 <strong>@reservation.TourName</strong>
-                                <div class="small text-muted">Ref: TA-@reservation.Id.ToString("D6")</div>
+                                <div class="small text-muted">Ref: @(reservation.PaymentReference ?? $"TA-{reservation.Id:D6}")</div>
                             </td>
                             <td class="align-middle">
                                 <div>@reservation.FullName</div>
@@ -102,11 +121,11 @@
                                 <div>Children: @reservation.Children</div>
                                 <div>Infants: @reservation.Infants</div>
                             </td>
-                            <td class="align-middle text-center"><strong>@reservation.TotalPrice</strong></td>
+                            <td class="align-middle text-center"><strong>@reservation.TotalPrice.ToString("N0")</strong></td>
                             <td class="align-middle">
                                 <div class="badge badge-info mr-1">@reservation.PaymentMethod</div>
-                                <div class="badge @(reservation.PaymentStatus == PaymentStatus.Paid ? "badge-success" : reservation.PaymentStatus == PaymentStatus.Pending ? "badge-warning" : "badge-secondary")">@reservation.PaymentStatus</div>
-                                <div class="badge @(reservation.Status == ReservationStatus.Confirmed ? "badge-success" : reservation.Status == ReservationStatus.Pending ? "badge-warning" : "badge-secondary")">@reservation.Status</div>
+                                <div class="@PaymentBadgeClass(reservation.PaymentStatus) mr-1">@reservation.PaymentStatus</div>
+                                <div class="@ReservationBadgeClass(reservation.Status)">@reservation.Status</div>
                                 @if (!string.IsNullOrWhiteSpace(reservation.PaymentReference))
                                 {
                                     <div class="small text-muted">Ref: @reservation.PaymentReference</div>

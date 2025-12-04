@@ -122,7 +122,10 @@ namespace Controllers
             var (manager, redirect) = await ResolveManagerAsync(userName, ct);
             if (redirect is not null) return redirect;
 
-            var dashboardModel = ManagerDashboardViewModel.Create(manager!);
+            var reservations = await _reservationRepository.ListAsync(null, ct);
+            var reservationDtos = reservations.Select(ReservationDetailsDto.FromEntity).ToList();
+
+            var dashboardModel = ManagerDashboardViewModel.Create(manager!, reservationDtos);
             ViewData["Manager"] = manager;
 
             return View(dashboardModel);

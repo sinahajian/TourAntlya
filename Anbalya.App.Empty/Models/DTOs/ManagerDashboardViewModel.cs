@@ -1,64 +1,77 @@
 using System.Collections.Generic;
+using System.Linq;
+using Models.Entities;
 
 public class ManagerDashboardViewModel
 {
     private ManagerDashboardViewModel(
         ManagerDto manager,
+        ReservationDashboardSummary summary,
         IReadOnlyList<DashboardCard> summaryCards,
-        IReadOnlyList<ProgressItem> projects,
-        IReadOnlyList<ColorCard> paletteCards)
+        IReadOnlyList<ReservationDetailsDto> recentReservations)
     {
         Manager = manager;
+        Summary = summary;
         SummaryCards = summaryCards;
-        Projects = projects;
-        PaletteCards = paletteCards;
+        RecentReservations = recentReservations;
     }
 
     public ManagerDto Manager { get; }
 
+    public ReservationDashboardSummary Summary { get; }
+
     public IReadOnlyList<DashboardCard> SummaryCards { get; }
 
-    public IReadOnlyList<ProgressItem> Projects { get; }
+    public IReadOnlyList<ReservationDetailsDto> RecentReservations { get; }
 
-    public IReadOnlyList<ColorCard> PaletteCards { get; }
-
-    public static ManagerDashboardViewModel Create(ManagerDto manager)
+    public static ManagerDashboardViewModel Create(ManagerDto manager, IReadOnlyList<ReservationDetailsDto> reservations)
     {
+        var summary = ReservationDashboardSummary.Create(reservations);
+        var recentReservations = reservations
+            .OrderByDescending(r => r.CreatedAt)
+            .ThenByDescending(r => r.Id)
+            .Take(8)
+            .ToList();
+
         var cards = new List<DashboardCard>
         {
-            new("Earnings (Monthly)", "text-primary", "$40,000", "fa fa-calendar fa-2x text-gray-300", "border-left-primary"),
-            new("Earnings (Annual)", "text-success", "$215,000", "fa fa-money fa-2x text-gray-300", "border-left-success"),
-            new("Tasks", "text-info", "50%", "fa fa-clipboard fa-2x text-gray-300", "border-left-info"),
-            new("Pending Requests", "text-warning", "18", "fa fa-comments fa-2x text-gray-300", "border-left-warning")
+            new("Total reservations", "text-primary", summary.Total.ToString("N0"), "fa fa-ticket fa-2x text-gray-300", "border-left-primary"),
+            new("Paid bookings", "text-success", $"{summary.Paid:N0} · €{summary.TotalRevenue:N0}", "fa fa-check-circle fa-2x text-gray-300", "border-left-success"),
+            new("Pending payment", "text-warning", summary.Pending.ToString("N0"), "fa fa-clock-o fa-2x text-gray-300", "border-left-warning"),
+            new("Cancelled / failed", "text-danger", (summary.Cancelled + summary.Failed).ToString("N0"), "fa fa-times-circle fa-2x text-gray-300", "border-left-danger")
         };
 
-        var projects = new List<ProgressItem>
-        {
-            new("Server Migration", 20, "bg-danger"),
-            new("Sales Tracking", 40, "bg-warning"),
-            new("Customer Database", 60, "bg-primary"),
-            new("Payout Details", 80, "bg-info"),
-            new("Account Setup", 100, "bg-success")
-        };
-
-        var palette = new List<ColorCard>
-        {
-            new("Primary", "#4e73df", "bg-primary", true),
-            new("Success", "#1cc88a", "bg-success", true),
-            new("Info", "#36b9cc", "bg-info", true),
-            new("Warning", "#f6c23e", "bg-warning", true),
-            new("Danger", "#e74a3b", "bg-danger", true),
-            new("Secondary", "#858796", "bg-secondary", true),
-            new("Light", "#f8f9fc", "bg-light", false),
-            new("Dark", "#5a5c69", "bg-dark", true)
-        };
-
-        return new ManagerDashboardViewModel(manager, cards, projects, palette);
+        return new ManagerDashboardViewModel(manager, summary, cards, recentReservations);
     }
 }
 
 public record DashboardCard(string Title, string AccentClass, string Value, string IconCss, string BorderCss);
 
-public record ProgressItem(string Title, int Percentage, string ProgressBarClass);
+public record ReservationDashboardSummary(
+    int Total,
+    int Pending,
+    int Confirmed,
+    int Cancelled,
+    int Paid,
+    int Failed,
+    int TotalRevenue)
+{
+    public static ReservationDashboardSummary Create(IReadOnlyList<ReservationDetailsDto> reservations)
+    {
+        var pending = reservations.Count(r => r.PaymentStatus == PaymentStatus.Pending);
+        var paid = reservations.Count(r => r.PaymentStatus == PaymentStatus.Paid);
+        var failed = reservations.Count(r => r.PaymentStatus == PaymentStatus.Failed);
+        var cancelled = reservations.Count(r => r.Status == ReservationStatus.Cancelled);
+        var confirmed = reservations.Count(r => r.Status == ReservationStatus.Confirmed);
+        var revenue = reservations.Where(r => r.PaymentStatus == PaymentStatus.Paid).Sum(r => r.TotalPrice);
 
-public record ColorCard(string Title, string HexCode, string BackgroundClass, bool UsesLightText);
+        return new ReservationDashboardSummary(
+            reservations.Count,
+            pending,
+            confirmed,
+            cancelled,
+            paid,
+            failed,
+            revenue);
+    }
+}

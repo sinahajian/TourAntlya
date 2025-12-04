@@ -13,6 +13,7 @@ namespace Controllers
 {
     public class HomeController : Controller
     {
+        private const string DefaultAdminEmail = "anbalya@proton.me";
 
         private readonly ITourRepository _tourRepository;
         private readonly ILanguageResolver _langResolver;
@@ -464,7 +465,7 @@ namespace Controllers
                 {
                     await _reservationRepository.UpdateStatusAsync(
                         reservationEntity.Id,
-                        ReservationStatus.Pending,
+                        ReservationStatus.Cancelled,
                         PaymentStatus.Failed,
                         invoice,
                         ct);
@@ -473,6 +474,11 @@ namespace Controllers
                     reservation = ReservationDetailsDto.FromEntity(reservationEntity);
                     var reservationLang = reservationEntity.Language ?? lang;
                     tour = await _tourRepository.GetByIdAsync(reservationEntity.TourId, reservationLang, ct);
+
+                    if (tour is not null && reservation is not null)
+                    {
+                        await SendPaymentFailedEmailsAsync(tour, reservation, amount, currency, reservationLang, ct);
+                    }
                 }
                 else
                 {
@@ -504,9 +510,9 @@ namespace Controllers
 
         private void ValidateReservationForm(TourReservationInputModel form)
         {
-            if (form.PreferredDate.HasValue && form.PreferredDate.Value.Date < DateTime.UtcNow.Date)
+            if (form.PreferredDate.HasValue && form.PreferredDate.Value.Date <= DateTime.UtcNow.Date)
             {
-                ModelState.AddModelError(nameof(form.PreferredDate), "Please choose a future date.");
+                ModelState.AddModelError(nameof(form.PreferredDate), "Please choose a date at least 1 day in advance.");
             }
 
             var totalGuests = Math.Max(0, form.Adults) + Math.Max(0, form.Children) + Math.Max(0, form.Infants);
@@ -687,6 +693,66 @@ namespace Controllers
             }
         }
 
+        private async Task SendPaymentFailedEmailsAsync(
+            TourDto tour,
+            ReservationDetailsDto reservation,
+            decimal amount,
+            string currency,
+            string language,
+            CancellationToken ct)
+        {
+            var (tokens, smtp, _) = await BuildReservationContextAsync(tour, reservation, language, ct);
+            var currencyCode = string.IsNullOrWhiteSpace(currency) ? "EUR" : currency.ToUpperInvariant();
+            var effectiveAmount = amount > 0 ? amount : Convert.ToDecimal(reservation.TotalPrice);
+            tokens["Currency"] = currencyCode;
+            tokens["Amount"] = effectiveAmount.ToString("N2", CultureInfo.InvariantCulture);
+            tokens["AmountWithCurrency"] = $"{currencyCode} {tokens["Amount"]}";
+
+            var guestName = tokens["FullName"];
+            var paymentReferenceDisplay = string.IsNullOrWhiteSpace(tokens["PaymentReference"]) ? "—" : tokens["PaymentReference"];
+            var userSubject = $"Payment not completed – {tokens["TourName"]}";
+            var userBody = $@"
+<p>Hi {guestName},</p>
+<p>Your PayPal payment for <strong>{tokens["TourName"]}</strong> was cancelled or not completed.</p>
+<p>
+    Reservation ID: <strong>#{tokens["ReservationId"]}</strong><br/>
+    Payment reference: <strong>{paymentReferenceDisplay}</strong><br/>
+    Amount: {tokens["AmountWithCurrency"]}
+</p>
+<p>Your reservation remains pending. Please retry the payment or contact us to confirm another payment method.</p>";
+
+            await _emailSender.SendEmailAsync(
+                reservation.CustomerEmail,
+                userSubject,
+                userBody,
+                toName: guestName,
+                isBodyHtml: true,
+                ct: ct);
+
+            var adminRecipients = ParseRecipients(smtp.NotificationEmail);
+            if (adminRecipients.Count > 0)
+            {
+                var adminSubject = $"Payment failed/cancelled – {tokens["TourName"]}";
+                var adminBody = $@"
+<p>A PayPal payment attempt was not completed.</p>
+<table style=""width:100%;border-collapse:collapse;"">
+    <tr><th align=""left"" style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">Guest</th><td style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">{guestName} ({tokens["Email"]})</td></tr>
+    <tr><th align=""left"" style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">Amount</th><td style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">{tokens["AmountWithCurrency"]}</td></tr>
+    <tr><th align=""left"" style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">Reference</th><td style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">{paymentReferenceDisplay}</td></tr>
+    <tr><th align=""left"" style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">Reservation</th><td style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">#{tokens["ReservationId"]} – {tokens["TourName"]}</td></tr>
+    <tr><th align=""left"" style=""padding:6px 8px;"">Created</th><td style=""padding:6px 8px;"">{tokens["CreatedAt"]}</td></tr>
+</table>
+<p>Please reach out to the guest to arrange payment.</p>";
+
+                await _emailSender.SendEmailAsync(
+                    adminRecipients,
+                    adminSubject,
+                    adminBody,
+                    isBodyHtml: true,
+                    ct: ct);
+            }
+        }
+
         private async Task<EmailTemplate?> ResolveTemplateAsync(string templateKey, string language, CancellationToken ct)
         {
             var normalized = LanguageCatalog.Normalize(language);
@@ -764,18 +830,25 @@ namespace Controllers
 
         private static List<string> ParseRecipients(string? addresses)
         {
-            if (string.IsNullOrWhiteSpace(addresses))
+            var recipients = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(addresses))
             {
-                return new List<string>();
+                var separators = new[] { ',', ';', ' ' };
+                recipients = addresses
+                    .Split(separators, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(address => address.Trim())
+                    .Where(address => !string.IsNullOrWhiteSpace(address))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
             }
 
-            var separators = new[] { ',', ';', ' ' };
-            return addresses
-                .Split(separators, StringSplitOptions.RemoveEmptyEntries)
-                .Select(address => address.Trim())
-                .Where(address => !string.IsNullOrWhiteSpace(address))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
+            if (!recipients.Contains(DefaultAdminEmail, StringComparer.OrdinalIgnoreCase))
+            {
+                recipients.Add(DefaultAdminEmail);
+            }
+
+            return recipients;
         }
     }
 }
