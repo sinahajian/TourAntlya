@@ -30,7 +30,8 @@
 
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark" id="accordionSidebar">
 
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="@Url.Action("Index", "Managers", new { userName = manager?.UserName })">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center"
+                href="@Url.Action("Index", "Managers", new { userName = manager?.UserName })">
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fa fa-smile-o"></i>
                 </div>
@@ -39,63 +40,78 @@
 
             <hr class="sidebar-divider my-0" />
 
-            <li class="nav-item @(string.Equals(currentAction, "Index", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+            <li
+                class="nav-item @(string.Equals(currentAction, "Index", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
                 <a class="nav-link" href="@Url.Action("Index", "Managers", new { userName = manager?.UserName })">
                     <i class="fa fa-fw fa-tachometer"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
 
-            <li class="nav-item @(string.Equals(currentAction, "Tours", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+            <li
+                class="nav-item @(string.Equals(currentAction, "Tours", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
                 <a class="nav-link" href="@Url.Action("Tours", "Managers", new { userName = manager?.UserName })">
                     <i class="fa fa-fw fa-suitcase"></i>
                     <span>Manage Tours</span>
                 </a>
             </li>
-            <li class="nav-item @(string.Equals(currentAction, "Reservations", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
-                <a class="nav-link" href="@Url.Action("Reservations", "Managers", new { userName = manager?.UserName })">
+            <li
+                class="nav-item @(string.Equals(currentAction, "Reservations", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+                <a class="nav-link"
+                    href="@Url.Action("Reservations", "Managers", new { userName = manager?.UserName })">
                     <i class="fa fa-fw fa-calendar-check-o"></i>
                     <span>Reservations</span>
                 </a>
             </li>
-            <li class="nav-item @(string.Equals(currentAction, "LandingContent", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
-                <a class="nav-link" href="@Url.Action("LandingContent", "Managers", new { userName = manager?.UserName })">
+            <li
+                class="nav-item @(string.Equals(currentAction, "LandingContent", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+                <a class="nav-link"
+                    href="@Url.Action("LandingContent", "Managers", new { userName = manager?.UserName })">
                     <i class="fa fa-fw fa-bullhorn"></i>
                     <span>Landing Content</span>
                 </a>
             </li>
-            <li class="nav-item @(string.Equals(currentAction, "About", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+            <li
+                class="nav-item @(string.Equals(currentAction, "About", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
                 <a class="nav-link" href="@Url.Action("About", "Managers", new { userName = manager?.UserName })">
                     <i class="fa fa-fw fa-address-card"></i>
                     <span>About Us</span>
                 </a>
             </li>
-            <li class="nav-item @(string.Equals(currentAction, "PaymentOptions", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
-                <a class="nav-link" href="@Url.Action("PaymentOptions", "Managers", new { userName = manager?.UserName })">
+            <li
+                class="nav-item @(string.Equals(currentAction, "PaymentOptions", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+                <a class="nav-link"
+                    href="@Url.Action("PaymentOptions", "Managers", new { userName = manager?.UserName })">
                     <i class="fa fa-fw fa-credit-card"></i>
                     <span>Payment Settings</span>
                 </a>
             </li>
-            <li class="nav-item @(string.Equals(currentAction, "Facilities", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+            <li
+                class="nav-item @(string.Equals(currentAction, "Facilities", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
                 <a class="nav-link" href="@Url.Action("Facilities", "Managers", new { userName = manager?.UserName })">
                     <i class="fa fa-fw fa-building"></i>
-                    <span>Royal Facilities</span>
+                    <span>Anbalya Facilities</span>
                 </a>
             </li>
-            <li class="nav-item @(string.Equals(currentAction, "ContactMessages", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
-                <a class="nav-link" href="@Url.Action("ContactMessages", "Managers", new { userName = manager?.UserName })">
+            <li
+                class="nav-item @(string.Equals(currentAction, "ContactMessages", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+                <a class="nav-link"
+                    href="@Url.Action("ContactMessages", "Managers", new { userName = manager?.UserName })">
                     <i class="fa fa-fw fa-envelope-open"></i>
                     <span>Contact Messages</span>
                 </a>
             </li>
-            <li class="nav-item @(string.Equals(currentAction, "EmailSettings", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
-                <a class="nav-link" href="@Url.Action("EmailSettings", "Managers", new { userName = manager?.UserName })">
+            <li
+                class="nav-item @(string.Equals(currentAction, "EmailSettings", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+                <a class="nav-link"
+                    href="@Url.Action("EmailSettings", "Managers", new { userName = manager?.UserName })">
                     <i class="fa fa-fw fa-paper-plane"></i>
                     <span>Email Settings</span>
                 </a>
             </li>
 
-            <li class="nav-item @(string.Equals(currentAction, "AddTour", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
+            <li
+                class="nav-item @(string.Equals(currentAction, "AddTour", System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty)">
                 <a class="nav-link" href="@Url.Action("AddTour", "Managers", new { userName = manager?.UserName })">
                     <i class="fa fa-fw fa-plus"></i>
                     <span>Add Tour</span>
@@ -118,7 +134,8 @@
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+                    <form
+                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
                         <div class="input-group">
                             <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
                                 aria-label="Search" aria-describedby="basic-addon2" />
@@ -245,8 +262,7 @@
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">@manager?.Name</span>
-                                <img class="img-profile rounded-circle"
-                                    src="@Url.Content("~/image/History.png")"
+                                <img class="img-profile rounded-circle" src="@Url.Content("~/image/History.png")"
                                     alt="manager avatar">
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
@@ -264,10 +280,14 @@
                                     Activity Log
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="@Url.Action("LoginManagers", "Managers")">
-                                    <i class="fa fa-sign-out fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Logout
-                                </a>
+                                <form asp-action="Logout" asp-controller="Managers" method="post" class="px-0"
+                                    id="manager-logout-form">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="dropdown-item btn btn-link text-start w-100">
+                                        <i class="fa fa-sign-out fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Logout
+                                    </button>
+                                </form>
                             </div>
                         </li>
 

@@ -326,6 +326,68 @@ namespace Anbalya.App.Empty.Migrations
                     b.ToTable("Fotos");
                 });
 
+            modelBuilder.Entity("Models.Entities.InvoiceSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccentColor")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("CompanyAddress")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<string>("CompanyEmail")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("CompanyPhone")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<long>("CreationTime")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FooterHtml")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HeaderHtml")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("IntroHtml")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("LogoPath")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("TermsHtml")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InvoiceSettings");
+                });
+
             modelBuilder.Entity("Models.Entities.LandingContent", b =>
                 {
                     b.Property<int>("Id")
@@ -539,6 +601,14 @@ namespace Anbalya.App.Empty.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClientSecret")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<long>("CreationTime")
                         .HasColumnType("bigint");
 
@@ -563,7 +633,9 @@ namespace Anbalya.App.Empty.Migrations
                             Id = 1,
                             BusinessEmail = "paypal@example.com",
                             CancelUrl = "https://tourantalya.com/paypal/cancel",
-                            CreationTime = 1761692185L,
+                            ClientId = "",
+                            ClientSecret = "",
+                            CreationTime = 1762107663L,
                             Currency = "EUR",
                             ReturnUrl = "https://tourantalya.com/paypal/success",
                             UseSandbox = true
@@ -619,28 +691,6 @@ namespace Anbalya.App.Empty.Migrations
                             Instructions = "Send the payment to the PayPal account above and include your reservation ID in the notes.",
                             IsEnabled = true,
                             Method = 0,
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = 2,
-                            AccountIdentifier = "**** **** **** 4242",
-                            CreationTime = 0L,
-                            DisplayName = "Visa Card",
-                            Instructions = "Contact our team to complete the Visa payment securely.",
-                            IsEnabled = true,
-                            Method = 1,
-                            UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
-                        },
-                        new
-                        {
-                            Id = 3,
-                            AccountIdentifier = "REVOLUT-12345678",
-                            CreationTime = 0L,
-                            DisplayName = "Revolut",
-                            Instructions = "Use Revolut transfer and note your reservation ID for quick confirmation.",
-                            IsEnabled = true,
-                            Method = 2,
                             UpdatedAt = new DateTimeOffset(new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         });
                 });

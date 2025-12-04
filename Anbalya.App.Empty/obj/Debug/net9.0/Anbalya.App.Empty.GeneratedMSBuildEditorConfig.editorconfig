@@ -56,6 +56,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9QYXJ0aWFscy9fVG91ck92ZXJ2aWV3LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/PayPalCancel.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9QYXlQYWxDYW5jZWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/PayPalSuccess.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9QYXlQYWxTdWNjZXNzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/sinahajianmanesh/TourAntalya/Anbalya.App.Empty/Views/Home/ReservationConfirmation.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSG9tZS9SZXNlcnZhdGlvbkNvbmZpcm1hdGlvbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

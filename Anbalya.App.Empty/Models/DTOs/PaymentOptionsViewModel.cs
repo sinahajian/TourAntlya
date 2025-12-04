@@ -17,6 +17,18 @@ public class PaymentOptionsViewModel
             .Select(PaymentOptionInputModel.FromEntity)
             .ToList();
 
+        if (optionList.Count == 0)
+        {
+            optionList.Add(new PaymentOptionInputModel
+            {
+                Method = PaymentMethod.PayPal,
+                DisplayName = "PayPal",
+                AccountIdentifier = string.Empty,
+                Instructions = "Guests will receive PayPal payment details after booking.",
+                IsEnabled = true
+            });
+        }
+
         return new PaymentOptionsViewModel
         {
             UserName = userName,
@@ -80,13 +92,25 @@ public class PayPalSettingsInputModel
     [Display(Name = "Use PayPal sandbox (test mode)")]
     public bool UseSandbox { get; set; } = true;
 
+    [Required]
+    [StringLength(256)]
+    [Display(Name = "PayPal API client ID")]
+    public string ClientId { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(256)]
+    [Display(Name = "PayPal API client secret")]
+    public string ClientSecret { get; set; } = string.Empty;
+
     public static PayPalSettingsInputModel FromEntity(PayPalSettings settings) => new PayPalSettingsInputModel
     {
         BusinessEmail = settings.BusinessEmail,
         Currency = settings.Currency,
         ReturnUrl = settings.ReturnUrl,
         CancelUrl = settings.CancelUrl,
-        UseSandbox = settings.UseSandbox
+        UseSandbox = settings.UseSandbox,
+        ClientId = settings.ClientId,
+        ClientSecret = settings.ClientSecret
     };
 
     public PayPalSettings ToEntity(int id = 1) => new PayPalSettings
@@ -96,6 +120,8 @@ public class PayPalSettingsInputModel
         Currency = Currency?.Trim().ToUpperInvariant() ?? "EUR",
         ReturnUrl = ReturnUrl?.Trim() ?? string.Empty,
         CancelUrl = CancelUrl?.Trim() ?? string.Empty,
-        UseSandbox = UseSandbox
+        UseSandbox = UseSandbox,
+        ClientId = ClientId?.Trim() ?? string.Empty,
+        ClientSecret = ClientSecret?.Trim() ?? string.Empty
     };
 }

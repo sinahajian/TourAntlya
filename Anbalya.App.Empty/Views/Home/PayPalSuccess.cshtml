@@ -1,0 +1,90 @@
+@model PayPalResultViewModel
+@using System.Globalization
+
+@{
+    var reservation = Model.Reservation;
+    var tour = Model.Tour;
+    ViewData["Title"] = string.IsNullOrWhiteSpace(Model.Title) ? "Payment Successful" : Model.Title;
+    var amountText = Model.Amount > 0
+        ? $"{Model.Amount.ToString("F2", CultureInfo.InvariantCulture)} {Model.Currency}"
+        : null;
+}
+
+<section class="section_gap">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <span class="badge badge-success p-2">Payment confirmed</span>
+                        </div>
+                        <h2 class="mb-2">Thank you!</h2>
+                        <p class="mb-2">We successfully matched your PayPal payment to the reservation below.</p>
+                        @if (!string.IsNullOrWhiteSpace(Model.Invoice))
+                        {
+                            <p class="mb-0">Payment reference: <strong>@Model.Invoice</strong></p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(amountText))
+                        {
+                            <small class="d-block text-muted">Amount received: @amountText</small>
+                        }
+                    </div>
+                </div>
+
+                @if (reservation is not null)
+                {
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h4 class="card-title">Reservation overview</h4>
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Tour</dt>
+                                <dd class="col-sm-8">@(tour?.TourName ?? reservation.TourName)</dd>
+
+                                <dt class="col-sm-4">Reservation ID</dt>
+                                <dd class="col-sm-8">TA-@reservation.Id.ToString("D6")</dd>
+
+                                @if (!string.IsNullOrWhiteSpace(reservation.PaymentReference))
+                                {
+                                    <dt class="col-sm-4">Payment reference</dt>
+                                    <dd class="col-sm-8">@reservation.PaymentReference</dd>
+                                }
+
+                                <dt class="col-sm-4">Guest</dt>
+                                <dd class="col-sm-8">@reservation.FullName</dd>
+
+                                <dt class="col-sm-4">Guests</dt>
+                                <dd class="col-sm-8">
+                                    Adults: @reservation.Adults<br />
+                                    Children: @reservation.Children<br />
+                                    Infants: @reservation.Infants
+                                </dd>
+
+                                <dt class="col-sm-4">Preferred date</dt>
+                                <dd class="col-sm-8">@reservation.PreferredDate?.ToString("D", CultureInfo.InvariantCulture) ?? "Not specified"</dd>
+
+                                <dt class="col-sm-4">Status</dt>
+                                <dd class="col-sm-8">
+                                    @reservation.Status.ToString() · @reservation.PaymentStatus.ToString()
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                }
+
+                <div class="alert alert-info mb-4">
+                    <p class="mb-1">We will send your final confirmation email shortly with pickup time and any remaining details.</p>
+                    <p class="mb-0">If you have questions, reply to the confirmation email or contact us at <a href="mailto:info@tourantalya.com">info@tourantalya.com</a>.</p>
+                </div>
+
+                <div class="text-center">
+                    @if (tour is not null)
+                    {
+                        <a href="@Url.Action("Tour", "Home", new { id = tour.Id, slug = tour.Slug })" class="btn theme_btn button_hover mr-2">View tour details</a>
+                    }
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary">Back to home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

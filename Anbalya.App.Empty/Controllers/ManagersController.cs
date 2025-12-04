@@ -27,7 +27,9 @@ namespace Controllers
         private readonly IAboutContentRepository _aboutRepository;
         private readonly IContactMessageRepository _contactMessageRepository;
         private readonly IEmailConfigurationRepository _emailConfigRepository;
+        private readonly IInvoiceSettingsRepository _invoiceSettingsRepository;
         private readonly ILogger<ManagersController> _logger;
+        private const string ManagerSessionKey = "ManagerUserName";
 
         public ManagersController(
             IManagerRepository managerRepository,
@@ -41,6 +43,7 @@ namespace Controllers
             IAboutContentRepository aboutRepository,
             IContactMessageRepository contactMessageRepository,
             IEmailConfigurationRepository emailConfigRepository,
+            IInvoiceSettingsRepository invoiceSettingsRepository,
             ILogger<ManagersController> logger)
         {
             _managerRepository = managerRepository;
@@ -54,12 +57,19 @@ namespace Controllers
             _aboutRepository = aboutRepository;
             _contactMessageRepository = contactMessageRepository;
             _emailConfigRepository = emailConfigRepository;
+            _invoiceSettingsRepository = invoiceSettingsRepository;
             _logger = logger;
         }
 
         [HttpGet]
         public IActionResult LoginManagers()
         {
+            var signedInUser = HttpContext.Session.GetString(ManagerSessionKey);
+            if (!string.IsNullOrWhiteSpace(signedInUser))
+            {
+                return RedirectToAction(nameof(Index), new { userName = signedInUser });
+            }
+
             var model = new ManagerLoginViewModel();
 
             if (TempData.TryGetValue("ManagerLoginError", out var error) && error is string errorMessage)
@@ -92,7 +102,18 @@ namespace Controllers
                 return View(viewModel);
             }
 
+            HttpContext.Session.SetString(ManagerSessionKey, manager.UserName);
+            TempData.Remove("ManagerLoginError");
             return RedirectToAction(nameof(Index), new { userName = manager.UserName });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Remove(ManagerSessionKey);
+            TempData["ManagerLoginFeedback"] = "You have been signed out.";
+            return RedirectToAction(nameof(LoginManagers));
         }
 
         [HttpGet]
@@ -433,13 +454,28 @@ namespace Controllers
                 return RedirectToAction(nameof(LoginManagers));
             }
 
-            var options = await _paymentOptionRepository.ListAsync(ct);
+            var options = (await _paymentOptionRepository.ListAsync(ct)).ToList();
+            if (options.Count == 0)
+            {
+                options.Add(new PaymentOption
+                {
+                    Method = PaymentMethod.PayPal,
+                    DisplayName = "PayPal",
+                    AccountIdentifier = string.Empty,
+                    Instructions = "Guests will receive PayPal payment details after booking.",
+                    IsEnabled = true
+                });
+            }
             var payPalSettings = await _payPalSettingsRepository.GetAsync(ct);
             var viewModel = PaymentOptionsViewModel.FromOptions(manager.UserName, options, payPalSettings);
 
             if (TempData.TryGetValue("ManagerPaymentFeedback", out var feedback) && feedback is string feedbackMessage)
             {
                 viewModel.FeedbackMessage = feedbackMessage;
+            }
+            else
+            {
+                viewModel.FeedbackMessage = "PayPal settings are read-only in this environment. Update PayPalHelper.cs to change them.";
             }
 
             ViewData["Manager"] = manager;
@@ -460,44 +496,7 @@ namespace Controllers
                 return RedirectToAction(nameof(LoginManagers));
             }
 
-            if (model.Options is null || model.Options.Count == 0)
-            {
-                ModelState.AddModelError(string.Empty, "At least one payment method must be provided.");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                ViewData["Manager"] = manager;
-                ViewData["Title"] = "Payment Settings";
-                if (model.Options is null || model.Options.Count == 0)
-                {
-                    var currentOptions = await _paymentOptionRepository.ListAsync(ct);
-                    model.Options = currentOptions.OrderBy(o => o.Method).Select(PaymentOptionInputModel.FromEntity).ToList();
-                }
-                model.PayPal ??= PayPalSettingsInputModel.FromEntity(await _payPalSettingsRepository.GetAsync(ct));
-                return View(model);
-            }
-
-            var optionsToPersist = model.Options ?? new List<PaymentOptionInputModel>();
-
-            foreach (var option in optionsToPersist)
-            {
-                var entity = new PaymentOption
-                {
-                    Method = option.Method,
-                    DisplayName = option.DisplayName.Trim(),
-                    AccountIdentifier = option.AccountIdentifier.Trim(),
-                    Instructions = option.Instructions.Trim(),
-                    IsEnabled = option.IsEnabled
-                };
-
-                await _paymentOptionRepository.UpdateAsync(entity, ct);
-            }
-
-            var payPalEntity = model.PayPal?.ToEntity() ?? new PayPalSettings();
-            await _payPalSettingsRepository.UpdateAsync(payPalEntity, ct);
-
-            TempData["ManagerPaymentFeedback"] = "Payment methods updated.";
+            TempData["ManagerPaymentFeedback"] = "PayPal settings are configured statically in code (see PayPalHelper.cs).";
             return RedirectToAction(nameof(PaymentOptions), new { userName = manager.UserName });
         }
 
@@ -522,7 +521,7 @@ namespace Controllers
             }
 
             ViewData["Manager"] = manager;
-            ViewData["Title"] = "Royal Facilities";
+            ViewData["Title"] = "Anbalya Facilities";
             ViewData["IconOptions"] = IconCatalog.LinearIcons;
             return View(viewModel);
         }
@@ -546,7 +545,7 @@ namespace Controllers
                         ModelState.Where(kvp => kvp.Value?.Errors?.Count > 0)
                             .Select(kvp => $"{kvp.Key}:{string.Join(',', kvp.Value!.Errors.Select(e => e.ErrorMessage))}")));
                 ViewData["Manager"] = manager;
-                ViewData["Title"] = "Royal Facilities";
+                ViewData["Title"] = "Anbalya Facilities";
                 ViewData["IconOptions"] = IconCatalog.LinearIcons;
                 return View(model);
             }
@@ -634,7 +633,8 @@ namespace Controllers
 
             var smtp = await _emailConfigRepository.GetSmtpSettingsAsync(ct);
             var templates = await _emailConfigRepository.GetTemplatesAsync(ct);
-            var viewModel = EmailSettingsViewModel.FromEntities(manager!.UserName, smtp, templates);
+            var invoice = await _invoiceSettingsRepository.GetAsync(ct);
+            var viewModel = EmailSettingsViewModel.FromEntities(manager!.UserName, smtp, templates, invoice);
 
             if (TempData.TryGetValue("ManagerEmailFeedback", out var feedback) && feedback is string feedbackMessage)
             {
@@ -657,6 +657,7 @@ namespace Controllers
             model.ContactAdmin ??= new EmailTemplateEditModel();
             model.ReservationUser ??= new EmailTemplateEditModel();
             model.ReservationAdmin ??= new EmailTemplateEditModel();
+            model.Invoice ??= new InvoiceSettingsEditModel();
 
             if (!ModelState.IsValid)
             {
@@ -669,11 +670,12 @@ namespace Controllers
                 return View(model);
             }
 
-            var (smtp, templates) = model.ToEntities();
-            _logger.LogInformation("EmailSettings POST: saving SMTP host '{Host}' and {TemplateCount} templates", smtp.Host, templates.Count);
+            var (smtp, templates, invoice) = model.ToEntities();
+            _logger.LogInformation("EmailSettings POST: saving SMTP host '{Host}', {TemplateCount} templates, and invoice settings '{CompanyName}'", smtp.Host, templates.Count, invoice.CompanyName);
 
             await _emailConfigRepository.UpdateSmtpSettingsAsync(smtp, ct);
             await _emailConfigRepository.UpdateTemplatesAsync(templates, ct);
+            await _invoiceSettingsRepository.UpdateAsync(invoice, ct);
 
             TempData["ManagerEmailFeedback"] = "Email settings updated.";
             return RedirectToAction(nameof(EmailSettings), new { userName = manager!.UserName });
@@ -727,18 +729,29 @@ namespace Controllers
             return RedirectToAction(nameof(Reservations), new { userName = manager.UserName, tourId });
         }
 
-        private async Task<(ManagerDto? manager, IActionResult? redirect)> ResolveManagerAsync(string userName, CancellationToken ct)
+        private async Task<(ManagerDto? manager, IActionResult? redirect)> ResolveManagerAsync(string? userName, CancellationToken ct)
         {
-            if (string.IsNullOrWhiteSpace(userName))
+            var sessionUser = HttpContext.Session.GetString(ManagerSessionKey);
+
+            if (string.IsNullOrWhiteSpace(sessionUser))
             {
+                HttpContext.Session.Remove(ManagerSessionKey);
                 TempData["ManagerLoginError"] = "Please login to access the dashboard.";
                 return (null, RedirectToAction(nameof(LoginManagers)));
             }
 
-            var manager = await _managerRepository.GetByUserNameAsync(userName, ct);
+            if (!string.IsNullOrWhiteSpace(userName) &&
+                !string.Equals(userName, sessionUser, StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ManagerLoginError"] = "You do not have access to that manager account.";
+                return (null, RedirectToAction(nameof(Index), new { userName = sessionUser }));
+            }
+
+            var manager = await _managerRepository.GetByUserNameAsync(sessionUser, ct);
 
             if (manager is null)
             {
+                HttpContext.Session.Remove(ManagerSessionKey);
                 TempData["ManagerLoginError"] = "Manager not found. Please login again.";
                 return (null, RedirectToAction(nameof(LoginManagers)));
             }

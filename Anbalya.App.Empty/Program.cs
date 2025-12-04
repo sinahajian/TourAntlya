@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using Models.DbContexts;
 using Models.Helper;
@@ -31,15 +32,29 @@ builder.Services.AddScoped<IRoyalFacilityRepository, RoyalFacilityRepository>();
 builder.Services.AddScoped<IAboutContentRepository, AboutContentRepository>();
 builder.Services.AddScoped<IContactMessageRepository, ContactMessageRepository>();
 builder.Services.AddScoped<IEmailConfigurationRepository, EmailConfigurationRepository>();
+builder.Services.AddScoped<IInvoiceSettingsRepository, InvoiceSettingsRepository>();
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+builder.Services.AddSingleton<IPayPalHelper, PayPalHelper>();
+builder.Services.AddTransient<AppDataSeeder>();
+builder.Services.AddTransient<IInvoiceDocumentService, InvoiceDocumentService>();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.Cookie.Name = ".TourAntalya.ManagerSession";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.IdleTimeout = TimeSpan.FromHours(8);
+});
 builder.Services.AddControllersWithViews();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TourDbContext>();
-    db.Database.Migrate("test13");        // جداول را می‌سازد/آپدیت می‌کند
-    // (اختیاری) اگر Seed داده نیاز داری، اینجا انجام بده
+    db.Database.Migrate("InvoiceSettings2");        // جداول را می‌سازد/آپدیت می‌کند
+
+    var seeder = scope.ServiceProvider.GetRequiredService<AppDataSeeder>();
+    await seeder.SeedAsync();
 }
 
 app.UseDeveloperExceptionPage();
@@ -48,6 +63,7 @@ app.UseStatusCodePages();
 app.UseHttpsRedirection();
 
 app.UseRouting();         // ترتیب مهم است
+app.UseSession();
 //app.UseAuthorization();   // اگر احراز هویت/مجوز دارید، اینجا می‌آید
 
 // دیگر UseEndpoints لازم نیست:

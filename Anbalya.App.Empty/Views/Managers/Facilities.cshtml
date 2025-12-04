@@ -3,24 +3,26 @@
 @using Models.Helper
 @{
     Layout = "_ManagerLayout";
-    ViewData["Title"] = "Royal Facilities";
-    var iconOptions = ViewData["IconOptions"] as IReadOnlyList<IconCatalog.IconOption> ?? Array.Empty<IconCatalog.IconOption>();
+    ViewData["Title"] = "Anbalya Facilities";
+    var iconOptions = ViewData["IconOptions"] as IReadOnlyList<IconCatalog.IconOption> ??
+    Array.Empty<IconCatalog.IconOption>();
     var languages = new (string Code, string Name, bool Rtl)[]
     {
-        ("en", "English", false),
-        ("de", "Deutsch", false),
-        ("tr", "Türkçe", false),
-        ("fa", "فارسی", true),
-        ("ru", "Русский", false),
-        ("pl", "Polski", false),
-        ("ar", "العربية", true)
+("en", "English", false),
+("de", "Deutsch", false),
+("tr", "Türkçe", false),
+("fa", "فارسی", true),
+("ru", "Русский", false),
+("pl", "Polski", false),
+("ar", "العربية", true)
     };
 }
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Royal Facilities</h2>
-        <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Managers", new { userName = Model.UserName })">Back to dashboard</a>
+        <h2 class="mb-0">Anbalya Facilities</h2>
+        <a class="btn btn-outline-secondary"
+            href="@Url.Action("Index", "Managers", new { userName = Model.UserName })">Back to dashboard</a>
     </div>
 
     @if (!string.IsNullOrWhiteSpace(Model.FeedbackMessage))
@@ -50,22 +52,21 @@
                         <div class="col-md-6">
                             <label asp-for="Facilities[i].IconClass" class="form-label">Icon CSS class</label>
                             <div class="input-group">
-                                <input asp-for="Facilities[i].IconClass"
-                                       class="form-control js-icon-input"
-                                       list="facility-icon-options"
-                                       data-preview-id="@facility.Id"
-                                       placeholder="Select or type a Linearicons class"
-                                       value="@facility.IconClass" />
+                                <input asp-for="Facilities[i].IconClass" class="form-control js-icon-input"
+                                    list="facility-icon-options" data-preview-id="@facility.Id"
+                                    placeholder="Select or type a Linearicons class" value="@facility.IconClass" />
                                 <div class="input-group-append">
                                     <span class="input-group-text"><i class="@facility.IconClass"></i></span>
                                 </div>
                             </div>
-                            <small class="form-text text-muted">Choose from the list or type any valid Linearicons class (e.g. <code>lnr lnr-dinner</code>).</small>
+                            <small class="form-text text-muted">Choose from the list or type any valid Linearicons class
+                                (e.g. <code>lnr lnr-dinner</code>).</small>
                             <span asp-validation-for="Facilities[i].IconClass" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
                             <label asp-for="Facilities[i].DisplayOrder" class="form-label"></label>
-                            <input asp-for="Facilities[i].DisplayOrder" class="form-control" type="number" min="0" value="@facility.DisplayOrder" />
+                            <input asp-for="Facilities[i].DisplayOrder" class="form-control" type="number" min="0"
+                                value="@facility.DisplayOrder" />
                             <span asp-validation-for="Facilities[i].DisplayOrder" class="text-danger small"></span>
                         </div>
                     </div>
@@ -76,13 +77,10 @@
                             var (code, name, _) = languages[tabIndex];
                             var isActive = tabIndex == 0;
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link @(isActive ? "active" : string.Empty)"
-                                   id="facility-@facility.Id-@code-tab"
-                                   data-toggle="tab"
-                                   href="#facility-@facility.Id-@code"
-                                   role="tab"
-                                   aria-controls="facility-@facility.Id-@code"
-                                   aria-selected="@isActive.ToString().ToLowerInvariant()">
+                                <a class="nav-link @(isActive ? "active" : string.Empty)" id="facility-@facility.Id-@code-tab"
+                                    data-toggle="tab" href="#facility-@facility.Id-@code" role="tab"
+                                    aria-controls="facility-@facility.Id-@code"
+                                    aria-selected="@isActive.ToString().ToLowerInvariant()">
                                     @name
                                 </a>
                             </li>
@@ -93,14 +91,16 @@
                         {
                             var (code, name, rtl) = languages[tabIndex];
                             var activeClass = tabIndex == 0 ? "show active" : string.Empty;
-                            <div class="tab-pane fade @activeClass" id="facility-@facility.Id-@code" role="tabpanel" aria-labelledby="facility-@facility.Id-@code-tab">
+                            <div class="tab-pane fade @activeClass" id="facility-@facility.Id-@code" role="tabpanel"
+                                aria-labelledby="facility-@facility.Id-@code-tab">
                                 <div class="mb-3">
                                     <label class="form-label">Title (@name)</label>
                                     @switch (code)
                                     {
                                         case "en":
                                             <div>
-                                                <input asp-for="Facilities[i].TitleEn" class="form-control" dir="@(rtl ? "rtl" : "ltr")" value="@facility.TitleEn" />
+                                                <input asp-for="Facilities[i].TitleEn" class="form-control" dir="@(rtl ? "rtl" : "ltr")"
+                                                    value="@facility.TitleEn" />
                                                 <span asp-validation-for="Facilities[i].TitleEn" class="text-danger small"></span>
                                             </div>
                                             break;
@@ -111,7 +111,8 @@
                                             <input asp-for="Facilities[i].TitleTr" class="form-control" value="@facility.TitleTr" />
                                             break;
                                         case "fa":
-                                            <input asp-for="Facilities[i].TitleFa" class="form-control" dir="rtl" value="@facility.TitleFa" />
+                                            <input asp-for="Facilities[i].TitleFa" class="form-control" dir="rtl"
+                                                value="@facility.TitleFa" />
                                             break;
                                         case "ru":
                                             <input asp-for="Facilities[i].TitleRu" class="form-control" value="@facility.TitleRu" />
@@ -120,7 +121,8 @@
                                             <input asp-for="Facilities[i].TitlePl" class="form-control" value="@facility.TitlePl" />
                                             break;
                                         default:
-                                            <input asp-for="Facilities[i].TitleAr" class="form-control" dir="rtl" value="@facility.TitleAr" />
+                                            <input asp-for="Facilities[i].TitleAr" class="form-control" dir="rtl"
+                                                value="@facility.TitleAr" />
                                             break;
                                     }
                                 </div>
@@ -130,27 +132,34 @@
                                     {
                                         case "en":
                                             <div>
-                                                <textarea asp-for="Facilities[i].DescriptionEn" class="form-control" rows="3" dir="@(rtl ? "rtl" : "ltr")">@facility.DescriptionEn</textarea>
+                                                <textarea asp-for="Facilities[i].DescriptionEn" class="form-control" rows="3"
+                                    dir="@(rtl ? "rtl" : "ltr")">@facility.DescriptionEn</textarea>
                                                 <span asp-validation-for="Facilities[i].DescriptionEn" class="text-danger small"></span>
                                             </div>
                                             break;
                                         case "de":
-                                            <textarea asp-for="Facilities[i].DescriptionDe" class="form-control" rows="3">@facility.DescriptionDe</textarea>
+                                            <textarea asp-for="Facilities[i].DescriptionDe" class="form-control"
+                                rows="3">@facility.DescriptionDe</textarea>
                                             break;
                                         case "tr":
-                                            <textarea asp-for="Facilities[i].DescriptionTr" class="form-control" rows="3">@facility.DescriptionTr</textarea>
+                                            <textarea asp-for="Facilities[i].DescriptionTr" class="form-control"
+                                rows="3">@facility.DescriptionTr</textarea>
                                             break;
                                         case "fa":
-                                            <textarea asp-for="Facilities[i].DescriptionFa" class="form-control" rows="3" dir="rtl">@facility.DescriptionFa</textarea>
+                                            <textarea asp-for="Facilities[i].DescriptionFa" class="form-control" rows="3"
+                                dir="rtl">@facility.DescriptionFa</textarea>
                                             break;
                                         case "ru":
-                                            <textarea asp-for="Facilities[i].DescriptionRu" class="form-control" rows="3">@facility.DescriptionRu</textarea>
+                                            <textarea asp-for="Facilities[i].DescriptionRu" class="form-control"
+                                rows="3">@facility.DescriptionRu</textarea>
                                             break;
                                         case "pl":
-                                            <textarea asp-for="Facilities[i].DescriptionPl" class="form-control" rows="3">@facility.DescriptionPl</textarea>
+                                            <textarea asp-for="Facilities[i].DescriptionPl" class="form-control"
+                                rows="3">@facility.DescriptionPl</textarea>
                                             break;
                                         default:
-                                            <textarea asp-for="Facilities[i].DescriptionAr" class="form-control" rows="3" dir="rtl">@facility.DescriptionAr</textarea>
+                                            <textarea asp-for="Facilities[i].DescriptionAr" class="form-control" rows="3"
+                                dir="rtl">@facility.DescriptionAr</textarea>
                                             break;
                                     }
                                 </div>

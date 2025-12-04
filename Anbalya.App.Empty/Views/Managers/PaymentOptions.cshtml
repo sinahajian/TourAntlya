@@ -88,6 +88,18 @@
                         </div>
                     </div>
                 </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label asp-for="PayPal.ClientId"></label>
+                        <input asp-for="PayPal.ClientId" class="form-control" placeholder="PayPal REST client ID" />
+                        <span asp-validation-for="PayPal.ClientId" class="text-danger small"></span>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="PayPal.ClientSecret"></label>
+                        <input asp-for="PayPal.ClientSecret" class="form-control" placeholder="PayPal REST client secret" />
+                        <span asp-validation-for="PayPal.ClientSecret" class="text-danger small"></span>
+                    </div>
+                </div>
 
                 <div class="form-group">
                     <label asp-for="PayPal.ReturnUrl"></label>

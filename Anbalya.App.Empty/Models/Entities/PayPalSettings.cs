@@ -9,6 +9,8 @@ namespace Models.Entities
         public string ReturnUrl { get; set; } = string.Empty;
         public string CancelUrl { get; set; } = string.Empty;
         public bool UseSandbox { get; set; } = true;
+        public string ClientId { get; set; } = string.Empty;
+        public string ClientSecret { get; set; } = string.Empty;
 
         public string SandboxBaseUrl => "https://www.sandbox.paypal.com/cgi-bin/webscr";
         public string LiveBaseUrl => "https://www.paypal.com/cgi-bin/webscr";

@@ -3639,3 +3639,105 @@ h1, h2, h3, h4, h5, h6 {
   height: 0;
   overflow: hidden;
 }
+
+.phone-input-group .phone-country-toggle {
+  min-width: 140px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+}
+
+.phone-input-group .dropdown {
+  position: relative;
+}
+
+.phone-input-group .phone-flag {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.phone-input-group .phone-country-code {
+  font-weight: 700;
+  display: inline-block;
+  margin-left: 0.25rem;
+}
+
+.phone-country-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1050;
+  margin-top: 2px;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+  min-width: 220px;
+}
+
+.phone-country-menu.show {
+  display: block;
+}
+
+.phone-country-menu .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.phone-country-menu .phone-menu-search {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid #ededed;
+}
+
+.phone-country-menu .phone-menu-search-input {
+  width: 100%;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.payment-step .custom-control + .custom-control {
+  margin-top: 0.35rem;
+}
+
+.payment-step .paypal-box {
+  background: #e9f5f8;
+  border: 1px solid #d4e7ed;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.payment-step .paypal-box .btn {
+  white-space: nowrap;
+}
+
+.payment-step .summary-card {
+  border: 1px solid #ededed;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+}
+
+.phone-country-menu .phone-flag {
+  width: 22px;
+  text-align: center;
+}
+
+.phone-country-menu .phone-country-name {
+  flex: 1;
+  color: #6c757d;
+}
+
+@media (max-width: 575.98px) {
+  .phone-input-group .phone-country-toggle {
+    min-width: 115px;
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+  }
+}

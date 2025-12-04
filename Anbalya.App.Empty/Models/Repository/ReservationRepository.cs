@@ -55,6 +55,19 @@ namespace Models.Repository
                 .FirstOrDefaultAsync(r => r.Id == id, ct);
         }
 
+        public async Task<Reservation?> GetByPaymentReferenceAsync(string paymentReference, CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(paymentReference))
+            {
+                return null;
+            }
+
+            return await _context.Reservations
+                .AsNoTracking()
+                .Include(r => r.Tour)
+                .FirstOrDefaultAsync(r => r.PaymentReference == paymentReference, ct);
+        }
+
         public async Task UpdateStatusAsync(int id, ReservationStatus status, PaymentStatus paymentStatus, string? paymentReference, CancellationToken ct = default)
         {
             var reservation = await _context.Reservations.FirstOrDefaultAsync(r => r.Id == id, ct);

@@ -31,7 +31,7 @@ namespace Models.Helper
             ["footer.newsletter.placeholder"] = Create("Email Address", de: "E-Mail-Adresse", tr: "E-posta adresi", fa: "آدرس ایمیل", ru: "Адрес эл. почты", pl: "Adres e-mail", ar: "البريد الإلكتروني"),
             ["footer.newsletter.submit"] = Create("Subscribe", de: "Abonnieren", tr: "Abone Ol", fa: "اشتراک", ru: "Подписаться", pl: "Subskrybuj", ar: "اشترك"),
             ["footer.follow"] = Create("Follow us", de: "Folge uns", tr: "Bizi takip edin", fa: "ما را دنبال کنید", ru: "Подписывайтесь на нас", pl: "Obserwuj nas", ar: "تابعنا"),
-            ["home.facilities.title"] = Create("Royal Facilities", de: "Königliche Einrichtungen", tr: "Kraliyet İmkânları", fa: "امکانات ویژه", ru: "Королевские удобства", pl: "Królewskie udogodnienia", ar: "مرافق ملكية"),
+            ["home.facilities.title"] = Create("Anbalya Facilities", de: "Königliche Einrichtungen", tr: "Kraliyet İmkânları", fa: "امکانات ویژه", ru: "Королевские удобства", pl: "Królewskie udogodnienia", ar: "مرافق ملكية"),
             ["home.facilities.caption"] = Create(
                 "Tailored services that keep every stay seamless, comfortable, and memorable.",
                 de: "Individuelle Services für einen nahtlosen, komfortablen und unvergesslichen Aufenthalt.",

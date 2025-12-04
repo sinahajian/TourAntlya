@@ -1,33 +1,63 @@
 version: "3.9"
+
 services:
-  postgres:
+  # ==========
+  # Postgres برنامه ۲
+  # ==========
+  anbalya_postgres:
     image: postgres:16-alpine
-    container_name: pg-local
+    container_name: anbalya-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: tourAntalya
       POSTGRES_PASSWORD: 12sina122
       POSTGRES_DB: TourAntalya
-    ports:
-      - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - anbalya_pgdata:/var/lib/postgresql/data
+    # اگر خواستی از بیرون هم به DB وصل شوی (مثلاً با DBeaver از لپ‌تاپ):
+    # پورت را باز کن ولی روی 5433 که با برنامه اول دعوا نکند
+    # ports:
+    #   - "5433:5432"
     healthcheck:
-      # دیتابیس/یوزر واقعی را پینگ کن؛ یا ساده فقط پذیرش اتصال را چک کن
-      test: ["CMD-SHELL", "pg_isready -h localhost -p 5432 -U sina -d sina || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -U anbalya_user -d AnbalyaDb"]
       interval: 5s
-      timeout: 3s
+      timeout: 5s
       retries: 10
 
-  pgadmin:
+  # ==========
+  # pgAdmin مخصوص همین برنامه (اختیاری)
+  # ==========
+  anbalya_pgadmin:
     image: dpage/pgadmin4:9.8
-    depends_on: [postgres]
+    container_name: anbalya-pgadmin
+    depends_on:
+      - anbalya_postgres
     environment:
-      PGADMIN_DEFAULT_EMAIL: Sina.hajian@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_DEFAULT_EMAIL: "anbalya.admin@example.com"
+      PGADMIN_DEFAULT_PASSWORD: "admin123"
     ports:
-      - "5050:80"
+      - "5051:80"    # 👈 چون برنامه اول احتمالا 5050 رو گرفته
     restart: unless-stopped
 
+  # ==========
+  # وب ASP.NET (Anbalya)
+  # ==========
+  anbalya_web:
+    build:
+      context: .          # همین فولدر (Dockerfile + Anbalya.App.Empty)
+      dockerfile: Dockerfile
+    container_name: anbalya-web
+    restart: unless-stopped
+    depends_on:
+      - anbalya_postgres
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      # کانکشن‌استرینگ به Postgres همین compose:
+      - ConnectionStrings__DefaultConnection=Host=anbalya_postgres;Port=5432;Database=AnbalyaDb;Username=anbalya_user;Password=anbalya_password;
+      # اگر اسم کانکشن‌استرینگ در appsettings چیز دیگه‌ایه، همون اسم رو اینجا بذار
+    ports:
+      - "8081:8080"   # بیرون: 8081 ، داخل کانتینر: 8080
+
 volumes:
-  pgdata:
+  anbalya_pgdata:

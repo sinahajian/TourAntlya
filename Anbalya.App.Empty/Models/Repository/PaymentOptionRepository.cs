@@ -1,59 +1,47 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Models.DbContexts;
 using Models.Entities;
 using Models.Interface;
+using Models.Services;
 
 namespace Models.Repository
 {
     public class PaymentOptionRepository : IPaymentOptionRepository
     {
-        private readonly TourDbContext _context;
-
-        public PaymentOptionRepository(TourDbContext context)
-        {
-            _context = context;
-        }
-
         public async Task<IReadOnlyList<PaymentOption>> ListAsync(CancellationToken ct = default)
         {
-            return await _context.PaymentOptions
-                .AsNoTracking()
-                .OrderBy(p => p.Method)
-                .ToListAsync(ct);
+            var option = CreateStaticOption();
+            return await Task.FromResult<IReadOnlyList<PaymentOption>>(new[] { option });
         }
 
         public async Task<PaymentOption?> GetByMethodAsync(PaymentMethod method, CancellationToken ct = default)
         {
-            return await _context.PaymentOptions
-                .FirstOrDefaultAsync(p => p.Method == method, ct);
+            var option = CreateStaticOption();
+            return await Task.FromResult(method == PaymentMethod.PayPal ? option : null);
         }
 
         public async Task UpdateAsync(PaymentOption option, CancellationToken ct = default)
         {
-            var existing = await _context.PaymentOptions
-                .FirstOrDefaultAsync(p => p.Method == option.Method, ct);
+            // Static configuration cannot be updated at runtime.
+            await Task.CompletedTask;
+        }
 
-            if (existing is null)
+        private static PaymentOption CreateStaticOption()
+        {
+            var snapshot = PayPalHelper.GetSnapshot();
+            return new PaymentOption
             {
-                option.CreationTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                option.UpdatedAt = DateTimeOffset.UtcNow;
-                await _context.PaymentOptions.AddAsync(option, ct);
-            }
-            else
-            {
-                existing.DisplayName = option.DisplayName;
-                existing.AccountIdentifier = option.AccountIdentifier;
-                existing.Instructions = option.Instructions;
-                existing.IsEnabled = option.IsEnabled;
-                existing.UpdatedAt = DateTimeOffset.UtcNow;
-            }
-
-            await _context.SaveChangesAsync(ct);
+                Method = PaymentMethod.PayPal,
+                DisplayName = string.IsNullOrWhiteSpace(snapshot.DisplayName) ? "PayPal" : snapshot.DisplayName,
+                AccountIdentifier = snapshot.BusinessEmail,
+                Instructions = string.IsNullOrWhiteSpace(snapshot.PaymentInstructions)
+                    ? "Complete the reservation and follow the PayPal instructions sent via email."
+                    : snapshot.PaymentInstructions,
+                IsEnabled = true,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
         }
     }
 }

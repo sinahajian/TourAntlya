@@ -20,6 +20,7 @@ namespace Models.DbContexts
         public DbSet<ContactMessage> ContactMessages { get; set; }
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
         public DbSet<SmtpSettings> SmtpSettings { get; set; }
+        public DbSet<InvoiceSettings> InvoiceSettings { get; set; }
         public TourDbContext(DbContextOptions<TourDbContext> options) : base(options)
         {
 
@@ -47,6 +48,8 @@ namespace Models.DbContexts
                     ReturnUrl = "https://tourantalya.com/paypal/success",
                     CancelUrl = "https://tourantalya.com/paypal/cancel",
                     UseSandbox = true,
+                    ClientId = string.Empty,
+                    ClientSecret = string.Empty,
                     CreationTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                 });
 
@@ -60,26 +63,6 @@ namespace Models.DbContexts
                     DisplayName = "PayPal",
                     AccountIdentifier = "paypal@example.com",
                     Instructions = "Send the payment to the PayPal account above and include your reservation ID in the notes.",
-                    IsEnabled = true,
-                    UpdatedAt = paymentSeedTimestamp
-                },
-                new PaymentOption
-                {
-                    Id = 2,
-                    Method = PaymentMethod.Visa,
-                    DisplayName = "Visa Card",
-                    AccountIdentifier = "**** **** **** 4242",
-                    Instructions = "Contact our team to complete the Visa payment securely.",
-                    IsEnabled = true,
-                    UpdatedAt = paymentSeedTimestamp
-                },
-                new PaymentOption
-                {
-                    Id = 3,
-                    Method = PaymentMethod.Revolut,
-                    DisplayName = "Revolut",
-                    AccountIdentifier = "REVOLUT-12345678",
-                    Instructions = "Use Revolut transfer and note your reservation ID for quick confirmation.",
                     IsEnabled = true,
                     UpdatedAt = paymentSeedTimestamp
                 });

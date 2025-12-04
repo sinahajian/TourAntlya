@@ -51,6 +51,19 @@
         _ => "View tours"
     };
 
+    string fromLabel = lang switch
+    {
+        "de" => "Ab",
+        "tr" => "Başlangıç",
+        "fa" => "از",
+        "ru" => "От",
+        "pl" => "Od",
+        "ar" => "ابتداءً من",
+        _ => "From"
+    };
+
+    const string currencySymbol = "€";
+
     var textAlignClass = isRtl ? "text-right" : "text-center";
     var cardTextClass = isRtl ? "text-right" : "text-center";
     var sectionDir = isRtl ? "rtl" : "ltr";
@@ -83,7 +96,7 @@
                         </a>
                         @if (hasPrice)
                         {
-                            <h5>€@price<small> @priceSuffix</small></h5>
+                            <h5>@fromLabel @currencySymbol@price<small> @priceSuffix</small></h5>
                         }
                         else
                         {

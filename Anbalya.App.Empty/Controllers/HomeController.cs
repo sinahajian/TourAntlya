@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Models.Interface;
 using Models.Entities;
 using Models.Helper;
+using Models.Services;
 namespace Controllers
 {
     public class HomeController : Controller
@@ -24,6 +25,8 @@ namespace Controllers
         private readonly IContactMessageRepository _contactMessageRepository;
         private readonly IEmailConfigurationRepository _emailConfigRepository;
         private readonly IEmailSender _emailSender;
+        private readonly IInvoiceSettingsRepository _invoiceSettingsRepository;
+        private readonly IInvoiceDocumentService _invoiceDocumentService;
         public HomeController(
             ITourRepository tourRepository,
             ILanguageResolver langResolver,
@@ -35,7 +38,9 @@ namespace Controllers
             IAboutContentRepository aboutRepository,
             IContactMessageRepository contactMessageRepository,
             IEmailConfigurationRepository emailConfigRepository,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IInvoiceSettingsRepository invoiceSettingsRepository,
+            IInvoiceDocumentService invoiceDocumentService)
         {
             _tourRepository = tourRepository;
             _langResolver = langResolver;
@@ -48,6 +53,8 @@ namespace Controllers
             _contactMessageRepository = contactMessageRepository;
             _emailConfigRepository = emailConfigRepository;
             _emailSender = emailSender;
+            _invoiceSettingsRepository = invoiceSettingsRepository;
+            _invoiceDocumentService = invoiceDocumentService;
         }
 
         public async Task<IActionResult> Index(CancellationToken ct)
@@ -160,14 +167,39 @@ namespace Controllers
                     payPalSettings.ReturnUrl ?? string.Empty,
                     payPalSettings.CancelUrl ?? string.Empty,
                     payPalSettings.UseSandbox);
-            var enabledOptions = paymentOptions
+            var payPalOptions = paymentOptions
+                .Where(o => o.Method == PaymentMethod.PayPal)
+                .ToList();
+            if (payPalOptions.Count == 0)
+            {
+                payPalOptions.Add(new PaymentOption
+                {
+                    Method = PaymentMethod.PayPal,
+                    DisplayName = "PayPal",
+                    AccountIdentifier = payPalSettings.BusinessEmail,
+                    Instructions = "Complete your reservation and follow the PayPal instructions we send by email.",
+                    IsEnabled = true
+                });
+            }
+            var enabledOptions = payPalOptions
                 .Where(o => o.IsEnabled)
                 .Select(PaymentOptionDto.FromEntity)
                 .ToList();
 
             if (enabledOptions.Count == 0)
             {
-                enabledOptions = paymentOptions.Select(PaymentOptionDto.FromEntity).ToList();
+                enabledOptions = payPalOptions.Select(PaymentOptionDto.FromEntity).ToList();
+            }
+
+            if (enabledOptions.Count == 0)
+            {
+                enabledOptions.Add(new PaymentOptionDto(
+                    0,
+                    PaymentMethod.PayPal,
+                    "PayPal",
+                    payPalSettings.BusinessEmail,
+                    "Complete your reservation and follow the PayPal instructions we send by email.",
+                    true));
             }
 
             var defaultMethod = enabledOptions.FirstOrDefault()?.Method ?? PaymentMethod.PayPal;
@@ -199,6 +231,8 @@ namespace Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BookTour(TourReservationInputModel form, CancellationToken ct)
         {
+            form.PaymentMethod = PaymentMethod.PayPal;
+
             var lang = _langResolver.Resolve(HttpContext);
             var tour = await _tourRepository.GetByIdAsync(form.TourId, lang, ct);
             if (tour is null)
@@ -219,15 +253,24 @@ namespace Controllers
                     payPalSettings.ReturnUrl ?? string.Empty,
                     payPalSettings.CancelUrl ?? string.Empty,
                     payPalSettings.UseSandbox);
-            var enabledOptions = paymentOptions
+            var payPalOptions = paymentOptions
+                .Where(o => o.Method == PaymentMethod.PayPal)
+                .ToList();
+            if (payPalOptions.Count == 0)
+            {
+                payPalOptions.Add(new PaymentOption
+                {
+                    Method = PaymentMethod.PayPal,
+                    DisplayName = "PayPal",
+                    AccountIdentifier = payPalSettings.BusinessEmail,
+                    Instructions = "Complete your reservation and follow the PayPal instructions we send by email.",
+                    IsEnabled = true
+                });
+            }
+            var enabledOptions = payPalOptions
                 .Where(o => o.IsEnabled)
                 .Select(PaymentOptionDto.FromEntity)
                 .ToList();
-
-            if (enabledOptions.All(o => o.Method != form.PaymentMethod))
-            {
-                ModelState.AddModelError(nameof(form.PaymentMethod), "Selected payment method is not available.");
-            }
 
             if (!ModelState.IsValid)
             {
@@ -237,7 +280,7 @@ namespace Controllers
                     Form = form,
                     PaymentOptions = enabledOptions.Count > 0
                         ? enabledOptions
-                        : paymentOptions.Select(PaymentOptionDto.FromEntity).ToList(),
+                        : payPalOptions.Select(PaymentOptionDto.FromEntity).ToList(),
                     ErrorMessage = "Please correct the highlighted fields and try again.",
                     AccommodationOptions = AccommodationCatalog.List(),
                     PayPal = payPalInfo
@@ -248,6 +291,9 @@ namespace Controllers
             }
 
             var totalPrice = CalculateTotalPrice(tour, form);
+            var paymentReference = string.IsNullOrWhiteSpace(form.PaymentReference)
+                ? GeneratePaymentReference(tour.Id)
+                : form.PaymentReference.Trim();
             var firstName = form.FirstName?.Trim() ?? string.Empty;
             var lastName = form.LastName?.Trim() ?? string.Empty;
             var fullName = string.Join(" ", new[] { firstName, lastName }
@@ -281,7 +327,7 @@ namespace Controllers
                 PaymentMethod = form.PaymentMethod,
                 PaymentStatus = PaymentStatus.Pending,
                 Status = ReservationStatus.Pending,
-                PaymentReference = string.IsNullOrWhiteSpace(form.PaymentReference) ? null : form.PaymentReference.Trim(),
+                PaymentReference = paymentReference,
                 TotalPrice = totalPrice,
                 Language = lang,
                 HotelName = hotelName,
@@ -298,7 +344,7 @@ namespace Controllers
             }
 
             var reservationDto = ReservationDetailsDto.FromEntity(storedReservation);
-            var paymentOption = paymentOptions.FirstOrDefault(o => o.Method == form.PaymentMethod);
+            var paymentOption = payPalOptions.FirstOrDefault();
 
             var confirmationViewModel = new ReservationConfirmationViewModel
             {
@@ -311,6 +357,149 @@ namespace Controllers
 
             ViewData["Title"] = $"{tour.TourName} Antalya Tour Confirmation";
             return View("ReservationConfirmation", confirmationViewModel);
+        }
+
+        [HttpGet("paypal/success")]
+        public async Task<IActionResult> PayPalSuccess(CancellationToken ct)
+        {
+            var lang = _langResolver.Resolve(HttpContext);
+            var invoice = Request.Query["invoice"].ToString();
+            var token = Request.Query["token"].ToString();
+            var payerId = Request.Query["PayerID"].ToString();
+            var currencyRaw = Request.Query["currency_code"].ToString();
+            var amountRaw = Request.Query["amount"].ToString();
+            var currency = string.IsNullOrWhiteSpace(currencyRaw) ? "EUR" : currencyRaw.ToUpperInvariant();
+            var amount = decimal.TryParse(amountRaw, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedAmount)
+                ? parsedAmount
+                : 0m;
+
+            Reservation? reservationEntity = null;
+            ReservationDetailsDto? reservation = null;
+            TourDto? tour = null;
+            var success = false;
+            var message = "We could not match this payment to an existing reservation. Please contact our support team.";
+            var title = "Payment not found";
+            var justMarkedPaid = false;
+            var alreadyPaid = false;
+
+            if (!string.IsNullOrWhiteSpace(invoice))
+            {
+                reservationEntity = await _reservationRepository.GetByPaymentReferenceAsync(invoice, ct);
+                if (reservationEntity is not null)
+                {
+                    if (reservationEntity.PaymentStatus != PaymentStatus.Paid)
+                    {
+                        await _reservationRepository.UpdateStatusAsync(
+                            reservationEntity.Id,
+                            ReservationStatus.Confirmed,
+                            PaymentStatus.Paid,
+                            invoice,
+                            ct);
+                        justMarkedPaid = true;
+                    }
+                    else
+                    {
+                        alreadyPaid = true;
+                    }
+
+                    reservationEntity = await _reservationRepository.GetByIdAsync(reservationEntity.Id, ct) ?? reservationEntity;
+                    reservation = ReservationDetailsDto.FromEntity(reservationEntity);
+                    var reservationLang = reservationEntity.Language ?? lang;
+                    tour = await _tourRepository.GetByIdAsync(reservationEntity.TourId, reservationLang, ct);
+
+                    success = true;
+                    title = "Payment successful";
+                    message = alreadyPaid
+                        ? "This payment was already confirmed earlier. We have your reservation on file."
+                        : "Thank you! We have confirmed your payment and will send the final instructions shortly.";
+
+                    if (justMarkedPaid && tour is not null && reservation is not null)
+                    {
+                        await SendPaymentConfirmationEmailsAsync(tour, reservation, amount, currency, reservation.Language ?? lang, ct);
+                    }
+                }
+            }
+
+            var viewModel = new PayPalResultViewModel
+            {
+                Success = success,
+                Title = title,
+                Message = message,
+                Invoice = invoice ?? string.Empty,
+                Amount = amount,
+                Currency = currency,
+                PayerId = payerId,
+                Token = token,
+                Reservation = reservation,
+                Tour = tour
+            };
+
+            ViewData["Title"] = title;
+            return View("PayPalSuccess", viewModel);
+        }
+
+        [HttpGet("paypal/cancel")]
+        public async Task<IActionResult> PayPalCancel(CancellationToken ct)
+        {
+            var lang = _langResolver.Resolve(HttpContext);
+            var invoice = Request.Query["invoice"].ToString();
+            var token = Request.Query["token"].ToString();
+            var payerId = Request.Query["PayerID"].ToString();
+            var currencyRaw = Request.Query["currency_code"].ToString();
+            var amountRaw = Request.Query["amount"].ToString();
+            var currency = string.IsNullOrWhiteSpace(currencyRaw) ? "EUR" : currencyRaw.ToUpperInvariant();
+            var amount = decimal.TryParse(amountRaw, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedAmount)
+                ? parsedAmount
+                : 0m;
+
+            Reservation? reservationEntity = null;
+            ReservationDetailsDto? reservation = null;
+            TourDto? tour = null;
+            var message = "The payment was cancelled before completion. Your reservation remains pending.";
+
+            if (!string.IsNullOrWhiteSpace(invoice))
+            {
+                reservationEntity = await _reservationRepository.GetByPaymentReferenceAsync(invoice, ct);
+                if (reservationEntity is not null)
+                {
+                    await _reservationRepository.UpdateStatusAsync(
+                        reservationEntity.Id,
+                        ReservationStatus.Pending,
+                        PaymentStatus.Failed,
+                        invoice,
+                        ct);
+
+                    reservationEntity = await _reservationRepository.GetByIdAsync(reservationEntity.Id, ct) ?? reservationEntity;
+                    reservation = ReservationDetailsDto.FromEntity(reservationEntity);
+                    var reservationLang = reservationEntity.Language ?? lang;
+                    tour = await _tourRepository.GetByIdAsync(reservationEntity.TourId, reservationLang, ct);
+                }
+                else
+                {
+                    message = "We did not find a reservation matching this payment reference. If you created a booking, please contact us.";
+                }
+            }
+            else
+            {
+                message = "We did not receive a payment reference from PayPal. Please try again or contact support.";
+            }
+
+            var viewModel = new PayPalResultViewModel
+            {
+                Success = false,
+                Title = "Payment cancelled",
+                Message = message,
+                Invoice = invoice ?? string.Empty,
+                Amount = amount,
+                Currency = currency,
+                PayerId = payerId,
+                Token = token,
+                Reservation = reservation,
+                Tour = tour
+            };
+
+            ViewData["Title"] = "Payment cancelled";
+            return View("PayPalCancel", viewModel);
         }
 
         private void ValidateReservationForm(TourReservationInputModel form)
@@ -344,6 +533,9 @@ namespace Controllers
             return adultTotal + childTotal + infantTotal;
         }
 
+        private static string GeneratePaymentReference(int tourId) =>
+            $"TA-{tourId}-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+
         private async Task SendContactNotificationsAsync(ContactMessage message, string language, CancellationToken ct)
         {
             var smtp = await _emailConfigRepository.GetSmtpSettingsAsync(ct);
@@ -367,7 +559,13 @@ namespace Controllers
                 "Thank you for contacting Tour Antalya",
                 $"Hello {tokens["FullName"]},\n\nThank you for reaching out to Tour Antalya. Our team will respond shortly.\n\nYour message:\n{tokens["Message"]}\n\nBest regards,\nTour Antalya");
 
-            await _emailSender.SendEmailAsync(message.Email, userSubject, userBody, tokens["FullName"], ct);
+            await _emailSender.SendEmailAsync(
+                message.Email,
+                userSubject,
+                userBody,
+                toName: tokens["FullName"],
+                isBodyHtml: true,
+                ct: ct);
 
             var adminRecipients = ParseRecipients(smtp.NotificationEmail);
             if (adminRecipients.Count > 0)
@@ -379,34 +577,18 @@ namespace Controllers
                     $"New contact request from {tokens["FullName"]}",
                     $"A new contact request has been submitted.\n\nName: {tokens["FullName"]}\nEmail: {tokens["Email"]}\nLanguage: {tokens["Language"]}\nReceived: {tokens["CreatedAt"]}\n\nMessage:\n{tokens["Message"]}");
 
-                await _emailSender.SendEmailAsync(adminRecipients, adminSubject, adminBody, ct);
+                await _emailSender.SendEmailAsync(
+                    adminRecipients,
+                    adminSubject,
+                    adminBody,
+                    isBodyHtml: true,
+                    ct: ct);
             }
         }
 
         private async Task SendReservationNotificationsAsync(TourDto tour, ReservationDetailsDto reservation, string language, CancellationToken ct)
         {
-            var smtp = await _emailConfigRepository.GetSmtpSettingsAsync(ct);
-            var tokens = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["FullName"] = string.IsNullOrWhiteSpace(reservation.FullName) ? "Guest" : reservation.FullName,
-                ["Email"] = reservation.CustomerEmail,
-                ["Phone"] = reservation.CustomerPhone ?? string.Empty,
-                ["TourName"] = tour.TourName,
-                ["ReservationId"] = reservation.Id.ToString(CultureInfo.InvariantCulture),
-                ["PreferredDate"] = reservation.PreferredDate?.ToString("D", CultureInfo.InvariantCulture) ?? "Not specified",
-                ["Adults"] = reservation.Adults.ToString(CultureInfo.InvariantCulture),
-                ["Children"] = reservation.Children.ToString(CultureInfo.InvariantCulture),
-                ["Infants"] = reservation.Infants.ToString(CultureInfo.InvariantCulture),
-                ["TotalPrice"] = reservation.TotalPrice.ToString("N0", CultureInfo.InvariantCulture),
-                ["PaymentMethod"] = reservation.PaymentMethod.ToString(),
-                ["PaymentReference"] = reservation.PaymentReference ?? string.Empty,
-                ["PickupLocation"] = reservation.PickupLocation,
-                ["HotelName"] = reservation.HotelName ?? string.Empty,
-                ["RoomNumber"] = reservation.RoomNumber ?? string.Empty,
-                ["Notes"] = reservation.Notes ?? string.Empty,
-                ["Language"] = reservation.Language ?? LanguageCatalog.Normalize(language),
-                ["CreatedAt"] = reservation.CreatedAt.ToLocalTime().ToString("f")
-            };
+            var (tokens, smtp, _) = await BuildReservationContextAsync(tour, reservation, language, ct);
 
             var userTemplate = await ResolveTemplateAsync(EmailTemplateKeys.ReservationUser, language, ct);
             var (userSubject, userBody) = RenderTemplate(
@@ -415,7 +597,13 @@ namespace Controllers
                 $"Reservation received – {tour.TourName}",
                 $"Hello {tokens["FullName"]},\n\nThank you for booking {tour.TourName} with Tour Antalya.\n\nReservation ID: {tokens["ReservationId"]}\nPreferred date: {tokens["PreferredDate"]}\nGuests: Adults {tokens["Adults"]}, Children {tokens["Children"]}, Infants {tokens["Infants"]}\nPayment method: {tokens["PaymentMethod"]}\n\nWe will contact you shortly with confirmation details.\n\nBest regards,\nTour Antalya");
 
-            await _emailSender.SendEmailAsync(reservation.CustomerEmail, userSubject, userBody, tokens["FullName"], ct);
+            await _emailSender.SendEmailAsync(
+                reservation.CustomerEmail,
+                userSubject,
+                userBody,
+                toName: tokens["FullName"],
+                isBodyHtml: true,
+                ct: ct);
 
             var adminRecipients = ParseRecipients(smtp.NotificationEmail);
             if (adminRecipients.Count > 0)
@@ -427,7 +615,75 @@ namespace Controllers
                     $"New reservation – {tour.TourName}",
                     $"A new reservation has been placed.\n\nTour: {tokens["TourName"]}\nReservation ID: {tokens["ReservationId"]}\nGuest: {tokens["FullName"]}\nEmail: {tokens["Email"]}\nPhone: {tokens["Phone"]}\nPreferred date: {tokens["PreferredDate"]}\nAdults: {tokens["Adults"]} · Children: {tokens["Children"]} · Infants: {tokens["Infants"]}\nPickup/location: {tokens["PickupLocation"]}\nHotel: {tokens["HotelName"]} {tokens["RoomNumber"]}\nNotes: {tokens["Notes"]}\nPayment method: {tokens["PaymentMethod"]}\nPayment reference: {tokens["PaymentReference"]}\nCreated: {tokens["CreatedAt"]}");
 
-                await _emailSender.SendEmailAsync(adminRecipients, adminSubject, adminBody, ct);
+                await _emailSender.SendEmailAsync(
+                    adminRecipients,
+                    adminSubject,
+                    adminBody,
+                    isBodyHtml: true,
+                    ct: ct);
+            }
+        }
+
+        private async Task SendPaymentConfirmationEmailsAsync(TourDto tour, ReservationDetailsDto reservation, decimal amount, string currency, string language, CancellationToken ct)
+        {
+            var (tokens, smtp, invoiceSettings) = await BuildReservationContextAsync(tour, reservation, language, ct);
+            var currencyCode = string.IsNullOrWhiteSpace(currency) ? "EUR" : currency.ToUpperInvariant();
+            var effectiveAmount = amount > 0 ? amount : Convert.ToDecimal(reservation.TotalPrice);
+            tokens["Currency"] = currencyCode;
+            tokens["Amount"] = effectiveAmount.ToString("N2", CultureInfo.InvariantCulture);
+            tokens["AmountWithCurrency"] = $"{currencyCode} {tokens["Amount"]}";
+
+            var attachment = await _invoiceDocumentService.CreateInvoiceAsync(tour, reservation, effectiveAmount, currencyCode, ct);
+            var attachments = attachment is null ? null : new[] { attachment };
+            var guestName = tokens["FullName"];
+            var paymentReferenceDisplay = string.IsNullOrWhiteSpace(tokens["PaymentReference"]) ? "—" : tokens["PaymentReference"];
+            var phoneLine = string.IsNullOrWhiteSpace(tokens["CompanyPhone"]) ? string.Empty : $"<br/>{tokens["CompanyPhone"]}";
+            var emailLine = string.IsNullOrWhiteSpace(tokens["CompanyEmail"]) ? string.Empty : $"<br/><a href=\"mailto:{tokens["CompanyEmail"]}\">{tokens["CompanyEmail"]}</a>";
+            var contactSignature = $"{invoiceSettings.CompanyName}{phoneLine}{emailLine}";
+
+            var userSubject = $"Payment confirmed – {tokens["TourName"]}";
+            var userBody = $@"
+<p>Hi {guestName},</p>
+<p>We have received your payment of <strong>{tokens["AmountWithCurrency"]}</strong> for <strong>{tokens["TourName"]}</strong>.</p>
+<p>
+    Reservation ID: <strong>#{tokens["ReservationId"]}</strong><br/>
+    Payment reference: <strong>{paymentReferenceDisplay}</strong><br/>
+    Tour date: {tokens["PreferredDate"]}
+</p>
+<p>Your PDF receipt is attached. We will share pickup and transfer details 24 hours before departure.</p>
+<p>Warm regards,<br/>{contactSignature}</p>";
+
+            await _emailSender.SendEmailAsync(
+                reservation.CustomerEmail,
+                userSubject,
+                userBody,
+                toName: guestName,
+                isBodyHtml: true,
+                attachments: attachments,
+                ct: ct);
+
+            var adminRecipients = ParseRecipients(smtp.NotificationEmail);
+            if (adminRecipients.Count > 0)
+            {
+                var adminSubject = $"Payment received – {tokens["TourName"]}";
+                var adminBody = $@"
+<p>A payment has been confirmed.</p>
+<table style=""width:100%;border-collapse:collapse;"">
+    <tr><th align=""left"" style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">Guest</th><td style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">{guestName} ({tokens["Email"]})</td></tr>
+    <tr><th align=""left"" style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">Amount</th><td style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">{tokens["AmountWithCurrency"]}</td></tr>
+    <tr><th align=""left"" style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">Reference</th><td style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">{paymentReferenceDisplay}</td></tr>
+    <tr><th align=""left"" style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">Reservation</th><td style=""padding:6px 8px;border-bottom:1px solid #dbe3f0;"">#{tokens["ReservationId"]} – {tokens["TourName"]}</td></tr>
+    <tr><th align=""left"" style=""padding:6px 8px;"">Created</th><td style=""padding:6px 8px;"">{tokens["CreatedAt"]}</td></tr>
+</table>
+<p>Please update the itinerary and send the pickup confirmation to the guest.</p>";
+
+                await _emailSender.SendEmailAsync(
+                    adminRecipients,
+                    adminSubject,
+                    adminBody,
+                    isBodyHtml: true,
+                    attachments: attachments,
+                    ct: ct);
             }
         }
 
@@ -446,6 +702,48 @@ namespace Controllers
             }
 
             return template;
+        }
+
+        private async Task<(Dictionary<string, string> tokens, SmtpSettings smtp, InvoiceSettings invoiceSettings)> BuildReservationContextAsync(
+            TourDto tour,
+            ReservationDetailsDto reservation,
+            string language,
+            CancellationToken ct)
+        {
+            var smtp = await _emailConfigRepository.GetSmtpSettingsAsync(ct);
+            var invoiceSettings = await _invoiceSettingsRepository.GetAsync(ct);
+            var normalizedLanguage = reservation.Language ?? LanguageCatalog.Normalize(language);
+            var fullName = string.IsNullOrWhiteSpace(reservation.FullName) ? "Guest" : reservation.FullName;
+            var preferredDate = reservation.PreferredDate?.ToString("D", CultureInfo.InvariantCulture) ?? "Not specified";
+
+            var tokens = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["FullName"] = fullName,
+                ["Email"] = reservation.CustomerEmail,
+                ["Phone"] = reservation.CustomerPhone ?? string.Empty,
+                ["TourName"] = tour.TourName,
+                ["ReservationId"] = reservation.Id.ToString(CultureInfo.InvariantCulture),
+                ["PreferredDate"] = preferredDate,
+                ["Adults"] = reservation.Adults.ToString(CultureInfo.InvariantCulture),
+                ["Children"] = reservation.Children.ToString(CultureInfo.InvariantCulture),
+                ["Infants"] = reservation.Infants.ToString(CultureInfo.InvariantCulture),
+                ["TotalGuests"] = reservation.TotalGuests.ToString(CultureInfo.InvariantCulture),
+                ["TotalPrice"] = reservation.TotalPrice.ToString("N0", CultureInfo.InvariantCulture),
+                ["PaymentMethod"] = reservation.PaymentMethod.ToString(),
+                ["PaymentReference"] = reservation.PaymentReference ?? string.Empty,
+                ["PickupLocation"] = reservation.PickupLocation,
+                ["HotelName"] = reservation.HotelName ?? string.Empty,
+                ["RoomNumber"] = reservation.RoomNumber ?? string.Empty,
+                ["Notes"] = reservation.Notes ?? string.Empty,
+                ["Language"] = normalizedLanguage,
+                ["CreatedAt"] = reservation.CreatedAt.ToLocalTime().ToString("f"),
+                ["CompanyName"] = invoiceSettings.CompanyName,
+                ["CompanyEmail"] = string.IsNullOrWhiteSpace(invoiceSettings.CompanyEmail) ? smtp.FromEmail : invoiceSettings.CompanyEmail,
+                ["CompanyPhone"] = string.IsNullOrWhiteSpace(invoiceSettings.CompanyPhone) ? smtp.NotificationEmail ?? string.Empty : invoiceSettings.CompanyPhone,
+                ["CompanyAddress"] = invoiceSettings.CompanyAddress
+            };
+
+            return (tokens, smtp, invoiceSettings);
         }
 
         private static (string Subject, string Body) RenderTemplate(EmailTemplate? template, IDictionary<string, string> tokens, string defaultSubject, string defaultBody)

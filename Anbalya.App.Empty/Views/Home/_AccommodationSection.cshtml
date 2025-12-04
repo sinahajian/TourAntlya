@@ -1,4 +1,21 @@
 @model AccommodationSectionViewModel
+@using Models.Helper
+@using System.Linq
+
+@{
+    var lang = LanguageCatalog.Normalize(Model.Tours.FirstOrDefault()?.LanguageUsed ?? "en");
+    var priceSuffix = lang switch
+    {
+        "de" => "/Erwachsener",
+        "tr" => "/kişi",
+        "fa" => "/بزرگسال",
+        "ru" => "/взрослый",
+        "pl" => "/osoba dorosła",
+        "ar" => "/للبالغ",
+        _ => "/adult"
+    };
+    const string currencySymbol = "€";
+}
 
 @if (Model.Tours.Count > 0)
 {
@@ -23,7 +40,7 @@
                             <a href="@detailUrl">
                                 <h4 class="sec_h4">@tour.TourName</h4>
                             </a>
-                            <h5>@tour.Price<small> /adult</small></h5>
+                            <h5>@currencySymbol@tour.Price<small> @priceSuffix</small></h5>
                         </div>
                     </div>
                 }

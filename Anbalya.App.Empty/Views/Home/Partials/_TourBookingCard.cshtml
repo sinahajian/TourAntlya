@@ -1,5 +1,6 @@
 @model TourBookingPageViewModel
 @using Models.Helper
+@using Models.Entities
 
 @{
     var form = Model.Form ?? new TourReservationInputModel();
@@ -58,6 +59,7 @@
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="Form.TourId" />
             <input type="hidden" asp-for="Form.Language" />
+            <input type="hidden" asp-for="Form.PaymentReference" />
 
             <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
@@ -151,7 +153,22 @@
 
                 <div class="form-group">
                     <label asp-for="Form.CustomerPhone"></label>
-                    <input asp-for="Form.CustomerPhone" class="form-control" placeholder="WhatsApp or mobile (e.g. +90 555 123 45 67)" />
+                    <div class="input-group phone-input-group">
+                        <div class="input-group-prepend dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle phone-country-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="phone-flag mr-2" data-phone-flag>🇹🇷</span>
+                                <span class="phone-country-code" data-phone-code>+90</span>
+                            </button>
+                            <div class="dropdown-menu phone-country-menu" data-phone-country-menu></div>
+                        </div>
+                        <input asp-for="Form.CustomerPhone"
+                               class="form-control phone-number-input"
+                               placeholder="WhatsApp or mobile number"
+                               autocomplete="tel"
+                               inputmode="tel"
+                               data-phone-input />
+                    </div>
+                    <small class="form-text text-muted">Pick your country code or type it to auto-detect the flag.</small>
                     <span asp-validation-for="Form.CustomerPhone" class="text-danger small"></span>
                 </div>
 
@@ -191,7 +208,7 @@
                 </div>
             </div>
 
-            <div class="booking-step d-none" data-step="2">
+            <div class="booking-step d-none payment-step" data-step="2">
                 <div class="form-group mb-3">
                     <label class="d-block">Payment method</label>
                     @if (paymentOptions.Any())
@@ -203,7 +220,14 @@
                                 <input class="custom-control-input" type="radio" id="@paymentId" name="Form.PaymentMethod" value="@option.Method" @(form.PaymentMethod == option.Method ? "checked" : null) />
                                 <label class="custom-control-label" for="@paymentId">
                                     <strong>@option.DisplayName</strong>
-                                    <span class="d-block small text-muted">@option.AccountIdentifier</span>
+                                    @if (option.Method == PaymentMethod.PayPal)
+                                    {
+                                        <span class="d-block small text-muted">Pay securely with PayPal</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="d-block small text-muted">@option.AccountIdentifier</span>
+                                    }
                                 </label>
                                 <p class="small text-muted mt-1 mb-0">@option.Instructions</p>
                             </div>
@@ -218,7 +242,7 @@
 
                 @if (Model.PayPal.Enabled)
                 {
-                    <div class="alert alert-info" id="paypalCheckoutContainer" style="display:none;">
+                    <div class="alert alert-info paypal-box" id="paypalCheckoutContainer" style="display:none;">
                         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between">
                             <div class="mr-md-3 mb-2 mb-md-0">
                                 <strong>Instant PayPal checkout</strong>
@@ -236,7 +260,7 @@
                     </div>
                 }
 
-                <div class="alert alert-light">
+                <div class="alert alert-light summary-card">
                     <strong>Summary</strong>
                     <ul class="list-unstyled mb-0 small">
                         <li>Total guests: <span id="summary-total-guests">@((form.Adults + form.Children + form.Infants))</span></li>
