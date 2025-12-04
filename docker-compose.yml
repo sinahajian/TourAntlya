@@ -44,7 +44,7 @@ services:
   # ==========
   anbalya_web:
     build:
-      context: .          # همین فولدر (Dockerfile + Anbalya.App.Empty)
+      context: .
       dockerfile: Dockerfile
     container_name: anbalya-web
     restart: unless-stopped
@@ -53,11 +53,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      # کانکشن‌استرینگ به Postgres همین compose:
-      - ConnectionStrings__DefaultConnection=Host=anbalya_postgres;Port=5432;Database=AnbalyaDb;Username=anbalya_user;Password=anbalya_password;
-      # اگر اسم کانکشن‌استرینگ در appsettings چیز دیگه‌ایه، همون اسم رو اینجا بذار
+      # 🚩 این مهمه: override کردن همون SinaRailway
+      - ConnectionStrings__SinaRailway=Host=anbalya_postgres;Port=5432;Database=TourAntalya;Username=tourAntalya;Password=12sina122;Pooling=true;SSL Mode=Disable;
     ports:
-      - "8081:8080"   # بیرون: 8081 ، داخل کانتینر: 8080
-
+      - "8081:8080"
 volumes:
   anbalya_pgdata:

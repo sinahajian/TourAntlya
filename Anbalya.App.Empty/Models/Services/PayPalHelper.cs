@@ -81,8 +81,8 @@ public static class PayPalStaticConfig
     // Checkout settings
     public static string Currency { get; set; } = "EUR";
     public static bool UseSandbox { get; set; } = true;
-    public static string ReturnUrl { get; set; } = "https://localhost:5027/paypal/success";
-    public static string CancelUrl { get; set; } = "https://localhost:5027/paypal/cancel";
+    public static string ReturnUrl { get; set; } = "https://anbalya.com/paypal/success";
+    public static string CancelUrl { get; set; } = "https://anbalya.com/paypal/cancel";
     public static string DisplayName { get; set; } = "PayPal";
     public static string PaymentInstructions { get; set; } =
         "Complete your reservation and follow the PayPal checkout link we send by email.";
