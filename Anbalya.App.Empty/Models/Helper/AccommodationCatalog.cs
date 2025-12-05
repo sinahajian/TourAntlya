@@ -6,7 +6,6 @@ namespace Models.Helper
     {
         private static readonly IReadOnlyList<string> _options = new List<string>
         {
-            "Select Your Hotel",
             "Not Sure Yet",
             "Not on the List",
             "1207 Boutique Hotel - Antalya 2",

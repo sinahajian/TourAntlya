@@ -40,9 +40,11 @@
         }
 
         <form asp-action="BookTour"
+              asp-controller="Home"
               method="post"
               novalidate
               class="booking-form"
+              data-book-action="@Url.Action("BookTour", "Home")"
               data-tour-id="@Model.Tour.Id"
               data-tour-name="@Model.Tour.TourName"
               data-adult-price="@Model.Tour.Price"
@@ -58,8 +60,10 @@
               data-paypal-cancel="@Model.PayPal.CancelUrl">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="Form.TourId" />
+            <input type="hidden" name="TourId" value="@Model.Tour.Id" />
             <input type="hidden" asp-for="Form.Language" />
             <input type="hidden" asp-for="Form.PaymentReference" />
+            <input type="hidden" asp-for="Form.PayWithPayPal" />
 
             <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
@@ -181,7 +185,8 @@
                            class="form-control"
                            id="hotelField"
                            list="hotelList"
-                           placeholder="Start typing to search or pick from the list" />
+                           placeholder="Start typing to search or pick from the list"
+                           value='@((string.IsNullOrWhiteSpace(form.HotelName) || string.Equals(form.HotelName, "Select Your Hotel", StringComparison.OrdinalIgnoreCase)) ? string.Empty : form.HotelName)' />
                     <datalist id="hotelList">
                         @foreach (var option in accommodationOptions)
                         {
@@ -251,14 +256,13 @@
                                 <strong>Instant PayPal checkout</strong>
                                 <p class="small mb-0">Use PayPal for immediate confirmation once you review the amount.</p>
                             </div>
-                            <a id="paypalCheckoutButton"
-                               class="btn btn-warning text-uppercase font-weight-bold disabled"
-                               href="#"
-                               aria-disabled="true"
-                               target="_blank"
-                               rel="noopener noreferrer">
+                            <button id="paypalCheckoutButton"
+                                    type="button"
+                                    class="btn btn-warning text-uppercase font-weight-bold disabled"
+                                    aria-disabled="true"
+                                    data-paypal-submit>
                                 <i class="fa fa-paypal mr-2"></i> Pay with PayPal
-                            </a>
+                            </button>
                         </div>
                     </div>
                 }

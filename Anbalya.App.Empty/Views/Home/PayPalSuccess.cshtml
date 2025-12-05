@@ -17,10 +17,12 @@
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body text-center">
                         <div class="mb-3">
-                            <span class="badge badge-success p-2">Payment confirmed</span>
+                            <span class="badge @(Model.Success ? "badge-success" : "badge-warning") p-2">
+                                @(Model.Success ? "Payment confirmed" : "Payment could not be confirmed")
+                            </span>
                         </div>
-                        <h2 class="mb-2">Thank you!</h2>
-                        <p class="mb-2">We successfully matched your PayPal payment to the reservation below.</p>
+                        <h2 class="mb-2">@(!string.IsNullOrWhiteSpace(Model.Title) ? Model.Title : (Model.Success ? "Payment successful" : "Payment not confirmed"))</h2>
+                        <p class="mb-2">@(!string.IsNullOrWhiteSpace(Model.Message) ? Model.Message : "We successfully matched your PayPal payment to the reservation below.")</p>
                         @if (!string.IsNullOrWhiteSpace(Model.Invoice))
                         {
                             <p class="mb-0">Payment reference: <strong>@Model.Invoice</strong></p>
@@ -72,8 +74,12 @@
                     </div>
                 }
 
-                <div class="alert alert-info mb-4">
-                    <p class="mb-1">We will send your final confirmation email shortly with pickup time and any remaining details.</p>
+                <div class="alert @(Model.Success ? "alert-info" : "alert-warning") mb-4">
+                    <p class="mb-1">
+                        @(Model.Success
+                            ? "We will send your final confirmation email shortly with pickup time and any remaining details."
+                            : "Your reservation is saved but the payment was not confirmed. Please retry PayPal checkout or contact us.")
+                    </p>
                     <p class="mb-0">If you have questions, reply to the confirmation email or contact us at <a href="mailto:info@tourantalya.com">info@tourantalya.com</a>.</p>
                 </div>
 

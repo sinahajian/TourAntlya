@@ -67,4 +67,6 @@ public class TourReservationInputModel
     [StringLength(160)]
     [Display(Name = "Payment reference")]
     public string? PaymentReference { get; set; }
+
+    public bool PayWithPayPal { get; set; }
 }

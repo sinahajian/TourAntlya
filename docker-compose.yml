@@ -16,8 +16,8 @@ services:
       - anbalya_pgdata:/var/lib/postgresql/data
     # اگر خواستی از بیرون هم به DB وصل شوی (مثلاً با DBeaver از لپ‌تاپ):
     # پورت را باز کن ولی روی 5433 که با برنامه اول دعوا نکند
-    # ports:
-    #   - "5433:5432"
+    ports:
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U anbalya_user -d AnbalyaDb"]
       interval: 5s

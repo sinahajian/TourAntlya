@@ -4,11 +4,16 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 using Models.Interface;
 using Models.Entities;
 using Models.Helper;
 using Models.Services;
+using PaypalServerSdk.Standard.Exceptions;
+using PaypalServerSdk.Standard.Models;
 namespace Controllers
 {
     public class HomeController : Controller
@@ -28,6 +33,8 @@ namespace Controllers
         private readonly IEmailSender _emailSender;
         private readonly IInvoiceSettingsRepository _invoiceSettingsRepository;
         private readonly IInvoiceDocumentService _invoiceDocumentService;
+        private readonly IPayPalHelper _payPalHelper;
+        private readonly ILogger<HomeController> _logger;
         public HomeController(
             ITourRepository tourRepository,
             ILanguageResolver langResolver,
@@ -41,7 +48,9 @@ namespace Controllers
             IEmailConfigurationRepository emailConfigRepository,
             IEmailSender emailSender,
             IInvoiceSettingsRepository invoiceSettingsRepository,
-            IInvoiceDocumentService invoiceDocumentService)
+            IInvoiceDocumentService invoiceDocumentService,
+            IPayPalHelper payPalHelper,
+            ILogger<HomeController> logger)
         {
             _tourRepository = tourRepository;
             _langResolver = langResolver;
@@ -56,6 +65,8 @@ namespace Controllers
             _emailSender = emailSender;
             _invoiceSettingsRepository = invoiceSettingsRepository;
             _invoiceDocumentService = invoiceDocumentService;
+            _payPalHelper = payPalHelper;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index(CancellationToken ct)
@@ -217,7 +228,7 @@ namespace Controllers
                     Infants = 0,
                     PickupLocation = string.Empty,
                     PaymentMethod = defaultMethod,
-                    HotelName = "Select Your Hotel"
+                    HotelName = string.Empty
                 },
                 PaymentOptions = enabledOptions,
                 AccommodationOptions = AccommodationCatalog.List(),
@@ -230,15 +241,35 @@ namespace Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> BookTour(TourReservationInputModel form, CancellationToken ct)
+        public async Task<IActionResult> BookTour(CancellationToken ct)
         {
-            form.PaymentMethod = PaymentMethod.PayPal;
+            var postedForm = Request.HasFormContentType ? Request.Form : null;
+            LogIncomingForm(postedForm);
+
+            var form = MapReservationForm(postedForm);
+
+            if (form.TourId <= 0)
+            {
+                var rawTourId = Request.Query["tourId"].FirstOrDefault();
+                if (int.TryParse(rawTourId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedId))
+                {
+                    form.TourId = parsedId;
+                }
+            }
+
+            form.PaymentMethod = form.PaymentMethod == 0 ? PaymentMethod.PayPal : form.PaymentMethod;
+            form.PreferredDate = NormalizePreferredDate(form.PreferredDate);
+
+            ModelState.Clear();
+            TryValidateModel(form, "Form");
 
             var lang = _langResolver.Resolve(HttpContext);
+            LogFormState(form, postedForm);
             var tour = await _tourRepository.GetByIdAsync(form.TourId, lang, ct);
             if (tour is null)
             {
-                return NotFound();
+                TempData["BookingError"] = "We could not find this tour. Please try again from the tour page.";
+                return RedirectToAction(nameof(Index));
             }
 
             ValidateReservationForm(form);
@@ -275,6 +306,20 @@ namespace Controllers
 
             if (!ModelState.IsValid)
             {
+                var allErrors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(m => !string.IsNullOrWhiteSpace(m))
+                    .Distinct()
+                    .ToList();
+
+                var errorMessage = allErrors.Count switch
+                {
+                    > 1 => string.Join(" ", allErrors),
+                    1 => allErrors[0],
+                    _ => "Please correct the highlighted fields and try again."
+                };
+
                 var errorViewModel = new TourBookingPageViewModel
                 {
                     Tour = tour,
@@ -282,7 +327,7 @@ namespace Controllers
                     PaymentOptions = enabledOptions.Count > 0
                         ? enabledOptions
                         : payPalOptions.Select(PaymentOptionDto.FromEntity).ToList(),
-                    ErrorMessage = "Please correct the highlighted fields and try again.",
+                    ErrorMessage = errorMessage,
                     AccommodationOptions = AccommodationCatalog.List(),
                     PayPal = payPalInfo
                 };
@@ -299,11 +344,7 @@ namespace Controllers
             var lastName = form.LastName?.Trim() ?? string.Empty;
             var fullName = string.Join(" ", new[] { firstName, lastName }
                 .Where(part => !string.IsNullOrWhiteSpace(part)));
-            var hotelName = form.HotelName;
-            if (string.Equals(hotelName, "Select Your Hotel", StringComparison.OrdinalIgnoreCase))
-            {
-                hotelName = null;
-            }
+            var hotelName = string.IsNullOrWhiteSpace(form.HotelName) ? null : form.HotelName.Trim();
 
             var pickupLocation = string.IsNullOrWhiteSpace(form.PickupLocation)
                 ? hotelName ?? string.Empty
@@ -319,7 +360,7 @@ namespace Controllers
                     : fullName,
                 CustomerEmail = form.CustomerEmail.Trim(),
                 CustomerPhone = string.IsNullOrWhiteSpace(form.CustomerPhone) ? null : form.CustomerPhone.Trim(),
-                PreferredDate = form.PreferredDate,
+                PreferredDate = NormalizePreferredDate(form.PreferredDate),
                 Adults = form.Adults,
                 Children = form.Children,
                 Infants = form.Infants,
@@ -356,8 +397,37 @@ namespace Controllers
 
             await SendReservationNotificationsAsync(tour, reservationDto, lang, ct);
 
+            var wantsPayPalCheckout = (form.PayWithPayPal || form.PaymentMethod == PaymentMethod.PayPal) &&
+                                      !string.IsNullOrWhiteSpace(payPalSettings.BusinessEmail);
+
+            if (wantsPayPalCheckout)
+            {
+                var payPalOrder = await CreatePayPalOrderAsync(tour, reservationDto, payPalSettings, ct);
+                if (payPalOrder.Success && !string.IsNullOrWhiteSpace(payPalOrder.ApprovalUrl))
+                {
+                    return Redirect(payPalOrder.ApprovalUrl);
+                }
+
+                var fallbackUrl = BuildLegacyPayPalUrl(payPalSettings, reservationDto, tour);
+                if (!string.IsNullOrWhiteSpace(fallbackUrl))
+                {
+                    _logger.LogWarning("PayPal order API failed; falling back to hosted checkout for reservation {ReservationId}: {Error}", reservationDto.Id, payPalOrder.Error ?? "Unknown error");
+                    return Redirect(fallbackUrl);
+                }
+
+                ViewBag.PayPalError = "We saved your reservation but could not start PayPal checkout. Please try again or contact us to complete payment.";
+                _logger.LogWarning("PayPal order creation failed for reservation {ReservationId}: {Error}", reservationDto.Id, payPalOrder.Error ?? "Unknown error");
+            }
+
             ViewData["Title"] = $"{tour.TourName} Antalya Tour Confirmation";
             return View("ReservationConfirmation", confirmationViewModel);
+        }
+
+        [HttpGet]
+        public IActionResult BookTour()
+        {
+            TempData["BookingError"] = "Please start your reservation from a tour page.";
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet("paypal/success")]
@@ -365,16 +435,20 @@ namespace Controllers
         {
             var lang = _langResolver.Resolve(HttpContext);
             var invoice = Request.Query["invoice"].ToString();
+            var reservationIdRaw = Request.Query["reservationId"].ToString();
             var token = Request.Query["token"].ToString();
             var payerId = Request.Query["PayerID"].ToString();
             var currencyRaw = Request.Query["currency_code"].ToString();
             var amountRaw = Request.Query["amount"].ToString();
-            var currency = string.IsNullOrWhiteSpace(currencyRaw) ? "EUR" : currencyRaw.ToUpperInvariant();
+            var payPalSettings = await _payPalSettingsRepository.GetAsync(ct);
+            var currency = string.IsNullOrWhiteSpace(currencyRaw)
+                ? (string.IsNullOrWhiteSpace(payPalSettings.Currency) ? "EUR" : payPalSettings.Currency.ToUpperInvariant())
+                : currencyRaw.ToUpperInvariant();
             var amount = decimal.TryParse(amountRaw, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedAmount)
                 ? parsedAmount
                 : 0m;
 
-            Reservation? reservationEntity = null;
+            var reservationEntity = await FindReservationAsync(reservationIdRaw, invoice, ct);
             ReservationDetailsDto? reservation = null;
             TourDto? tour = null;
             var success = false;
@@ -383,10 +457,10 @@ namespace Controllers
             var justMarkedPaid = false;
             var alreadyPaid = false;
 
-            if (!string.IsNullOrWhiteSpace(invoice))
+            if (reservationEntity is not null)
             {
-                reservationEntity = await _reservationRepository.GetByPaymentReferenceAsync(invoice, ct);
-                if (reservationEntity is not null)
+                var verification = await CapturePayPalOrderAsync(token, reservationEntity, payPalSettings, ct);
+                if (verification.Success)
                 {
                     if (reservationEntity.PaymentStatus != PaymentStatus.Paid)
                     {
@@ -394,7 +468,7 @@ namespace Controllers
                             reservationEntity.Id,
                             ReservationStatus.Confirmed,
                             PaymentStatus.Paid,
-                            invoice,
+                            reservationEntity.PaymentReference ?? invoice,
                             ct);
                         justMarkedPaid = true;
                     }
@@ -410,13 +484,47 @@ namespace Controllers
 
                     success = true;
                     title = "Payment successful";
+                    currency = verification.Currency ?? currency ?? payPalSettings.Currency ?? "EUR";
+                    amount = verification.Amount ?? amount;
                     message = alreadyPaid
                         ? "This payment was already confirmed earlier. We have your reservation on file."
                         : "Thank you! We have confirmed your payment and will send the final instructions shortly.";
 
                     if (justMarkedPaid && tour is not null && reservation is not null)
                     {
-                        await SendPaymentConfirmationEmailsAsync(tour, reservation, amount, currency, reservation.Language ?? lang, ct);
+                        await SendPaymentConfirmationEmailsAsync(
+                            tour,
+                            reservation,
+                            verification.Amount ?? amount,
+                            currency,
+                            reservation.Language ?? lang,
+                            ct);
+                    }
+                }
+                else
+                {
+                    await _reservationRepository.UpdateStatusAsync(
+                        reservationEntity.Id,
+                        ReservationStatus.Pending,
+                        PaymentStatus.Failed,
+                        reservationEntity.PaymentReference ?? invoice,
+                        ct);
+
+                    reservationEntity = await _reservationRepository.GetByIdAsync(reservationEntity.Id, ct) ?? reservationEntity;
+                    reservation = ReservationDetailsDto.FromEntity(reservationEntity);
+                    var reservationLang = reservationEntity.Language ?? lang;
+                    tour = await _tourRepository.GetByIdAsync(reservationEntity.TourId, reservationLang, ct);
+
+                    title = "Payment not confirmed";
+                    currency = verification.Currency ?? currency;
+                    amount = verification.Amount ?? amount;
+                    message = string.IsNullOrWhiteSpace(verification.Error)
+                        ? "We could not confirm this payment with PayPal. Please try again or contact support."
+                        : $"We could not confirm this payment with PayPal: {verification.Error}";
+
+                    if (tour is not null && reservation is not null)
+                    {
+                        await SendPaymentFailedEmailsAsync(tour, reservation, amount, currency, reservationLang, ct);
                     }
                 }
             }
@@ -444,50 +552,48 @@ namespace Controllers
         {
             var lang = _langResolver.Resolve(HttpContext);
             var invoice = Request.Query["invoice"].ToString();
+            var reservationIdRaw = Request.Query["reservationId"].ToString();
             var token = Request.Query["token"].ToString();
             var payerId = Request.Query["PayerID"].ToString();
             var currencyRaw = Request.Query["currency_code"].ToString();
             var amountRaw = Request.Query["amount"].ToString();
-            var currency = string.IsNullOrWhiteSpace(currencyRaw) ? "EUR" : currencyRaw.ToUpperInvariant();
+            var payPalSettings = await _payPalSettingsRepository.GetAsync(ct);
+            var currency = string.IsNullOrWhiteSpace(currencyRaw)
+                ? (string.IsNullOrWhiteSpace(payPalSettings.Currency) ? "EUR" : payPalSettings.Currency.ToUpperInvariant())
+                : currencyRaw.ToUpperInvariant();
             var amount = decimal.TryParse(amountRaw, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedAmount)
                 ? parsedAmount
                 : 0m;
 
-            Reservation? reservationEntity = null;
+            var reservationEntity = await FindReservationAsync(reservationIdRaw, invoice, ct);
             ReservationDetailsDto? reservation = null;
             TourDto? tour = null;
             var message = "The payment was cancelled before completion. Your reservation remains pending.";
 
-            if (!string.IsNullOrWhiteSpace(invoice))
+            if (reservationEntity is not null)
             {
-                reservationEntity = await _reservationRepository.GetByPaymentReferenceAsync(invoice, ct);
-                if (reservationEntity is not null)
-                {
-                    await _reservationRepository.UpdateStatusAsync(
-                        reservationEntity.Id,
-                        ReservationStatus.Cancelled,
-                        PaymentStatus.Failed,
-                        invoice,
-                        ct);
+                await _reservationRepository.UpdateStatusAsync(
+                    reservationEntity.Id,
+                    ReservationStatus.Cancelled,
+                    PaymentStatus.Failed,
+                    reservationEntity.PaymentReference ?? invoice,
+                    ct);
 
-                    reservationEntity = await _reservationRepository.GetByIdAsync(reservationEntity.Id, ct) ?? reservationEntity;
-                    reservation = ReservationDetailsDto.FromEntity(reservationEntity);
-                    var reservationLang = reservationEntity.Language ?? lang;
-                    tour = await _tourRepository.GetByIdAsync(reservationEntity.TourId, reservationLang, ct);
+                reservationEntity = await _reservationRepository.GetByIdAsync(reservationEntity.Id, ct) ?? reservationEntity;
+                reservation = ReservationDetailsDto.FromEntity(reservationEntity);
+                var reservationLang = reservationEntity.Language ?? lang;
+                tour = await _tourRepository.GetByIdAsync(reservationEntity.TourId, reservationLang, ct);
 
-                    if (tour is not null && reservation is not null)
-                    {
-                        await SendPaymentFailedEmailsAsync(tour, reservation, amount, currency, reservationLang, ct);
-                    }
-                }
-                else
+                if (tour is not null && reservation is not null)
                 {
-                    message = "We did not find a reservation matching this payment reference. If you created a booking, please contact us.";
+                    await SendPaymentFailedEmailsAsync(tour, reservation, amount, currency, reservationLang, ct);
                 }
             }
             else
             {
-                message = "We did not receive a payment reference from PayPal. Please try again or contact support.";
+                message = string.IsNullOrWhiteSpace(invoice)
+                    ? "We did not receive a payment reference from PayPal. Please try again or contact support."
+                    : "We did not find a reservation matching this payment reference. If you created a booking, please contact us.";
             }
 
             var viewModel = new PayPalResultViewModel
@@ -510,25 +616,201 @@ namespace Controllers
 
         private void ValidateReservationForm(TourReservationInputModel form)
         {
+            const string prefix = "Form.";
+
             if (form.PreferredDate.HasValue && form.PreferredDate.Value.Date <= DateTime.UtcNow.Date)
             {
-                ModelState.AddModelError(nameof(form.PreferredDate), "Please choose a date at least 1 day in advance.");
+                ModelState.AddModelError(prefix + nameof(form.PreferredDate), "Please choose a date at least 1 day in advance.");
             }
 
             var totalGuests = Math.Max(0, form.Adults) + Math.Max(0, form.Children) + Math.Max(0, form.Infants);
             if (totalGuests <= 0)
             {
-                ModelState.AddModelError(nameof(form.Adults), "At least one guest is required.");
+                ModelState.AddModelError(prefix + nameof(form.Adults), "At least one guest is required.");
             }
 
             var hotelValue = form.HotelName?.Trim();
-            var hasHotelSelection = !string.IsNullOrWhiteSpace(hotelValue) &&
-                                     !string.Equals(hotelValue, "Select Your Hotel", StringComparison.OrdinalIgnoreCase);
+            var hasHotelSelection = !string.IsNullOrWhiteSpace(hotelValue);
 
             if (!hasHotelSelection && string.IsNullOrWhiteSpace(form.PickupLocation))
             {
-                ModelState.AddModelError(nameof(form.HotelName), "Please select your hotel or enter a pickup location.");
+                var message = "Please select your hotel or enter a pickup location.";
+                ModelState.AddModelError(prefix + nameof(form.HotelName), message);
+                ModelState.AddModelError(prefix + nameof(form.PickupLocation), message);
             }
+        }
+
+        private TourReservationInputModel MapReservationForm(IFormCollection? form)
+        {
+            if (form is null || form.Count == 0)
+            {
+                return new TourReservationInputModel();
+            }
+
+            string GetValue(params string[] keys)
+            {
+                foreach (var key in keys)
+                {
+                    if (string.IsNullOrWhiteSpace(key)) continue;
+                    var values = form[key];
+                    if (values.Count == 0) continue;
+
+                    var candidate = values.LastOrDefault(v => !string.IsNullOrWhiteSpace(v))
+                                   ?? values.LastOrDefault();
+
+                    if (candidate is not null)
+                    {
+                        return candidate.Trim();
+                    }
+                }
+
+                return string.Empty;
+            }
+
+            int GetInt(int fallback, params string[] keys)
+            {
+                foreach (var key in keys)
+                {
+                    if (string.IsNullOrWhiteSpace(key)) continue;
+                    var raw = GetValue(key);
+                    if (int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
+                    {
+                        return parsed;
+                    }
+                }
+
+                return fallback;
+            }
+
+            DateTime? GetDate(params string[] keys)
+            {
+                foreach (var key in keys)
+                {
+                    var raw = GetValue(key);
+                    if (!string.IsNullOrWhiteSpace(raw) &&
+                        DateTime.TryParse(raw, CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal, out var parsed))
+                    {
+                        return parsed;
+                    }
+                }
+
+                return null;
+            }
+
+            bool GetBool(params string[] keys)
+            {
+                foreach (var key in keys)
+                {
+                    var raw = GetValue(key);
+                    if (string.IsNullOrWhiteSpace(raw)) continue;
+                    if (string.Equals(raw, "true", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(raw, "on", StringComparison.OrdinalIgnoreCase) ||
+                        raw == "1")
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            var formModel = new TourReservationInputModel
+            {
+                TourId = GetInt(0, "Form.TourId", "TourId"),
+                Language = GetValue("Form.Language", "Language"),
+                PaymentReference = GetValue("Form.PaymentReference", "PaymentReference"),
+                PayWithPayPal = GetBool("Form.PayWithPayPal", "PayWithPayPal"),
+                FirstName = GetValue("Form.FirstName", "FirstName"),
+                LastName = GetValue("Form.LastName", "LastName"),
+                CustomerEmail = GetValue("Form.CustomerEmail", "CustomerEmail"),
+                CustomerPhone = GetValue("Form.CustomerPhone", "CustomerPhone"),
+                PreferredDate = GetDate("Form.PreferredDate", "PreferredDate"),
+                Adults = GetInt(1, "Form.Adults", "Adults"),
+                Children = GetInt(0, "Form.Children", "Children"),
+                Infants = GetInt(0, "Form.Infants", "Infants"),
+                PickupLocation = GetValue("Form.PickupLocation", "PickupLocation"),
+                HotelName = GetValue("Form.HotelName", "HotelName"),
+                RoomNumber = GetValue("Form.RoomNumber", "RoomNumber"),
+                Notes = GetValue("Form.Notes", "Notes"),
+                PaymentMethod = ParsePaymentMethod(GetValue("Form.PaymentMethod", "PaymentMethod"))
+            };
+
+            return formModel;
+        }
+
+        private PaymentMethod ParsePaymentMethod(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return PaymentMethod.PayPal;
+            }
+
+            if (Enum.TryParse<PaymentMethod>(raw, true, out var parsed) &&
+                Enum.IsDefined(typeof(PaymentMethod), parsed))
+            {
+                return parsed;
+            }
+
+            if (int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) &&
+                Enum.IsDefined(typeof(PaymentMethod), value))
+            {
+                return (PaymentMethod)value;
+            }
+
+            return PaymentMethod.PayPal;
+        }
+
+        private void LogIncomingForm(IFormCollection? form)
+        {
+            if (form is null)
+            {
+                _logger.LogWarning("BookTour: no form content received.");
+                return;
+            }
+
+            var keyList = string.Join(", ", form.Keys);
+            var values = string.Join("; ", form.Keys.Select(k => $"{k}='{string.Join("|", form[k].ToArray())}'"));
+            _logger.LogInformation("BookTour raw form keys: {Keys}", string.IsNullOrWhiteSpace(keyList) ? "(none)" : keyList);
+            _logger.LogInformation("BookTour raw form values: {Values}", values);
+        }
+
+        private void LogFormState(TourReservationInputModel form, IFormCollection? postedForm = null)
+        {
+            var keys = postedForm is not null ? string.Join(", ", postedForm.Keys) : "(no form)";
+            _logger.LogInformation("BookTour form keys: {Keys}", keys);
+            _logger.LogInformation("BookTour values: TourId={TourId}, FirstName='{FirstName}', LastName='{LastName}', Email='{Email}', Phone='{Phone}', Hotel='{Hotel}', Pickup='{Pickup}', Adults={Adults}, Children={Children}, Infants={Infants}, PreferredDate='{PreferredDate}'",
+                form.TourId,
+                form.FirstName,
+                form.LastName,
+                form.CustomerEmail,
+                form.CustomerPhone,
+                form.HotelName,
+                form.PickupLocation,
+                form.Adults,
+                form.Children,
+                form.Infants,
+                form.PreferredDate?.ToString("u") ?? "(null)");
+        }
+
+        private static DateTime? NormalizePreferredDate(DateTime? date)
+        {
+            if (!date.HasValue)
+            {
+                return null;
+            }
+
+            var day = date.Value.Date;
+            if (day.Kind == DateTimeKind.Unspecified)
+            {
+                return DateTime.SpecifyKind(day, DateTimeKind.Utc);
+            }
+
+            if (day.Kind == DateTimeKind.Local)
+            {
+                return day.ToUniversalTime();
+            }
+
+            return day;
         }
 
         private static int CalculateTotalPrice(TourDto tour, TourReservationInputModel form)
@@ -541,6 +823,302 @@ namespace Controllers
 
         private static string GeneratePaymentReference(int tourId) =>
             $"TA-{tourId}-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+
+        private async Task<PayPalOrderResult> CreatePayPalOrderAsync(
+            TourDto tour,
+            ReservationDetailsDto reservation,
+            PayPalSettings payPalSettings,
+            CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(payPalSettings.BusinessEmail) ||
+                string.IsNullOrWhiteSpace(payPalSettings.ClientId) ||
+                string.IsNullOrWhiteSpace(payPalSettings.ClientSecret))
+            {
+                return new PayPalOrderResult(false, null, null, null, "PayPal is not configured.");
+            }
+
+            var currency = string.IsNullOrWhiteSpace(payPalSettings.Currency) ? "EUR" : payPalSettings.Currency.ToUpperInvariant();
+            var invoice = reservation.PaymentReference ?? GeneratePaymentReference(reservation.TourId);
+            var returnUrl = BuildPayPalCallbackUrl(payPalSettings.ReturnUrl, nameof(PayPalSuccess), invoice, reservation.Id);
+            var cancelUrl = BuildPayPalCallbackUrl(payPalSettings.CancelUrl, nameof(PayPalCancel), invoice, reservation.Id);
+
+            var orderRequest = new OrderRequest
+            {
+                Intent = CheckoutPaymentIntent.Capture,
+                PurchaseUnits = new List<PurchaseUnitRequest>
+                {
+                    new()
+                    {
+                        ReferenceId = reservation.Id.ToString(CultureInfo.InvariantCulture),
+                        CustomId = reservation.Id.ToString(CultureInfo.InvariantCulture),
+                        InvoiceId = invoice,
+                        Description = $"Reservation #{reservation.Id} – {tour.TourName}",
+                        Amount = new AmountWithBreakdown
+                        {
+                            CurrencyCode = currency,
+                            MValue = Convert.ToDecimal(reservation.TotalPrice).ToString("0.00", CultureInfo.InvariantCulture)
+                        }
+                    }
+                },
+                ApplicationContext = new OrderApplicationContext
+                {
+                    BrandName = "Tour Antalya",
+                    UserAction = OrderApplicationContextUserAction.PayNow,
+                    ShippingPreference = OrderApplicationContextShippingPreference.NoShipping,
+                    Locale = reservation.Language,
+                    ReturnUrl = returnUrl,
+                    CancelUrl = cancelUrl
+                }
+            };
+
+            var input = new CreateOrderInput
+            {
+                Body = orderRequest,
+                ContentType = "application/json"
+            };
+
+            try
+            {
+                var orderResponse = await _payPalHelper.Client.OrdersController.CreateOrderAsync(input, ct);
+                var order = orderResponse?.Data;
+                var approvalUrl = order?.Links?.FirstOrDefault(l => string.Equals(l.Rel, "approve", StringComparison.OrdinalIgnoreCase))?.Href;
+
+                if (!string.IsNullOrWhiteSpace(order?.Id) && !string.IsNullOrWhiteSpace(approvalUrl))
+                {
+                    return new PayPalOrderResult(true, order.Id, approvalUrl, order.Status?.ToString() ?? "Created", null);
+                }
+
+                return new PayPalOrderResult(false, order?.Id, approvalUrl, order?.Status?.ToString() ?? "Unknown", "PayPal did not return an approval URL.");
+            }
+            catch (ApiException ex)
+            {
+                _logger.LogError(ex, "PayPal create order failed for reservation {ReservationId}", reservation.Id);
+                return new PayPalOrderResult(false, null, null, null, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "PayPal create order failed for reservation {ReservationId}", reservation.Id);
+                return new PayPalOrderResult(false, null, null, null, ex.Message);
+            }
+        }
+
+        private async Task<PayPalVerificationResult> CapturePayPalOrderAsync(
+            string orderId,
+            Reservation reservation,
+            PayPalSettings payPalSettings,
+            CancellationToken ct)
+        {
+            var currency = string.IsNullOrWhiteSpace(payPalSettings.Currency) ? "EUR" : payPalSettings.Currency.ToUpperInvariant();
+            var expectedAmount = Convert.ToDecimal(reservation.TotalPrice);
+
+            if (string.IsNullOrWhiteSpace(orderId))
+            {
+                return new PayPalVerificationResult(false, "missing_token", null, null, expectedAmount, currency, "PayPal did not return a payment token.");
+            }
+
+            try
+            {
+                var ordersController = _payPalHelper.Client.OrdersController;
+                var orderDetailsResponse = await ordersController.GetOrderAsync(new GetOrderInput { Id = orderId }, ct);
+                var orderDetails = orderDetailsResponse?.Data;
+                var initialCapture = ExtractCapture(orderDetails);
+                var initialAmount = ParseAmount(initialCapture?.Amount) ?? ParseAmount(orderDetails?.PurchaseUnits?.FirstOrDefault()?.Amount);
+                var initialCurrency = initialCapture?.Amount?.CurrencyCode ?? orderDetails?.PurchaseUnits?.FirstOrDefault()?.Amount?.CurrencyCode ?? currency;
+
+                if (orderDetails?.Status == OrderStatus.Completed && IsCaptureValid(initialCapture, reservation, expectedAmount, currency))
+                {
+                    return new PayPalVerificationResult(true, orderDetails.Status?.ToString() ?? "Completed", orderDetails.Id, initialCapture?.Id, initialAmount ?? expectedAmount, initialCurrency, null);
+                }
+
+                var captureResponse = await ordersController.CaptureOrderAsync(new CaptureOrderInput
+                {
+                    Id = orderId,
+                    ContentType = "application/json",
+                    Prefer = "return=representation",
+                    Body = new OrderCaptureRequest()
+                }, ct);
+
+                var capturedOrder = captureResponse?.Data;
+                var capture = ExtractCapture(capturedOrder);
+                var captureAmount = ParseAmount(capture?.Amount) ?? ParseAmount(capturedOrder?.PurchaseUnits?.FirstOrDefault()?.Amount);
+                var captureCurrency = capture?.Amount?.CurrencyCode ?? capturedOrder?.PurchaseUnits?.FirstOrDefault()?.Amount?.CurrencyCode ?? currency;
+                var captureStatus = capturedOrder?.Status?.ToString() ?? capture?.Status?.ToString() ?? "unknown";
+
+                if (capturedOrder?.Status == OrderStatus.Completed && IsCaptureValid(capture, reservation, expectedAmount, currency))
+                {
+                    return new PayPalVerificationResult(true, captureStatus, capturedOrder.Id, capture?.Id, captureAmount ?? expectedAmount, captureCurrency, null);
+                }
+
+                var error = capture?.StatusDetails?.Reason?.ToString() ?? "PayPal did not confirm the payment.";
+                return new PayPalVerificationResult(false, captureStatus, capturedOrder?.Id ?? orderId, capture?.Id, captureAmount ?? initialAmount, captureCurrency, error);
+            }
+            catch (ApiException ex)
+            {
+                _logger.LogError(ex, "PayPal capture failed for reservation {ReservationId}", reservation.Id);
+                return new PayPalVerificationResult(false, "error", orderId, null, expectedAmount, currency, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "PayPal capture failed for reservation {ReservationId}", reservation.Id);
+                return new PayPalVerificationResult(false, "error", orderId, null, expectedAmount, currency, ex.Message);
+            }
+        }
+
+        private string BuildPayPalCallbackUrl(string? baseUrl, string actionName, string invoice, int reservationId)
+        {
+            var target = !string.IsNullOrWhiteSpace(baseUrl)
+                ? baseUrl
+                : Url.Action(actionName, "Home", null, Request.Scheme, Request.Host.ToString()) ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(target))
+            {
+                return string.Empty;
+            }
+
+            var query = new Dictionary<string, string?>
+            {
+                ["invoice"] = invoice,
+                ["reservationId"] = reservationId.ToString(CultureInfo.InvariantCulture)
+            };
+
+            return QueryHelpers.AddQueryString(target, query!);
+        }
+
+        private string BuildPayPalCallbackUrl(string? baseUrl, string actionName, string invoice, int reservationId, PayPalSettings settings)
+        {
+            var preferLocal =
+                HttpContext?.Request?.Host.HasValue == true &&
+                (HttpContext.Request.Host.Host.Contains("localhost", StringComparison.OrdinalIgnoreCase)
+                 || HttpContext.Request.Host.Host.StartsWith("127.", StringComparison.OrdinalIgnoreCase)
+                 || HttpContext.Request.Host.Host.StartsWith("192.168.", StringComparison.OrdinalIgnoreCase)
+                 || settings.UseSandbox);
+
+            var target = (!preferLocal && !string.IsNullOrWhiteSpace(baseUrl))
+                ? baseUrl
+                : Url.Action(actionName, "Home", null, Request.Scheme, Request.Host.ToString()) ?? string.Empty;
+
+            if (!Uri.TryCreate(target, UriKind.Absolute, out _))
+            {
+                target = Url.Action(actionName, "Home", null, Request.Scheme, Request.Host.ToString()) ?? string.Empty;
+            }
+
+            if (string.IsNullOrWhiteSpace(target))
+            {
+                return string.Empty;
+            }
+
+            var query = new Dictionary<string, string?>
+            {
+                ["invoice"] = invoice,
+                ["reservationId"] = reservationId.ToString(CultureInfo.InvariantCulture)
+            };
+
+            return QueryHelpers.AddQueryString(target, query!);
+        }
+
+        private string? BuildLegacyPayPalUrl(PayPalSettings settings, ReservationDetailsDto reservation, TourDto tour)
+        {
+            if (string.IsNullOrWhiteSpace(settings.BusinessEmail))
+            {
+                return null;
+            }
+
+            var baseUrl = settings.BaseUrl;
+            var amount = reservation.TotalPrice <= 0 ? 0 : reservation.TotalPrice;
+            var invoice = reservation.PaymentReference ?? GeneratePaymentReference(reservation.TourId);
+            var returnUrl = BuildPayPalCallbackUrl(settings.ReturnUrl, nameof(PayPalSuccess), invoice, reservation.Id, settings);
+            var cancelUrl = BuildPayPalCallbackUrl(settings.CancelUrl, nameof(PayPalCancel), invoice, reservation.Id, settings);
+
+            var query = new Dictionary<string, string?>
+            {
+                ["cmd"] = "_xclick",
+                ["business"] = settings.BusinessEmail,
+                ["currency_code"] = string.IsNullOrWhiteSpace(settings.Currency) ? "EUR" : settings.Currency,
+                ["amount"] = (amount <= 0 ? 1 : amount).ToString("0.00", CultureInfo.InvariantCulture),
+                ["item_name"] = $"{tour.TourName} – Reservation #{reservation.Id}",
+                ["invoice"] = invoice
+            };
+
+            if (!string.IsNullOrWhiteSpace(returnUrl)) query["return"] = returnUrl;
+            if (!string.IsNullOrWhiteSpace(cancelUrl)) query["cancel_return"] = cancelUrl;
+
+            return QueryHelpers.AddQueryString(baseUrl, query);
+        }
+
+        private async Task<Reservation?> FindReservationAsync(string reservationIdRaw, string invoice, CancellationToken ct)
+        {
+            if (int.TryParse(reservationIdRaw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var reservationId))
+            {
+                var byId = await _reservationRepository.GetByIdAsync(reservationId, ct);
+                if (byId is not null)
+                {
+                    return byId;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(invoice))
+            {
+                var byReference = await _reservationRepository.GetByPaymentReferenceAsync(invoice, ct);
+                if (byReference is not null)
+                {
+                    return byReference;
+                }
+            }
+
+            return null;
+        }
+
+        private static OrdersCapture? ExtractCapture(Order? order) =>
+            order?.PurchaseUnits?
+                .SelectMany(unit => unit?.Payments?.Captures ?? Enumerable.Empty<OrdersCapture>())
+                .FirstOrDefault();
+
+        private static bool IsCaptureValid(OrdersCapture? capture, Reservation reservation, decimal expectedAmount, string expectedCurrency)
+        {
+            if (capture?.Amount is null)
+            {
+                return false;
+            }
+
+            if (!string.Equals(capture.Amount.CurrencyCode, expectedCurrency, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var paidAmount = ParseAmount(capture.Amount);
+            if (!paidAmount.HasValue || Math.Abs(paidAmount.Value - expectedAmount) > 0.01m)
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(reservation.PaymentReference))
+            {
+                var referenceMatches = string.Equals(capture.InvoiceId, reservation.PaymentReference, StringComparison.OrdinalIgnoreCase)
+                                       || string.Equals(capture.CustomId, reservation.PaymentReference, StringComparison.OrdinalIgnoreCase);
+                if (!referenceMatches)
+                {
+                    return false;
+                }
+            }
+
+            return capture.Status == CaptureStatus.Completed;
+        }
+
+        private static decimal? ParseAmount(Money? money) => ParseAmount(money?.MValue);
+
+        private static decimal? ParseAmount(AmountWithBreakdown? amount) => ParseAmount(amount?.MValue);
+
+        private static decimal? ParseAmount(string? amountRaw)
+        {
+            if (string.IsNullOrWhiteSpace(amountRaw))
+            {
+                return null;
+            }
+
+            return decimal.TryParse(amountRaw, NumberStyles.Any, CultureInfo.InvariantCulture, out var value)
+                ? value
+                : null;
+        }
 
         private async Task SendContactNotificationsAsync(ContactMessage message, string language, CancellationToken ct)
         {
@@ -850,5 +1428,16 @@ namespace Controllers
 
             return recipients;
         }
+
+        private record PayPalOrderResult(bool Success, string? OrderId, string? ApprovalUrl, string? Status, string? Error);
+
+        private record PayPalVerificationResult(
+            bool Success,
+            string? Status,
+            string? OrderId,
+            string? CaptureId,
+            decimal? Amount,
+            string? Currency,
+            string? Error);
     }
 }

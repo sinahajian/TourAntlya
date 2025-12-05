@@ -21,6 +21,13 @@
                         <p class="mb-1">We reserved <strong>@reservation.TotalGuests</strong> spot(s) for <strong>@tour.TourName</strong>.</p>
                         <p class="mb-0">Your reference code: <strong>@Model.ReferenceCode</strong></p>
                         <small class="text-muted">Created @Model.FormattedCreatedAt</small>
+                        @if (ViewBag.PayPalError is string payPalError && !string.IsNullOrWhiteSpace(payPalError))
+                        {
+                            <div class="alert alert-warning text-left mt-3" role="alert">@payPalError</div>
+                            <div class="text-left">
+                                <a class="btn btn-warning mt-2" href="@Url.Action("Tour", "Home", new { id = tour.Id, slug = tour.Slug })">Try PayPal again</a>
+                            </div>
+                        }
                     </div>
                 </div>
 

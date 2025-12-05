@@ -39,6 +39,11 @@
         const payPalButton = document.getElementById('paypalCheckoutButton');
         const payPalContainer = document.getElementById('paypalCheckoutContainer');
         const paymentRadios = Array.from(form.querySelectorAll('input[name="Form.PaymentMethod"]'));
+        const payWithPayPalInput = form.querySelector('input[name="Form.PayWithPayPal"]');
+        const reserveButton = form.querySelector('button[type="submit"]');
+        const hotelInput = form.querySelector('input[name="Form.HotelName"]');
+        const pickupInput = form.querySelector('input[name="Form.PickupLocation"]');
+        const formAction = form.dataset.bookAction || form.getAttribute('action') || '';
 
         const phoneInput = form.querySelector('[data-phone-input]');
         const phoneMenu = form.querySelector('[data-phone-country-menu]');
@@ -183,6 +188,45 @@
             return invoice;
         };
 
+        const syncHiddenField = (name, value) => {
+            let hidden = form.querySelector(`input[type="hidden"][data-sync="${name}"]`);
+            if (!hidden) {
+                hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = name;
+                hidden.dataset.sync = name;
+                form.appendChild(hidden);
+            }
+            hidden.value = value ?? '';
+        };
+
+        const syncAllFields = () => {
+            const getVal = (selector) => {
+                const el = form.querySelector(selector);
+                return el ? el.value : '';
+            };
+
+            syncHiddenField('Form.TourId', getVal('input[name="Form.TourId"]') || form.dataset.tourId || '');
+            syncHiddenField('TourId', getVal('input[name="TourId"]') || form.dataset.tourId || '');
+            syncHiddenField('Form.Language', getVal('input[name="Form.Language"]') || form.dataset.language || '');
+            syncHiddenField('Form.PaymentReference', getVal('input[name="Form.PaymentReference"]'));
+            syncHiddenField('Form.PayWithPayPal', getVal('input[name="Form.PayWithPayPal"]'));
+            syncHiddenField('Form.FirstName', getVal('input[name="Form.FirstName"]'));
+            syncHiddenField('Form.LastName', getVal('input[name="Form.LastName"]'));
+            syncHiddenField('Form.CustomerEmail', getVal('input[name=\"Form.CustomerEmail\"]'));
+            syncHiddenField('Form.CustomerPhone', getVal('input[name=\"Form.CustomerPhone\"]'));
+            syncHiddenField('Form.PreferredDate', getVal('input[name=\"Form.PreferredDate\"]'));
+            syncHiddenField('Form.Adults', getVal('input[name=\"Form.Adults\"]'));
+            syncHiddenField('Form.Children', getVal('input[name=\"Form.Children\"]'));
+            syncHiddenField('Form.Infants', getVal('input[name=\"Form.Infants\"]'));
+            syncHiddenField('Form.HotelName', getVal('input[name=\"Form.HotelName\"]'));
+            syncHiddenField('Form.PickupLocation', getVal('input[name=\"Form.PickupLocation\"]'));
+            syncHiddenField('Form.RoomNumber', getVal('input[name=\"Form.RoomNumber\"]'));
+            syncHiddenField('Form.Notes', getVal('input[name=\"Form.Notes\"]'));
+            const selectedPayment = paymentRadios.find(r => r.checked)?.value || getVal('input[name=\"Form.PaymentMethod\"]');
+            syncHiddenField('Form.PaymentMethod', selectedPayment);
+        };
+
         const togglePayPalVisibility = () => {
             if (!payPalContainer) {
                 return;
@@ -198,7 +242,12 @@
         const isPayPalSelectedAndReady = () => {
             const selected = paymentRadios.find(r => r.checked)?.value;
             const currentTotal = Number(form.dataset.currentTotal || 0);
-            return selected === 'PayPal' && payPalEnabled && currentTotal > 0 && payPalButton && !payPalButton.classList.contains('disabled') && payPalButton.href && payPalButton.href !== '#';
+            return selected === 'PayPal'
+                && payPalEnabled
+                && currentTotal > 0
+                && payPalButton
+                && !payPalButton.classList.contains('disabled')
+                && !payPalButton.disabled;
         };
 
         const updateTotals = () => {
@@ -234,28 +283,16 @@
             }
 
             if (payPalEnabled && payPalButton) {
-                if (total > 0 && payPalEmail) {
-                    const invoiceId = ensureInvoice();
-                    const params = new URLSearchParams({
-                        cmd: '_xclick',
-                        business: payPalEmail,
-                        currency_code: payPalCurrency,
-                        amount: total.toFixed(2),
-                        item_name: tourName,
-                        invoice: invoiceId
-                    });
-
-                    if (payPalReturn) params.set('return', payPalReturn);
-                    if (payPalCancel) params.set('cancel_return', payPalCancel);
-
-                    payPalButton.href = `${payPalBaseUrl}?${params.toString()}`;
+                if (total > 0) {
+                    ensureInvoice();
                     payPalButton.classList.remove('disabled');
-                    payPalButton.setAttribute('aria-disabled', 'false');
+                    payPalButton.removeAttribute('aria-disabled');
+                    payPalButton.disabled = false;
                     payPalContainer?.classList.remove('d-none');
                 } else {
-                    payPalButton.href = '#';
                     payPalButton.classList.add('disabled');
                     payPalButton.setAttribute('aria-disabled', 'true');
+                    payPalButton.disabled = true;
                     form.dataset.paypalInvoice = '';
                     if (paymentReferenceInput) {
                         paymentReferenceInput.value = '';
@@ -267,6 +304,26 @@
             }
 
             togglePayPalVisibility();
+        };
+
+        const requireHotelOrPickup = () => {
+            if (!hotelInput || !pickupInput) return true;
+            const hotel = (hotelInput.value || '').trim();
+            const pickup = (pickupInput.value || '').trim();
+            const hasHotel = !!hotel && hotel.toLowerCase() !== 'select your hotel'.toLowerCase();
+            const hasPickup = !!pickup;
+
+            if (!hasHotel && !hasPickup) {
+                const message = 'Please select your hotel or enter a pickup location.';
+                hotelInput.setCustomValidity(message);
+                pickupInput.setCustomValidity(message);
+                hotelInput.reportValidity();
+                return false;
+            }
+
+            hotelInput.setCustomValidity('');
+            pickupInput.setCustomValidity('');
+            return true;
         };
 
         const normalizeDial = (dial = '') => dial.replace(/[^\d+]/g, '');
@@ -494,6 +551,10 @@
             const fields = Array.from(step.querySelectorAll('input, select, textarea'))
                 .filter(el => !el.disabled && el.offsetParent !== null);
 
+            if (step.dataset.step === '1' && !requireHotelOrPickup()) {
+                return false;
+            }
+
             return fields.every(field => {
                 const valid = field.checkValidity();
                 log('validate field', { index, name: field.name, value: field.value, valid });
@@ -526,15 +587,77 @@
             input.addEventListener('blur', updateTotals);
         });
 
+        if (reserveButton) {
+            reserveButton.addEventListener('click', () => {
+                delete form.dataset.paypalSubmit;
+                if (formAction) {
+                    form.setAttribute('action', formAction);
+                }
+                form.setAttribute('method', 'post');
+                const selected = paymentRadios.find(r => r.checked)?.value;
+                if (selected === 'PayPal' && payWithPayPalInput) {
+                    payWithPayPalInput.value = 'true';
+                }
+                requireHotelOrPickup();
+            });
+        }
+
+        if (payPalButton) {
+            payPalButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                if (!isPayPalSelectedAndReady()) {
+                    togglePayPalVisibility();
+                    return;
+                }
+
+                if (!requireHotelOrPickup()) {
+                    return;
+                }
+
+                if (formAction) {
+                    form.setAttribute('action', formAction);
+                }
+                form.setAttribute('method', 'post');
+
+                form.dataset.paypalSubmit = 'true';
+                if (payWithPayPalInput) {
+                    payWithPayPalInput.value = 'true';
+                }
+                const payPalRadio = paymentRadios.find(r => r.value === 'PayPal');
+                if (payPalRadio) {
+                    payPalRadio.checked = true;
+                }
+
+                ensureInvoice();
+                combinePhoneValue();
+                syncAllFields();
+                log('submit payload (paypal)', Array.from(new FormData(form).entries()));
+                form.submit();
+            });
+        }
+
         form.addEventListener('submit', () => {
             ensureInvoice();
             combinePhoneValue();
-            if (isPayPalSelectedAndReady()) {
-                window.open(payPalButton.href, '_blank', 'noopener');
+            syncAllFields();
+            if (!form.dataset.paypalSubmit && payWithPayPalInput) {
+                const selected = paymentRadios.find(r => r.checked)?.value;
+                payWithPayPalInput.value = selected === 'PayPal' ? 'true' : 'false';
             }
+            delete form.dataset.paypalSubmit;
+            requireHotelOrPickup();
+            log('submit payload', Array.from(new FormData(form).entries()));
         });
 
         paymentRadios.forEach(radio => radio.addEventListener('change', togglePayPalVisibility));
+        if (hotelInput) {
+            hotelInput.addEventListener('input', requireHotelOrPickup);
+            hotelInput.addEventListener('change', requireHotelOrPickup);
+        }
+        if (pickupInput) {
+            pickupInput.addEventListener('input', requireHotelOrPickup);
+            pickupInput.addEventListener('change', requireHotelOrPickup);
+        }
         form.addEventListener('submit', updateTotals);
 
         if (phoneInput && phoneToggle && phoneMenu) {
