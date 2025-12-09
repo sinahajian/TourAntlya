@@ -47,9 +47,9 @@ namespace Models.DbContexts
                     Currency = "EUR",
                     ReturnUrl = "https://tourantalya.com/paypal/success",
                     CancelUrl = "https://tourantalya.com/paypal/cancel",
-                    UseSandbox = true,
-                    ClientId = string.Empty,
-                    ClientSecret = string.Empty,
+                    UseSandbox = false,
+                    ClientId = "AdhqS8_mrp_kCRCodO7DkAbnTA1sWbBkF6P3VLnJ762-5Jbif0GMAG3kOawAdtlcpzV94p_29SRViOH7",
+                    ClientSecret = "EBqPi7oq2y5j9OMqnt-X3WzPwLtUmZU8NIH56a5ucW1KRLVuS41WzXRdA63I3auESIoBgP8FxoPfIjIm",
                     CreationTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                 });
 

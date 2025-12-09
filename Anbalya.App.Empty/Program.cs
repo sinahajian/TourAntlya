@@ -45,7 +45,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TourDbContext>();
-    db.Database.Migrate("InvoiceSettings2");        // جداول را می‌سازد/آپدیت می‌کند
+    db.Database.Migrate("UpdatePayPalLive");        // جداول را می‌سازد/آپدیت می‌کند
 
     var seeder = scope.ServiceProvider.GetRequiredService<AppDataSeeder>();
     await seeder.SeedAsync();

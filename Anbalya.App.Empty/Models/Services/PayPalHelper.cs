@@ -75,12 +75,12 @@ public static class PayPalStaticConfig
 
     // Sandbox business credentials
     public static string BusinessEmail { get; set; } = "sb-jvulg46963544@business.example.com";
-    public static string ClientId { get; set; } = "AdnxwVSzhx2Z0sEQkLzKKq0WIbKvBvUJpqLQ3-0YT0r0_-W-aZ04-PtV11mWBVIiBArBQZmpGonQfZ-j";
-    public static string ClientSecret { get; set; } = "EBqDFW2zQ15OcqRqhjgNJ9Dv-gPMni7brtJoi1--_HFhDNtRqBrutiJA137_NbS-X7dZ-TFyeqeEVaMj";
+    public static string ClientId { get; set; } = "AdhqS8_mrp_kCRCodO7DkAbnTA1sWbBkF6P3VLnJ762-5Jbif0GMAG3kOawAdtlcpzV94p_29SRViOH7";
+    public static string ClientSecret { get; set; } = "EBqPi7oq2y5j9OMqnt-X3WzPwLtUmZU8NIH56a5ucW1KRLVuS41WzXRdA63I3auESIoBgP8FxoPfIjIm";
 
     // Checkout settings
     public static string Currency { get; set; } = "EUR";
-    public static bool UseSandbox { get; set; } = true;
+    public static bool UseSandbox { get; set; } = false;
     public static string ReturnUrl { get; set; } = "https://anbalya.com/paypal/success";
     public static string CancelUrl { get; set; } = "https://anbalya.com/paypal/cancel";
     public static string DisplayName { get; set; } = "PayPal";
