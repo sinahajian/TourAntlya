@@ -2,11 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Models.Interface;
 using Models.Entities;
@@ -19,6 +23,10 @@ namespace Controllers
     public class HomeController : Controller
     {
         private const string DefaultAdminEmail = "anbalya@proton.me";
+        private const int ContactRateLimit = 3;
+        private static readonly TimeSpan ContactRateWindow = TimeSpan.FromMinutes(10);
+        private static readonly TimeSpan ContactDuplicateWindow = TimeSpan.FromHours(24);
+        private static readonly Regex UrlPattern = new(@"(https?://|www\.)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private readonly ITourRepository _tourRepository;
         private readonly ILanguageResolver _langResolver;
@@ -34,6 +42,7 @@ namespace Controllers
         private readonly IInvoiceSettingsRepository _invoiceSettingsRepository;
         private readonly IInvoiceDocumentService _invoiceDocumentService;
         private readonly IPayPalHelper _payPalHelper;
+        private readonly IMemoryCache _cache;
         private readonly ILogger<HomeController> _logger;
         public HomeController(
             ITourRepository tourRepository,
@@ -50,6 +59,7 @@ namespace Controllers
             IInvoiceSettingsRepository invoiceSettingsRepository,
             IInvoiceDocumentService invoiceDocumentService,
             IPayPalHelper payPalHelper,
+            IMemoryCache cache,
             ILogger<HomeController> logger)
         {
             _tourRepository = tourRepository;
@@ -66,6 +76,7 @@ namespace Controllers
             _invoiceSettingsRepository = invoiceSettingsRepository;
             _invoiceDocumentService = invoiceDocumentService;
             _payPalHelper = payPalHelper;
+            _cache = cache;
             _logger = logger;
         }
 
@@ -114,19 +125,164 @@ namespace Controllers
             }
 
             var normalizedLang = LanguageCatalog.Normalize(form.Language ?? lang);
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var isSpam = TryDetectContactSpam(form, ip, out var spamReason);
             var message = new ContactMessage
             {
                 FullName = form.FullName.Trim(),
                 Email = form.Email.Trim(),
                 Message = form.Message.Trim(),
-                Language = normalizedLang
+                Language = normalizedLang,
+                Status = isSpam ? ContactMessageStatus.Spam : ContactMessageStatus.New
             };
 
             await _contactMessageRepository.CreateAsync(message, ct);
-            await SendContactNotificationsAsync(message, normalizedLang, ct);
+            if (isSpam)
+            {
+                _logger.LogWarning("Contact spam detected. Reason={Reason} Ip={Ip} Email={Email}", spamReason, ip, message.Email);
+            }
+            else
+            {
+                await SendContactNotificationsAsync(message, normalizedLang, ct);
+            }
 
             TempData["ContactSuccess"] = true;
             return RedirectToAction(nameof(Contact));
+        }
+
+        private bool TryDetectContactSpam(ContactRequestInputModel form, string ip, out string reason)
+        {
+            if (!string.IsNullOrWhiteSpace(form.Website))
+            {
+                reason = "honeypot";
+                return true;
+            }
+
+            if (LooksLikeGibberish(form.Message))
+            {
+                reason = "gibberish";
+                return true;
+            }
+
+            var urlMatches = UrlPattern.Matches(form.Message);
+            if (urlMatches.Count >= 2 || (urlMatches.Count == 1 && form.Message.Length < 60))
+            {
+                reason = "url-heavy";
+                return true;
+            }
+
+            if (IsRateLimited(ip))
+            {
+                reason = "rate-limit";
+                return true;
+            }
+
+            if (IsDuplicate(ip, form.Email, form.Message))
+            {
+                reason = "duplicate";
+                return true;
+            }
+
+            reason = string.Empty;
+            return false;
+        }
+
+        private bool IsRateLimited(string ip)
+        {
+            var key = $"contact-rate:{ip}";
+            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var windowStart = now - (long)ContactRateWindow.TotalSeconds;
+            var timestamps = _cache.GetOrCreate(key, entry =>
+            {
+                entry.SlidingExpiration = ContactRateWindow;
+                return new List<long>();
+            })!;
+
+            lock (timestamps)
+            {
+                timestamps.RemoveAll(ts => ts < windowStart);
+                if (timestamps.Count >= ContactRateLimit)
+                {
+                    return true;
+                }
+
+                timestamps.Add(now);
+            }
+
+            return false;
+        }
+
+        private bool IsDuplicate(string ip, string email, string message)
+        {
+            var normalizedEmail = email.Trim().ToLowerInvariant();
+            var normalizedMessage = NormalizeText(message);
+            var hash = ComputeHash($"{normalizedEmail}|{normalizedMessage}");
+            var key = $"contact-dup:{ip}:{hash}";
+            if (_cache.TryGetValue(key, out _))
+            {
+                return true;
+            }
+
+            _cache.Set(key, true, ContactDuplicateWindow);
+            return false;
+        }
+
+        private static string NormalizeText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return string.Empty;
+            }
+
+            var parts = text
+                .Split(new[] { ' ', '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(part => part.Trim());
+
+            return string.Join(' ', parts).ToLowerInvariant();
+        }
+
+        private static bool LooksLikeGibberish(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return true;
+            }
+
+            var trimmed = message.Trim();
+            if (trimmed.Length < 20)
+            {
+                return false;
+            }
+
+            var total = 0;
+            var lettersOrDigits = 0;
+            foreach (var ch in trimmed)
+            {
+                if (char.IsWhiteSpace(ch))
+                {
+                    continue;
+                }
+
+                total++;
+                if (char.IsLetterOrDigit(ch))
+                {
+                    lettersOrDigits++;
+                }
+            }
+
+            if (total == 0)
+            {
+                return true;
+            }
+
+            var ratio = (double)lettersOrDigits / total;
+            return ratio < 0.5;
+        }
+
+        private static string ComputeHash(string input)
+        {
+            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+            return Convert.ToHexString(bytes);
         }
 
         [HttpGet]

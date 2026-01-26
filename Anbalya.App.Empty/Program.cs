@@ -31,6 +31,7 @@ builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddSingleton<IPayPalHelper, PayPalHelper>();
 builder.Services.AddTransient<AppDataSeeder>();
 builder.Services.AddTransient<IInvoiceDocumentService, InvoiceDocumentService>();
+builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {

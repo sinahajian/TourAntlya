@@ -15,5 +15,8 @@ public class ContactRequestInputModel
     [StringLength(1000)]
     public string Message { get; set; } = string.Empty;
 
+    [StringLength(200)]
+    public string? Website { get; set; }
+
     public string? Language { get; set; }
 }

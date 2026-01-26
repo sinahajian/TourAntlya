@@ -15,6 +15,7 @@
         nameof(ContactMessageStatus.New) => "badge badge-info",
         nameof(ContactMessageStatus.Read) => "badge badge-secondary",
         nameof(ContactMessageStatus.Archived) => "badge badge-dark",
+        nameof(ContactMessageStatus.Spam) => "badge badge-danger",
         _ => "badge badge-light"
     };
 }
@@ -130,6 +131,17 @@
                                                     <input type="hidden" name="status" value="@ContactMessageStatus.Archived" />
                                                     <input type="hidden" name="filter" value="@activeStatus" />
                                                     <button type="submit" class="btn btn-outline-dark">Archive</button>
+                                                </form>
+                                            }
+                                            @if (message.Status != nameof(ContactMessageStatus.Spam))
+                                            {
+                                                <form asp-action="UpdateContactMessageStatus" method="post" class="d-inline ml-1">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="userName" value="@Model.UserName" />
+                                                    <input type="hidden" name="messageId" value="@message.Id" />
+                                                    <input type="hidden" name="status" value="@ContactMessageStatus.Spam" />
+                                                    <input type="hidden" name="filter" value="@activeStatus" />
+                                                    <button type="submit" class="btn btn-outline-danger">Mark spam</button>
                                                 </form>
                                             }
                                         </div>

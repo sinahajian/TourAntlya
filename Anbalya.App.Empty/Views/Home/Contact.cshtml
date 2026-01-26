@@ -67,6 +67,10 @@
                 <form asp-action="Contact" method="post" class="contact_form" novalidate>
                     @Html.AntiForgeryToken()
                     <input asp-for="Language" type="hidden" />
+                    <div class="d-none" aria-hidden="true">
+                        <label asp-for="Website">Website</label>
+                        <input asp-for="Website" autocomplete="off" tabindex="-1" />
+                    </div>
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                     <div class="form-group">
                         <label asp-for="FullName" class="font-weight-semibold">@nameLabel</label>

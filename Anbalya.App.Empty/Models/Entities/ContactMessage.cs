@@ -14,6 +14,7 @@ namespace Models.Entities
     {
         New = 0,
         Read = 1,
-        Archived = 2
+        Archived = 2,
+        Spam = 3
     }
 }
