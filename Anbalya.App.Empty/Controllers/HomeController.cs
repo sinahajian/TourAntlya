@@ -99,6 +99,15 @@ namespace Controllers
             };
 
             ViewData["Title"] = "Antalya Tours & Excursions";
+            if (!string.IsNullOrWhiteSpace(landing.Description))
+            {
+                ViewData["MetaDescription"] = landing.Description;
+            }
+
+            if (!string.IsNullOrWhiteSpace(landing.BackgroundImage))
+            {
+                ViewData["MetaImage"] = landing.BackgroundImage;
+            }
             return View(model);
         }
 
@@ -322,6 +331,21 @@ namespace Controllers
             if (!string.IsNullOrWhiteSpace(slug) && !string.Equals(slug, tour.Slug, StringComparison.OrdinalIgnoreCase))
             {
                 return RedirectToActionPermanent(nameof(Tour), new { id, slug = tour.Slug });
+            }
+
+            if (!string.IsNullOrWhiteSpace(tour.MiniDescription))
+            {
+                ViewData["MetaDescription"] = tour.MiniDescription;
+            }
+            else if (!string.IsNullOrWhiteSpace(tour.Description))
+            {
+                ViewData["MetaDescription"] = tour.Description;
+            }
+
+            var metaImage = tour.Foto ?? tour.Fotos.FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(metaImage))
+            {
+                ViewData["MetaImage"] = metaImage;
             }
 
             var paymentOptions = await _paymentOptionRepository.ListAsync(ct);

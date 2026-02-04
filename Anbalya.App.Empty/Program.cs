@@ -1,4 +1,5 @@
 using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Models.DbContexts;
 using Models.Helper;
@@ -43,6 +44,26 @@ builder.Services.AddSession(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 var app = builder.Build();
+
+var canonicalBaseUrl = builder.Configuration["Site:BaseUrl"];
+if (!app.Environment.IsDevelopment() && !string.IsNullOrWhiteSpace(canonicalBaseUrl))
+{
+    if (Uri.TryCreate(canonicalBaseUrl, UriKind.Absolute, out var canonicalUri))
+    {
+        app.Use(async (context, next) =>
+        {
+            if (!string.Equals(context.Request.Host.Host, canonicalUri.Host, StringComparison.OrdinalIgnoreCase))
+            {
+                var targetUrl = $"{canonicalUri.Scheme}://{canonicalUri.Host}{context.Request.PathBase}{context.Request.Path}{context.Request.QueryString}";
+                context.Response.StatusCode = StatusCodes.Status301MovedPermanently;
+                context.Response.Headers.Location = targetUrl;
+                return;
+            }
+
+            await next();
+        });
+    }
+}
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TourDbContext>();
@@ -62,6 +83,16 @@ app.UseSession();
 //app.UseAuthorization();   // اگر احراز هویت/مجوز دارید، اینجا می‌آید
 
 // دیگر UseEndpoints لازم نیست:
+app.MapControllerRoute(
+    name: "robots",
+    pattern: "robots.txt",
+    defaults: new { controller = "Seo", action = "Robots" });
+
+app.MapControllerRoute(
+    name: "sitemap",
+    pattern: "sitemap.xml",
+    defaults: new { controller = "Seo", action = "Sitemap" });
+
 app.MapDefaultControllerRoute();
 
 

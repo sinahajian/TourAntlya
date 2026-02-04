@@ -1,5 +1,6 @@
 @using Models.Helper
 @inject Models.Interface.ILanguageResolver LanguageResolver
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     var currentLanguageCode = LanguageResolver.Resolve(Context);
     var currentLanguage = LanguageCatalog.Find(currentLanguageCode);
@@ -22,9 +23,52 @@
     var footerNewsletterSubmit = StaticTextCatalog.Get(currentLanguageCode, "footer.newsletter.submit");
     var footerFollow = StaticTextCatalog.Get(currentLanguageCode, "footer.follow");
     var rawTitle = ViewData["Title"] as string;
+    var siteBaseUrl = (Configuration["Site:BaseUrl"] ?? string.Empty).TrimEnd('/');
+    var siteName = Configuration["Site:Name"] ?? "Anbalya";
     var seoTitle = string.IsNullOrWhiteSpace(rawTitle)
-        ? "Antalya Tours | Anbalya Tour"
-        : $"{rawTitle} | Antalya Tours | Anbalya Tour";
+        ? $"Antalya Tours | {siteName}"
+        : $"{rawTitle} | Antalya Tours | {siteName}";
+    var defaultDescription = Configuration["Site:DefaultDescription"] ?? "Discover Antalya tours, boat trips, and curated experiences with Anbalya.";
+    var defaultImage = Configuration["Site:DefaultImage"] ?? "/image/logo.png";
+    var metaDescription = (ViewData["MetaDescription"] as string)?.Trim();
+    if (string.IsNullOrWhiteSpace(metaDescription))
+    {
+        metaDescription = defaultDescription;
+    }
+    else
+    {
+        metaDescription = metaDescription.Replace("\r", " ").Replace("\n", " ").Trim();
+    }
+
+    var metaImage = ViewData["MetaImage"] as string;
+    var ogType = ViewData["OgType"] as string ?? "website";
+    var canonicalPath = (Context.Request.PathBase + Context.Request.Path).ToString();
+    var canonicalUrl = string.IsNullOrWhiteSpace(siteBaseUrl)
+        ? $"{Context.Request.Scheme}://{Context.Request.Host}{canonicalPath}"
+        : $"{siteBaseUrl}{canonicalPath}";
+
+    string BuildAbsoluteUrl(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        if (Uri.TryCreate(value, UriKind.Absolute, out var absolute))
+        {
+            return absolute.ToString();
+        }
+
+        var normalized = value.StartsWith("/", StringComparison.Ordinal) ? value : "/" + value;
+        if (!string.IsNullOrWhiteSpace(siteBaseUrl))
+        {
+            return $"{siteBaseUrl}{normalized}";
+        }
+
+        return $"{Context.Request.Scheme}://{Context.Request.Host}{normalized}";
+    }
+
+    var ogImageUrl = BuildAbsoluteUrl(string.IsNullOrWhiteSpace(metaImage) ? defaultImage : metaImage);
 }
 
 <!DOCTYPE html>
@@ -36,6 +80,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <title>@seoTitle</title>
+    <meta name="description" content="@metaDescription">
+    <meta name="robots" content="index,follow">
+    <link rel="canonical" href="@canonicalUrl">
+    <meta property="og:site_name" content="@siteName">
+    <meta property="og:title" content="@seoTitle">
+    <meta property="og:description" content="@metaDescription">
+    <meta property="og:url" content="@canonicalUrl">
+    <meta property="og:type" content="@ogType">
+    @if (!string.IsNullOrWhiteSpace(ogImageUrl))
+    {
+        <meta property="og:image" content="@ogImageUrl">
+        <meta name="twitter:image" content="@ogImageUrl">
+    }
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@seoTitle">
+    <meta name="twitter:description" content="@metaDescription">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="@Url.Content("~/css/bootstrap.css")">
     <link rel="stylesheet" href="@Url.Content("~/vendors/linericon/style.css")">
